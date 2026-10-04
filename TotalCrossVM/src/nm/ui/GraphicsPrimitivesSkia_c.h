@@ -129,7 +129,7 @@ static bool skiaDrawPlanData(TCObject plan, SkiaImageDrawPlanData* data)
 static int skiaDrawGeometryPlan(Context currentContext, TCObject dstSurf, TCObject plan,
                                 int32 srcX, int32 srcY, int32 width, int32 height,
                                 int32 dstX, int32 dstY, int32 doClip, int32 allowPhysicalCopy,
-                                int32 physicalCopyOnly)
+                                int32 physicalCopyOnly, int32 allowOpaqueWritePixels)
 {
    SkiaImageDrawPlanData data;
    int32 surfaceId;
@@ -188,11 +188,13 @@ static int skiaDrawGeometryPlan(Context currentContext, TCObject dstSurf, TCObje
    int result = skia_image_backing_draw_geometry_to_surface(surfaceId, &data,
       (float)srcX, (float)srcY, (float)(srcX + width), (float)(srcY + height),
       (float)dstX, (float)dstY, (float)(dstX + width), (float)(dstY + height),
-      allowPhysicalCopy != 0 && doClip != 0, physicalCopyOnly != 0);
+      allowPhysicalCopy != 0 && doClip != 0, physicalCopyOnly != 0,
+      allowOpaqueWritePixels != 0);
    if (clipSet) {
       skia_restoreClip(surfaceId);
    }
-   if (allowPhysicalCopy && (result & SKIA_IMAGE_DRAW_HANDLED)
+   if ((allowPhysicalCopy || (result & SKIA_IMAGE_DRAW_OPAQUE_WRITE_HIT))
+      && (result & SKIA_IMAGE_DRAW_HANDLED)
       && !(result & SKIA_IMAGE_DRAW_NOOP)) {
       if (Graphics_isImageSurface(dstSurf)) {
          skia_image_backing_record_surface_mutation(surfaceId);
@@ -209,8 +211,14 @@ static int skiaDrawGeometryPlan(Context currentContext, TCObject dstSurf, TCObje
 
 #ifndef SKIA_H
 static void drawSurface(Context currentContext, TCObject dstSurf, TCObject srcSurf, int32 srcX, int32 srcY, int32 width, int32 height,
-                       int32 dstX, int32 dstY, int32 doClip)
+                       int32 dstX, int32 dstY, int32 doClip, int32 allowOpaqueWritePixels,
+                       int32* opaqueWriteStatus)
 {
+   if (opaqueWriteStatus) {
+      *opaqueWriteStatus = 0;
+   }
+   UNUSED(allowOpaqueWritePixels)
+   UNUSED(opaqueWriteStatus)
    uint32 i;
    Pixel * srcPixels;
    Pixel * dstPixels;
@@ -397,7 +405,11 @@ end:
 }
 #else
 static void drawSurface(Context currentContext, TCObject dstSurf, TCObject srcSurf, int32 srcX, int32 srcY, int32 w, int32 h,
-   int32 dstX, int32 dstY, int32 doClip) {
+   int32 dstX, int32 dstY, int32 doClip, int32 allowOpaqueWritePixels,
+   int32* opaqueWriteStatus) {
+   if (opaqueWriteStatus) {
+      *opaqueWriteStatus = 0;
+   }
    if (Surface_isImage(srcSurf)) {
       double contentScale = Image_contentScale(srcSurf);
       double scaleW;
@@ -491,14 +503,20 @@ static void drawSurface(Context currentContext, TCObject dstSurf, TCObject srcSu
 
       TCObject backing = Image_backing(srcSurf);
       if (isNativeImageBacking(backing)) {
-         if (!skia_image_backing_draw_to_surface(skiaSurfaceForGraphics(dstSurf),
+         int drawStatus = skia_image_backing_draw_to_surface(skiaSurfaceForGraphics(dstSurf),
                NativeImageBacking_nativeHandle(backing),
                (float)(srcX / scaleW + frame * Image_width(srcSurf)),
                (float)(srcY / scaleH),
                (float)((srcX + w) / scaleW + frame * Image_width(srcSurf)),
                (float)((srcY + h) / scaleH),
                (float)dstX, (float)dstY, (float)(dstX + w), (float)(dstY + h),
-               Image_alphaMask(srcSurf))) {
+               Image_alphaMask(srcSurf), allowOpaqueWritePixels != 0,
+               ImageBacking_opacityState(backing));
+         if (opaqueWriteStatus) {
+            *opaqueWriteStatus = drawStatus
+               & (SKIA_IMAGE_DRAW_OPAQUE_WRITE_ATTEMPT | SKIA_IMAGE_DRAW_OPAQUE_WRITE_HIT);
+         }
+         if (!(drawStatus & SKIA_IMAGE_DRAW_HANDLED)) {
             if (clipSet) {
                skia_restoreClip(skiaSurfaceForGraphics(dstSurf));
             }
@@ -524,7 +542,7 @@ static void drawSurface(Context currentContext, TCObject dstSurf, TCObject srcSu
             (float)((srcX + w) / scaleW + frame * Image_width(srcSurf)),
             (float)((srcY + h) / scaleH),
             (float)dstX, (float)dstY, (float)(dstX + w), (float)(dstY + h),
-            Image_alphaMask(srcSurf));
+            Image_alphaMask(srcSurf), allowOpaqueWritePixels != 0, opaqueWriteStatus);
       }
       if (clipSet) {
          skia_restoreClip(skiaSurfaceForGraphics(dstSurf));

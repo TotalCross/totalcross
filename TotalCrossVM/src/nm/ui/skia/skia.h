@@ -44,7 +44,7 @@ void skia_setClip(int32 skiaSurface, int32 x1, int32 y1, int32 x2, int32 y2);
 void skia_restoreClip(int32 skiaSurface);
 void skia_setSurfaceScale(int32 skiaSurface, double contentScale);
 
-void skia_drawSurface(int32 skiaSurface, int32 id, float srcLeft, float srcTop, float srcRight, float srcBottom, float dstLeft, float dstTop, float dstRight, float dstBottom, int32 alphaMask);
+void skia_drawSurface(int32 skiaSurface, int32 id, float srcLeft, float srcTop, float srcRight, float srcBottom, float dstLeft, float dstTop, float dstRight, float dstBottom, int32 alphaMask, bool allowOpaqueWritePixels, int32* opaqueWriteStatus);
 void skia_drawDottedLine(int32 skiaSurface, int32 x1, int32 y1, int32 x2, int32 y2, Pixel pixel1, Pixel pixel2);
 Pixel skia_getPixel(int32 skiaSurface, int32 x, int32 y);
 int skia_getPixelRow(int32 skiaSurface, void *output, int32 y, int32 width);
@@ -93,6 +93,11 @@ int skia_image_backing_variant_observe_for_test(int64_t handle, int32 kind,
     const uint32_t* words, int32 wordCount);
 int32 skia_image_backing_variant_state_for_test(int64_t handle);
 void skia_image_backing_fail_next_snapshot_for_test(void);
+void skia_image_backing_fail_next_opaque_write_pixels_for_test(void);
+int skia_image_geometry_try_opaque_write_pixels(int32 targetSurface, int64_t sourceHandle,
+    float srcLeft, float srcTop, float srcRight, float srcBottom,
+    float dstLeft, float dstTop, float dstRight, float dstBottom,
+    int32 alphaMask, int32 sourceOpacityState);
 int skia_image_backing_make_mutable(int64_t handle);
 int skia_image_backing_is_compact(int64_t handle);
 void skia_image_backing_fail_next_promotion_for_test(void);
@@ -182,10 +187,12 @@ typedef struct SkiaImageDrawPlanData {
 #define SKIA_IMAGE_DRAW_NOOP (1 << 15)
 #define SKIA_IMAGE_DRAW_GENERIC_GEOMETRY (1 << 16)
 #define SKIA_IMAGE_DRAW_SMOOTH_RESAMPLE (1 << 17)
+#define SKIA_IMAGE_DRAW_OPAQUE_WRITE_ATTEMPT (1 << 18)
+#define SKIA_IMAGE_DRAW_OPAQUE_WRITE_HIT (1 << 19)
 int skia_image_backing_draw_geometry_to_surface(int32 targetSurface,
     const SkiaImageDrawPlanData* plan, float srcLeft, float srcTop, float srcRight,
     float srcBottom, float dstLeft, float dstTop, float dstRight, float dstBottom,
-    bool allowPhysicalCopy, bool physicalCopyOnly);
+    bool allowPhysicalCopy, bool physicalCopyOnly, bool allowOpaqueWritePixels);
 void skia_image_backing_record_surface_mutation(int32 surfaceId);
 int64_t skia_image_backing_materialize_geometry(const SkiaImageDrawPlanData* plan);
 int32 skia_image_backing_width(int64_t handle);
@@ -199,7 +206,8 @@ int skia_image_backing_draw(int64_t targetHandle, int64_t sourceHandle,
 int32 skia_image_backing_surface_id(int64_t handle);
 int skia_image_backing_draw_to_surface(int32 targetSurface, int64_t sourceHandle,
     float srcLeft, float srcTop, float srcRight, float srcBottom,
-    float dstLeft, float dstTop, float dstRight, float dstBottom, int32 alphaMask);
+    float dstLeft, float dstTop, float dstRight, float dstBottom, int32 alphaMask,
+    bool allowOpaqueWritePixels, int32 sourceOpacityState);
 void skia_image_backing_release(int64_t handle);
 void skia_image_backing_reset_accounting_for_test(void);
 uint64_t skia_image_backing_records_created_for_test(void);

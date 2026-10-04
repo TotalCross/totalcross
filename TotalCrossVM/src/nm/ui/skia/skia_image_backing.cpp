@@ -933,9 +933,20 @@ int32 skia_image_backing_surface_id(int64_t handle) {
 int skia_image_backing_draw_to_surface(int32 targetSurface, int64_t sourceHandle,
                                        float srcLeft, float srcTop, float srcRight, float srcBottom,
                                        float dstLeft, float dstTop, float dstRight, float dstBottom,
-                                       int32 alphaMask) {
-    return drawOnCanvas(skiaGetCanvas(targetSurface), findBacking(sourceHandle), srcLeft, srcTop,
-                        srcRight, srcBottom, dstLeft, dstTop, dstRight, dstBottom, alphaMask);
+                                       int32 alphaMask, bool allowOpaqueWritePixels,
+                                       int32 sourceOpacityState) {
+    int status = 0;
+    if (allowOpaqueWritePixels) {
+        status = skia_image_geometry_try_opaque_write_pixels(targetSurface, sourceHandle,
+            srcLeft, srcTop, srcRight, srcBottom, dstLeft, dstTop, dstRight, dstBottom,
+            alphaMask, sourceOpacityState);
+        if (status & SKIA_IMAGE_DRAW_OPAQUE_WRITE_HIT) {
+            return status | SKIA_IMAGE_DRAW_HANDLED;
+        }
+    }
+    const int drawn = drawOnCanvas(skiaGetCanvas(targetSurface), findBacking(sourceHandle),
+        srcLeft, srcTop, srcRight, srcBottom, dstLeft, dstTop, dstRight, dstBottom, alphaMask);
+    return status | (drawn ? SKIA_IMAGE_DRAW_HANDLED : 0);
 }
 
 SkCanvas* skia_image_backing_canvas(int64_t handle) {

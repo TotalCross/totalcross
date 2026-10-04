@@ -26,6 +26,19 @@ import totalcross.ui.gfx.Graphics;
 
 class ImageDestinationScaleTest {
   @Test
+  void opaqueWriteDiagnosticsSeparateHitsFromFallbacks() {
+    ImageRasterFeatureBridge.resetDrawAccountingForTest();
+
+    ImageRasterFeatureBridge.recordDrawEvents(ImageRasterFeatureBridge.OPAQUE_WRITE_ATTEMPT
+        | ImageRasterFeatureBridge.OPAQUE_WRITE_HIT);
+    ImageRasterFeatureBridge.recordDrawEvents(ImageRasterFeatureBridge.OPAQUE_WRITE_ATTEMPT);
+
+    assertEquals(2, ImageRasterFeatureBridge.opaqueWriteAttemptsForTest);
+    assertEquals(1, ImageRasterFeatureBridge.opaqueWriteHitsForTest);
+    assertEquals(1, ImageRasterFeatureBridge.opaqueWriteFallbacksForTest);
+  }
+
+  @Test
   void smoothPipelineResolvesPhysicalSizeWithoutAdoptingTheOriginal() throws Exception {
     Image image = new Image(png(96, 96)).getSmoothScaledInstance(48, 48);
 

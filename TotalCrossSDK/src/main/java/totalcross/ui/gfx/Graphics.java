@@ -1542,7 +1542,9 @@ public final class Graphics {
       }
     }
     if (!Settings.onJavaSE) {
-      copyRectNative(surface, x, y, width, height, dstX, dstY);
+      int drawStatus = copyRectNative(surface, x, y, width, height, dstX, dstY,
+          opaqueWritePixelsEnabledForDrawing());
+      ImageRasterFeatureBridge.recordDrawEvents(drawStatus);
       return;
     }
     int[] srcPixels = (int[]) getSurfacePixels(surface);
@@ -1553,7 +1555,13 @@ public final class Graphics {
   }
 
   @ReplacedByNativeOnDeploy
-  private void copyRectNative(GfxSurface surface, int x, int y, int width, int height, int dstX, int dstY) {
+  private int copyRectNative(GfxSurface surface, int x, int y, int width, int height, int dstX, int dstY,
+      boolean allowOpaqueWritePixels) {
+    return 0;
+  }
+
+  private boolean opaqueWritePixelsEnabledForDrawing() {
+    return ImageRuntimeConfigurationStartup.currentPolicy().rasterCore().opaqueWritePixels();
   }
 
   /** Sets the current font for operations that draw text. */
@@ -1690,7 +1698,8 @@ public final class Graphics {
   public void drawImage(totalcross.ui.image.Image image, int x, int y, boolean doClip) {
     Object drawPlan = resolveDrawPlanForDrawing(image);
     if (!Settings.onJavaSE && drawPlan != null) {
-      int drawStatus = drawGeometryNative(drawPlan, x, y, doClip);
+      int drawStatus = drawGeometryNative(drawPlan, x, y, doClip,
+          opaqueWritePixelsEnabledForDrawing());
       ImageRasterFeatureBridge.recordDrawEvents(drawStatus);
       if ((drawStatus & ImageRasterFeatureBridge.DRAW_HANDLED) != 0) {
         return;
@@ -1699,7 +1708,9 @@ public final class Graphics {
     }
     image = resolveImageForDrawing(image);
     if (!Settings.onJavaSE) {
-      drawImageNative(image, x, y, doClip);
+      int drawStatus = drawImageNative(image, x, y, doClip,
+          opaqueWritePixelsEnabledForDrawing());
+      ImageRasterFeatureBridge.recordDrawEvents(drawStatus);
       return;
     }
     int[] srcPixels = (int[]) image.getPixels();
@@ -1728,7 +1739,8 @@ public final class Graphics {
   public void copyImageRect(totalcross.ui.image.Image src, int x, int y, int width, int height, boolean doClip) {
     Object drawPlan = resolveDrawPlanForDrawing(src);
     if (!Settings.onJavaSE && drawPlan != null) {
-      int drawStatus = copyGeometryNative(drawPlan, x, y, width, height, doClip);
+      int drawStatus = copyGeometryNative(drawPlan, x, y, width, height, doClip,
+          opaqueWritePixelsEnabledForDrawing());
       ImageRasterFeatureBridge.recordDrawEvents(drawStatus);
       if ((drawStatus & ImageRasterFeatureBridge.DRAW_HANDLED) != 0) {
         return;
@@ -1737,7 +1749,9 @@ public final class Graphics {
     }
     src = resolveImageForDrawing(src);
     if (!Settings.onJavaSE) {
-      copyImageRectNative(src, x, y, width, height, doClip);
+      int drawStatus = copyImageRectNative(src, x, y, width, height, doClip,
+          opaqueWritePixelsEnabledForDrawing());
+      ImageRasterFeatureBridge.recordDrawEvents(drawStatus);
       return;
     }
     int[] srcPixels = (int[]) src.getPixels();
@@ -1755,7 +1769,8 @@ public final class Graphics {
   public void drawImage(totalcross.ui.image.Image src, int x, int y) {
     Object drawPlan = resolveDrawPlanForDrawing(src);
     if (!Settings.onJavaSE && drawPlan != null) {
-      int drawStatus = drawGeometryNative(drawPlan, x, y, true);
+      int drawStatus = drawGeometryNative(drawPlan, x, y, true,
+          opaqueWritePixelsEnabledForDrawing());
       ImageRasterFeatureBridge.recordDrawEvents(drawStatus);
       if ((drawStatus & ImageRasterFeatureBridge.DRAW_HANDLED) != 0) {
         return;
@@ -1764,7 +1779,8 @@ public final class Graphics {
     }
     src = resolveImageForDrawing(src);
     if (!Settings.onJavaSE) {
-      drawImageNative(src, x, y);
+      int drawStatus = drawImageNative(src, x, y, opaqueWritePixelsEnabledForDrawing());
+      ImageRasterFeatureBridge.recordDrawEvents(drawStatus);
       return;
     }
     // guich@tc100b5_5: refactored to use the transparent color
@@ -1812,13 +1828,14 @@ public final class Graphics {
   }
 
   @ReplacedByNativeOnDeploy
-  private int drawGeometryNative(Object plan, int x, int y, boolean doClip) {
+  private int drawGeometryNative(Object plan, int x, int y, boolean doClip,
+      boolean allowOpaqueWritePixels) {
     return 0;
   }
 
   @ReplacedByNativeOnDeploy
   private int copyGeometryNative(Object plan, int x, int y, int width, int height,
-      boolean doClip) {
+      boolean doClip, boolean allowOpaqueWritePixels) {
     return 0;
   }
 
@@ -1829,16 +1846,21 @@ public final class Graphics {
   }
 
   @ReplacedByNativeOnDeploy
-  private void drawImageNative(totalcross.ui.image.Image image, int x, int y, boolean doClip) {
+  private int drawImageNative(totalcross.ui.image.Image image, int x, int y, boolean doClip,
+      boolean allowOpaqueWritePixels) {
+    return 0;
   }
 
   @ReplacedByNativeOnDeploy
-  private void copyImageRectNative(totalcross.ui.image.Image image, int x, int y, int width, int height,
-      boolean doClip) {
+  private int copyImageRectNative(totalcross.ui.image.Image image, int x, int y, int width, int height,
+      boolean doClip, boolean allowOpaqueWritePixels) {
+    return 0;
   }
 
   @ReplacedByNativeOnDeploy
-  private void drawImageNative(totalcross.ui.image.Image image, int x, int y) {
+  private int drawImageNative(totalcross.ui.image.Image image, int x, int y,
+      boolean allowOpaqueWritePixels) {
+    return 0;
   }
 
   ////////////////////////////////////////////////////////////////////////////////

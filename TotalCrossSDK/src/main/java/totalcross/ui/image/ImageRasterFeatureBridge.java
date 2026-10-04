@@ -8,6 +8,8 @@ package totalcross.ui.image;
 public final class ImageRasterFeatureBridge {
   public static final int DRAW_HANDLED = ImageRasterDiagnostics.DRAW_HANDLED;
   public static final int PHYSICAL_COPY_HIT = ImageRasterDiagnostics.DRAW_PHYSICAL_COPY_HIT;
+  public static final int OPAQUE_WRITE_ATTEMPT = ImageRasterDiagnostics.DRAW_OPAQUE_WRITE_ATTEMPT;
+  public static final int OPAQUE_WRITE_HIT = ImageRasterDiagnostics.DRAW_OPAQUE_WRITE_HIT;
   static int copyRectPlanAttemptsForTest;
   static int copyRectPlanHandledForTest;
   static int copyRectPlanFallbacksForTest;
@@ -22,6 +24,9 @@ public final class ImageRasterFeatureBridge {
   static int targetColorVariantMaterializationsForTest;
   static int targetColorVariantHitsForTest;
   static int targetColorVariantFallbacksForTest;
+  static int opaqueWriteAttemptsForTest;
+  static int opaqueWriteHitsForTest;
+  static int opaqueWriteFallbacksForTest;
   private static boolean drawAccountingEnabledForTest;
 
   private ImageRasterFeatureBridge() {
@@ -48,15 +53,29 @@ public final class ImageRasterFeatureBridge {
       return false;
     }
     boolean written = unscaled && image.tryWriteOpaquePixels(data, offset, x, y, width, height);
-    ImageRasterDiagnostics.record(written
-        ? ImageRasterDiagnostics.OPAQUE_WRITE_SUCCESS : ImageRasterDiagnostics.RASTER_FALLBACK);
+    recordOpaqueWriteResult(written);
     return written;
   }
 
   /** @hidden */
   public static void recordOpaqueWriteResult(boolean directWrite) {
-    ImageRasterDiagnostics.record(directWrite
-        ? ImageRasterDiagnostics.OPAQUE_WRITE_SUCCESS : ImageRasterDiagnostics.RASTER_FALLBACK);
+    ImageRasterDiagnostics.record(ImageRasterDiagnostics.OPAQUE_WRITE_ATTEMPT);
+    if (directWrite) {
+      ImageRasterDiagnostics.record(ImageRasterDiagnostics.OPAQUE_WRITE_HIT);
+      ImageRasterDiagnostics.record(ImageRasterDiagnostics.OPAQUE_WRITE_SUCCESS);
+      if (drawAccountingEnabledForTest) {
+        opaqueWriteHitsForTest++;
+      }
+    } else {
+      ImageRasterDiagnostics.record(ImageRasterDiagnostics.OPAQUE_WRITE_FALLBACK);
+      ImageRasterDiagnostics.record(ImageRasterDiagnostics.RASTER_FALLBACK);
+      if (drawAccountingEnabledForTest) {
+        opaqueWriteFallbacksForTest++;
+      }
+    }
+    if (drawAccountingEnabledForTest) {
+      opaqueWriteAttemptsForTest++;
+    }
   }
 
   /** @hidden */
@@ -69,6 +88,14 @@ public final class ImageRasterFeatureBridge {
     ImageRasterDiagnostics.recordDrawEvents(status);
     if (!drawAccountingEnabledForTest) {
       return;
+    }
+    if ((status & ImageRasterDiagnostics.DRAW_OPAQUE_WRITE_ATTEMPT) != 0) {
+      opaqueWriteAttemptsForTest++;
+      if ((status & ImageRasterDiagnostics.DRAW_OPAQUE_WRITE_HIT) != 0) {
+        opaqueWriteHitsForTest++;
+      } else {
+        opaqueWriteFallbacksForTest++;
+      }
     }
     if ((status & ImageRasterDiagnostics.DRAW_IDENTITY_ATTEMPT) != 0) {
       identityAttemptsForTest++;
@@ -141,5 +168,8 @@ public final class ImageRasterFeatureBridge {
     targetColorVariantMaterializationsForTest = 0;
     targetColorVariantHitsForTest = 0;
     targetColorVariantFallbacksForTest = 0;
+    opaqueWriteAttemptsForTest = 0;
+    opaqueWriteHitsForTest = 0;
+    opaqueWriteFallbacksForTest = 0;
   }
 }

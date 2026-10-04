@@ -30,6 +30,9 @@ final class ImageRasterDiagnostics {
   static final int COPY_RECT_PLAN_HANDLED = 18;
   static final int COPY_RECT_PLAN_FALLBACK = 19;
   static final int PHYSICAL_COPY_HIT = 20;
+  static final int OPAQUE_WRITE_ATTEMPT = 21;
+  static final int OPAQUE_WRITE_HIT = 22;
+  static final int OPAQUE_WRITE_FALLBACK = 23;
 
   static final int DRAW_HANDLED = 1;
   static final int DRAW_IDENTITY_ATTEMPT = 1 << 1;
@@ -46,6 +49,8 @@ final class ImageRasterDiagnostics {
   static final int DRAW_PHYSICAL_COPY_HIT = 1 << 13;
   static final int DRAW_GENERIC_GEOMETRY = 1 << 16;
   static final int DRAW_SMOOTH_RESAMPLE = 1 << 17;
+  static final int DRAW_OPAQUE_WRITE_ATTEMPT = 1 << 18;
+  static final int DRAW_OPAQUE_WRITE_HIT = 1 << 19;
 
   private ImageRasterDiagnostics() {
   }
@@ -81,5 +86,15 @@ final class ImageRasterDiagnostics {
     if ((status & DRAW_PHYSICAL_VARIANT_MATERIALIZED) != 0) record(PHYSICAL_VARIANT_MATERIALIZED);
     if ((status & DRAW_PHYSICAL_VARIANT_FALLBACK) != 0) record(PHYSICAL_VARIANT_FALLBACK);
     if ((status & DRAW_PHYSICAL_COPY_HIT) != 0) record(PHYSICAL_COPY_HIT);
+    if ((status & DRAW_OPAQUE_WRITE_ATTEMPT) != 0) {
+      record(OPAQUE_WRITE_ATTEMPT);
+      if ((status & DRAW_OPAQUE_WRITE_HIT) != 0) {
+        record(OPAQUE_WRITE_HIT);
+        record(OPAQUE_WRITE_SUCCESS);
+      } else {
+        record(OPAQUE_WRITE_FALLBACK);
+        record(RASTER_FALLBACK);
+      }
+    }
   }
 }
