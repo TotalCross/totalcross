@@ -17,6 +17,7 @@ import java.util.zip.ZipInputStream;
 
 import tc.Deploy;
 import tc.tools.JarClassPathLoader;
+import tc.tools.provenance.BuildIdentity;
 import tc.tools.converter.bytecode.BC004_iconst_1;
 import tc.tools.converter.bytecode.BC005_iconst_2;
 import tc.tools.converter.bytecode.BC006_iconst_3;
@@ -1405,6 +1406,10 @@ public final class J2TC implements JConstants, TCConstants {
           Storage.compressAndWrite(tcbas, new DataStream(tcbasz));
           vout.addElement(new TCZ.Entry(tcbasz.toByteArray(), "ConstantPool", orig));
         }
+        byte[] buildIdentity = BuildIdentity.tczMetadata();
+        vout.addElement(new TCZ.Entry(
+            buildIdentity, BuildIdentity.TCZ_ENTRY_NAME, buildIdentity.length));
+
         // now that all files were processed, put everything in a single tcz file.
         // set the TCZ attributes
         short attr = 0;
