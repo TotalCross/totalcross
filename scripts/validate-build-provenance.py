@@ -12,6 +12,7 @@ import sys
 sys.dont_write_bytecode = True
 
 from provenance.build_identity import compute_build_id
+from provenance.compatibility_contract import read_compatibility_contract
 
 
 def parse_args():
@@ -37,6 +38,7 @@ def parse_args():
     parser.add_argument("--source-tree", required=True)
     parser.add_argument("--require-clean-source", action="store_true")
     parser.add_argument("--require-build-identity", action="store_true")
+    parser.add_argument("--compatibility-contract", type=Path)
     return parser.parse_args()
 
 
@@ -89,6 +91,7 @@ def validate_manifest(
     source_tree,
     require_clean_source,
     require_build_identity=False,
+    expected_compatibility=None,
 ):
     try:
         value = json.loads(manifest.read_text(encoding="utf-8"))
@@ -147,6 +150,34 @@ def validate_manifest(
                         f"got {build.get('id')!r}"
                     )
 
+    if expected_compatibility is not None:
+        actual_compatibility = value.get("compatibility")
+        if not isinstance(actual_compatibility, dict):
+            mismatches.append(
+                f"compatibility: expected object, got {actual_compatibility!r}"
+            )
+        else:
+            required_keys = set(expected_compatibility)
+            actual_keys = set(actual_compatibility)
+            if actual_keys != required_keys:
+                missing = sorted(required_keys - actual_keys)
+                unknown = sorted(actual_keys - required_keys)
+                if missing:
+                    mismatches.append(
+                        "compatibility: missing keys " + ", ".join(missing)
+                    )
+                if unknown:
+                    mismatches.append(
+                        "compatibility: unknown keys " + ", ".join(unknown)
+                    )
+            for key, expected_value in expected_compatibility.items():
+                actual_value = actual_compatibility.get(key)
+                if type(actual_value) is not int or actual_value != expected_value:
+                    mismatches.append(
+                        f"compatibility.{key}: expected {expected_value!r}, "
+                        f"got {actual_value!r}"
+                    )
+
     return mismatches
 
 
@@ -155,6 +186,16 @@ def main():
     if args.manifest and args.artifact_download:
         print("use either --manifest or --artifact-download, not both", file=sys.stderr)
         return 2
+
+    expected_compatibility = None
+    if args.compatibility_contract is not None:
+        try:
+            expected_compatibility = read_compatibility_contract(
+                args.compatibility_contract
+            )
+        except (OSError, ValueError) as error:
+            print(f"invalid compatibility contract: {error}", file=sys.stderr)
+            return 2
 
     try:
         manifests = (
@@ -179,6 +220,7 @@ def main():
             args.source_tree,
             args.require_clean_source,
             args.require_build_identity,
+            expected_compatibility,
         )
         if mismatches:
             failed = True

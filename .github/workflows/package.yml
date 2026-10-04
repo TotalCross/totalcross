@@ -228,7 +228,8 @@ jobs:
           --source-commit "${EXPECTED_SOURCE_COMMIT}" \
           --source-tree "${expected_source_tree}" \
           --require-clean-source \
-          --require-build-identity
+          --require-build-identity \
+          --compatibility-contract config/artifact-compatibility.properties
 
     - name: Validate embedded build identities
       if: ${{ always() }}
@@ -256,7 +257,8 @@ jobs:
         python3 scripts/provenance/artifact-identity.py \
           "${artifact_downloads[@]}" \
           --repository "${GITHUB_REPOSITORY}" \
-          --source-tree "${expected_source_tree}"
+          --source-tree "${expected_source_tree}" \
+          --compatibility-contract config/artifact-compatibility.properties
 
     - name: Read TotalCross version
       id: totalcross-version

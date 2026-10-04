@@ -24,6 +24,13 @@ base {
 }
 
 def repositoryRoot = project.rootDir.parentFile
+def compatibilityProperties = new Properties()
+new File(repositoryRoot, 'config/artifact-compatibility.properties').withInputStream {
+    compatibilityProperties.load(it)
+}
+def tczFormatVersion = compatibilityProperties.getProperty('tczFormat')
+def converterAbiVersion = compatibilityProperties.getProperty('converterAbi')
+def runtimeAbiVersion = compatibilityProperties.getProperty('runtimeAbi')
 def buildIdentityJsonProvider = providers.exec {
     workingDir repositoryRoot
     commandLine 'python3', new File(repositoryRoot, 'scripts/provenance/build-identity.py').absolutePath,
@@ -297,6 +304,9 @@ jar {
     int i = 0
     String classpathVar = configurations.runtimeClasspath.collect { " libs/" + (i++ == 0 ? String.format("%-50s", it.getName()) : String.format("%-62s", it.getName())) }.join(" ")
     inputs.property('totalcrossBuildIdentity', buildIdentityJson)
+    inputs.property('totalcrossTczFormat', tczFormatVersion)
+    inputs.property('totalcrossConverterAbi', converterAbiVersion)
+    inputs.property('totalcrossRuntimeAbi', runtimeAbiVersion)
     doFirst {
         def identity = buildIdentityProvider.get()
         manifest.attributes(
@@ -304,7 +314,10 @@ jar {
             'TotalCross-Build-ID': identity.build.id,
             'TotalCross-Source-Commit': identity.source.commit,
             'TotalCross-Source-Tree': identity.source.tree,
-            'TotalCross-Source-Dirty': identity.source.dirty.toString()
+            'TotalCross-Source-Dirty': identity.source.dirty.toString(),
+            'TotalCross-TCZ-Format': tczFormatVersion,
+            'TotalCross-Converter-ABI': converterAbiVersion,
+            'TotalCross-Runtime-ABI': runtimeAbiVersion
         )
     }
     manifest {
@@ -524,21 +537,33 @@ task copySdkDependencies(type: Sync) {
 tasks.withType(JavaExec).configureEach {
     classpath.from(tasks.named('totalcrossRuntimeJavaJar').flatMap { it.archiveFile })
     inputs.property('totalcrossBuildIdentity', buildIdentityJson)
+    inputs.property('totalcrossTczFormat', tczFormatVersion)
+    inputs.property('totalcrossConverterAbi', converterAbiVersion)
+    inputs.property('totalcrossRuntimeAbi', runtimeAbiVersion)
     doFirst {
         def identity = buildIdentityProvider.get()
         systemProperty 'totalcross.build.identity.version', identity.build.identityVersion.toString()
         systemProperty 'totalcross.build.id', identity.build.id
         systemProperty 'totalcross.source.tree', identity.source.tree
+        systemProperty 'totalcross.tcz.format', tczFormatVersion
+        systemProperty 'totalcross.converter.abi', converterAbiVersion
+        systemProperty 'totalcross.runtime.abi', runtimeAbiVersion
     }
 }
 
 tasks.withType(Test).configureEach {
     inputs.property('totalcrossBuildIdentity', buildIdentityJson)
+    inputs.property('totalcrossTczFormat', tczFormatVersion)
+    inputs.property('totalcrossConverterAbi', converterAbiVersion)
+    inputs.property('totalcrossRuntimeAbi', runtimeAbiVersion)
     doFirst {
         def identity = buildIdentityProvider.get()
         systemProperty 'totalcross.build.identity.version', identity.build.identityVersion.toString()
         systemProperty 'totalcross.build.id', identity.build.id
         systemProperty 'totalcross.source.tree', identity.source.tree
+        systemProperty 'totalcross.tcz.format', tczFormatVersion
+        systemProperty 'totalcross.converter.abi', converterAbiVersion
+        systemProperty 'totalcross.runtime.abi', runtimeAbiVersion
     }
 }
 

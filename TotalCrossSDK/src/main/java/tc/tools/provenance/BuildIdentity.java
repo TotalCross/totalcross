@@ -19,6 +19,9 @@ public final class BuildIdentity {
   private static final String BUILD_ID = "TotalCross-Build-ID";
   private static final String IDENTITY_VERSION = "TotalCross-Build-Identity-Version";
   private static final String SOURCE_TREE = "TotalCross-Source-Tree";
+  private static final String TCZ_FORMAT = "TotalCross-TCZ-Format";
+  private static final String CONVERTER_ABI = "TotalCross-Converter-ABI";
+  private static final String RUNTIME_ABI = "TotalCross-Runtime-ABI";
 
   private BuildIdentity() {
   }
@@ -35,10 +38,25 @@ public final class BuildIdentity {
     return attributeOrProperty(IDENTITY_VERSION, "totalcross.build.identity.version");
   }
 
+  public static String tczFormat() {
+    return attributeOrProperty(TCZ_FORMAT, "totalcross.tcz.format");
+  }
+
+  public static String converterAbi() {
+    return attributeOrProperty(CONVERTER_ABI, "totalcross.converter.abi");
+  }
+
+  public static String runtimeAbi() {
+    return attributeOrProperty(RUNTIME_ABI, "totalcross.runtime.abi");
+  }
+
   public static byte[] tczMetadata() {
     String value = "identityVersion=" + required(identityVersion(), IDENTITY_VERSION) + "\n"
         + "buildId=" + required(buildId(), BUILD_ID) + "\n"
-        + "sourceTree=" + required(sourceTree(), SOURCE_TREE) + "\n";
+        + "sourceTree=" + required(sourceTree(), SOURCE_TREE) + "\n"
+        + "tczFormat=" + required(tczFormat(), TCZ_FORMAT) + "\n"
+        + "converterAbi=" + required(converterAbi(), CONVERTER_ABI) + "\n"
+        + "runtimeAbi=" + required(runtimeAbi(), RUNTIME_ABI) + "\n";
     return value.getBytes(StandardCharsets.UTF_8);
   }
 

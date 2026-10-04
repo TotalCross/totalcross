@@ -17,9 +17,12 @@ sys.dont_write_bytecode = True
 
 from artifact_identity import (
     artifact_identity,
+    validate_artifact_set,
+    validate_compatibility,
     validate_downloads,
     validate_identity,
 )
+from compatibility_contract import read_compatibility_contract
 
 
 def main():
@@ -36,6 +39,16 @@ def main():
     )
     parser.add_argument("--repository", help="expected normalized repository identity")
     parser.add_argument("--source-tree", help="expected Git source tree object ID")
+    parser.add_argument(
+        "--compatibility-only",
+        action="store_true",
+        help="allow different Build IDs when compatibility epochs align",
+    )
+    parser.add_argument(
+        "--compatibility-contract",
+        type=Path,
+        help="require applicable artifact epochs to match this registry",
+    )
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
 
@@ -43,10 +56,17 @@ def main():
         parser.error("--repository and --source-tree must be used together")
     if args.artifacts and args.artifact_download:
         parser.error("use either direct artifacts or --artifact-download, not both")
+    if args.compatibility_only and (args.repository or args.artifact_download):
+        parser.error("--compatibility-only requires direct artifacts without repository checks")
     if not args.artifacts and not args.artifact_download:
         parser.error("provide artifacts or --artifact-download entries")
 
     try:
+        contract = (
+            read_compatibility_contract(args.compatibility_contract)
+            if args.compatibility_contract
+            else None
+        )
         if args.artifact_download:
             if not args.repository or not args.source_tree:
                 parser.error("--artifact-download requires --repository and --source-tree")
@@ -55,30 +75,25 @@ def main():
                 args.repository,
                 args.source_tree,
             )
+            compatibility = validate_compatibility(rows)
         else:
             rows = [artifact_identity(path) for path in args.artifacts]
             if args.repository:
                 for row in rows:
                     validate_identity(row, args.repository, args.source_tree)
+                compatibility = validate_compatibility(rows)
             else:
-                missing = [
-                    row["path"]
-                    for row in rows
-                    if not row.get("buildId")
-                    or not row.get("sourceTree")
-                    or row.get("identityVersion") != "1"
-                ]
-                if missing:
+                compatibility = validate_artifact_set(
+                    rows, allow_mixed_builds=args.compatibility_only
+                )
+        if contract is not None:
+            for key in ("tczFormat", "converterAbi", "runtimeAbi"):
+                actual = compatibility.get(key)
+                expected = str(contract[key])
+                if actual is not None and actual != expected:
                     raise ValueError(
-                        "missing or incomplete embedded build identity: "
-                        + ", ".join(missing)
+                        f"compatibility {key} mismatch: expected {expected}, got {actual}"
                     )
-                build_ids = {row["buildId"] for row in rows}
-                trees = {row.get("sourceTree") for row in rows}
-                if len(build_ids) != 1:
-                    raise ValueError("mixed TotalCross Build IDs detected")
-                if len(trees) != 1:
-                    raise ValueError("mixed TotalCross source trees detected")
     except (
         OSError,
         ValueError,
@@ -103,6 +118,13 @@ def main():
             )
         if args.repository:
             print(f"validated embedded build identity for {len(rows)} payloads")
+        elif args.compatibility_only:
+            print(
+                "compatible TotalCross artifacts: "
+                f"runtimeAbi={compatibility['runtimeAbi']} "
+                f"converterAbi={compatibility['converterAbi'] or 'n/a'} "
+                f"tczFormat={compatibility['tczFormat'] or 'n/a'}"
+            )
         else:
             print(f"coherent TotalCross build: {rows[0]['buildId']}")
     return 0
