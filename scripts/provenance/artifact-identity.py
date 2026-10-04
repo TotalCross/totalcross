@@ -15,6 +15,7 @@ import zlib
 
 BUILD_ID_RE = re.compile(rb"TOTALCROSS_BUILD_IDENTITY_V1:([0-9a-f]{64})")
 SOURCE_TREE_RE = re.compile(rb"TOTALCROSS_SOURCE_TREE:([0-9a-f]{40,64})")
+RUNTIME_ABI_RE = re.compile(rb"TOTALCROSS_RUNTIME_ABI:([0-9]+)")
 TCZ_IDENTITY_ENTRY = "META-INF/totalcross-build.properties"
 
 
@@ -51,6 +52,9 @@ def jar_identity(path):
         "buildId": attrs.get("TotalCross-Build-ID"),
         "sourceTree": attrs.get("TotalCross-Source-Tree"),
         "identityVersion": attrs.get("TotalCross-Build-Identity-Version"),
+        "tczFormat": attrs.get("TotalCross-TCZ-Format"),
+        "converterAbi": attrs.get("TotalCross-Converter-ABI"),
+        "runtimeAbi": attrs.get("TotalCross-Runtime-ABI"),
     }
 
 
@@ -93,6 +97,8 @@ def tcz_identity(path):
                 "buildId": props.get("buildId"),
                 "sourceTree": props.get("sourceTree"),
                 "identityVersion": props.get("identityVersion"),
+                "converterAbi": props.get("converterAbi"),
+                "runtimeAbi": props.get("runtimeAbi"),
             }
     return {"kind": "tcz", "tczFormat": version, "buildId": None, "sourceTree": None}
 
@@ -101,11 +107,13 @@ def native_identity(path):
     data = path.read_bytes()
     build_match = BUILD_ID_RE.search(data)
     tree_match = SOURCE_TREE_RE.search(data)
+    runtime_match = RUNTIME_ABI_RE.search(data)
     return {
         "kind": "native",
         "buildId": build_match.group(1).decode("ascii") if build_match else None,
         "sourceTree": tree_match.group(1).decode("ascii") if tree_match else None,
         "identityVersion": "1" if build_match else None,
+        "runtimeAbi": runtime_match.group(1).decode("ascii") if runtime_match else None,
     }
 
 
@@ -124,6 +132,11 @@ def main():
     )
     parser.add_argument("artifacts", nargs="+", type=Path)
     parser.add_argument("--json", action="store_true")
+    parser.add_argument(
+        "--compatibility-only",
+        action="store_true",
+        help="allow different Build IDs when compatibility epochs align",
+    )
     args = parser.parse_args()
 
     rows = []
@@ -135,6 +148,11 @@ def main():
     missing = [row["path"] for row in rows if not row.get("buildId")]
     build_ids = {row.get("buildId") for row in rows if row.get("buildId")}
     trees = {row.get("sourceTree") for row in rows if row.get("sourceTree")}
+    runtime_abis = {row.get("runtimeAbi") for row in rows if row.get("runtimeAbi")}
+    converter_abis = {
+        row.get("converterAbi") for row in rows if row.get("converterAbi")
+    }
+    tcz_formats = {str(row.get("tczFormat")) for row in rows if row.get("tczFormat")}
 
     if args.json:
         print(json.dumps(rows, sort_keys=True))
@@ -148,6 +166,44 @@ def main():
     if missing:
         print("missing embedded build identity: " + ", ".join(missing), file=sys.stderr)
         return 1
+
+    missing_runtime_abi = [row["path"] for row in rows if not row.get("runtimeAbi")]
+    missing_converter_abi = [
+        row["path"] for row in rows
+        if row.get("kind") in ("jar", "tcz") and not row.get("converterAbi")
+    ]
+    missing_tcz_format = [
+        row["path"] for row in rows
+        if row.get("kind") in ("jar", "tcz") and not row.get("tczFormat")
+    ]
+    if missing_runtime_abi:
+        print("missing runtime ABI epoch: " + ", ".join(missing_runtime_abi), file=sys.stderr)
+        return 1
+    if missing_converter_abi:
+        print("missing converter ABI epoch: " + ", ".join(missing_converter_abi), file=sys.stderr)
+        return 1
+    if missing_tcz_format:
+        print("missing TCZ format version: " + ", ".join(missing_tcz_format), file=sys.stderr)
+        return 1
+    if len(runtime_abis) != 1:
+        print("incompatible TotalCross runtime ABI epochs detected", file=sys.stderr)
+        return 1
+    if len(converter_abis) > 1:
+        print("incompatible TotalCross converter ABI epochs detected", file=sys.stderr)
+        return 1
+    if len(tcz_formats) > 1:
+        print("incompatible TotalCross TCZ format versions detected", file=sys.stderr)
+        return 1
+
+    if args.compatibility_only:
+        print(
+            "compatible TotalCross artifacts: "
+            f"runtimeAbi={next(iter(runtime_abis))} "
+            f"converterAbi={next(iter(converter_abis)) if converter_abis else 'n/a'} "
+            f"tczFormat={next(iter(tcz_formats)) if tcz_formats else 'n/a'}"
+        )
+        return 0
+
     if len(build_ids) != 1:
         print("mixed TotalCross Build IDs detected", file=sys.stderr)
         return 1

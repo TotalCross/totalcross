@@ -73,4 +73,30 @@ artifact hashes separately from embedded identity.
 
 Equal Build IDs mean that artifacts were produced from the same source identity.
 They do not define the long-term compatibility policy between independently
-built artifacts. Compatibility/ABI epochs are versioned separately.
+built artifacts.
+
+The canonical compatibility registry is
+`config/artifact-compatibility.properties` and currently defines:
+
+- `tczFormat`: the existing TCZ container format version; it must remain equal
+  to `TCZ_VERSION` in both Java and native readers;
+- `converterAbi`: the epoch for the converter/TCZ semantic contract;
+- `runtimeAbi`: the epoch required between converted artifacts/SDK and the
+  native VM/Launcher.
+
+Increment an ABI epoch only when a change intentionally makes artifacts across
+that boundary incompatible. Ordinary source changes and bug fixes do not bump
+an epoch.
+
+Strict smoke validation uses the default artifact validator mode and requires
+one Build ID. To diagnose or intentionally combine independently produced but
+compatible artifacts, use:
+
+```bash
+python3 scripts/provenance/artifact-identity.py --compatibility-only \\
+  <sdk.jar> <application.tcz> <libtcvm> <Launcher>
+```
+
+Compatibility-only mode permits different Build IDs but still requires aligned
+runtime ABI epochs, converter ABI epochs where applicable, and TCZ format
+versions. It must not be used to claim same-build provenance.

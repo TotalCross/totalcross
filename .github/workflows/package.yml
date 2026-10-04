@@ -180,7 +180,8 @@ jobs:
               --source-commit "${EXPECTED_SOURCE_COMMIT}" \
               --source-tree "${expected_source_tree}" \
               --require-clean-source \
-              --require-build-identity
+              --require-build-identity \
+              --compatibility-contract config/artifact-compatibility.properties
           fi
         done
 
