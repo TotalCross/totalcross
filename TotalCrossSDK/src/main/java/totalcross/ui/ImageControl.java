@@ -25,6 +25,7 @@ import totalcross.ui.gfx.Coord;
 import totalcross.ui.gfx.Graphics;
 import totalcross.ui.gfx.Rect;
 import totalcross.ui.image.Image;
+import totalcross.ui.image.ImageDrawingBridge;
 import totalcross.ui.image.ImageControlTarget;
 import totalcross.ui.image.ImageException;
 
@@ -36,6 +37,7 @@ public class ImageControl extends Control {
   /** The amount to scroll when in penless mode. Defaults to 10. */
   public static int scrollValue = 10;
   private Image img, img0, imgBack;
+  private Image[] persistentOwnedImages = new Image[0];
   private int startX, startY;
   private Coord c = new Coord();
   private boolean isEventEnabled, canDrag, isPressedEventsEnabled;
@@ -127,7 +129,56 @@ public class ImageControl extends Control {
         lastY = (height - getImageHeight()) / 2;
       }
     }
+    syncPersistentImageOwnership();
     Window.needsPaint = true;
+  }
+
+  @Override
+  void onParentChanged(Container oldParent, Container newParent) {
+    if (!Container.isReparenting(this)) {
+      syncPersistentImageOwnership();
+    }
+  }
+
+  private void syncPersistentImageOwnership() {
+    Image[] desiredSlots = parent == null ? new Image[0] : new Image[] { img, img0, imgBack };
+    Image[] desired = new Image[desiredSlots.length];
+    int desiredCount = 0;
+    for (Image candidate : desiredSlots) {
+      if (candidate != null && !containsImage(desired, desiredCount, candidate)) {
+        desired[desiredCount++] = candidate;
+      }
+    }
+    if (desiredCount != desired.length) {
+      Image[] compact = new Image[desiredCount];
+      System.arraycopy(desired, 0, compact, 0, desiredCount);
+      desired = compact;
+    }
+
+    for (Image newlyOwned : desired) {
+      if (!containsImage(persistentOwnedImages, persistentOwnedImages.length, newlyOwned)) {
+        ImageDrawingBridge.retainPersistentOwner(this, newlyOwned);
+      }
+    }
+    for (Image previouslyOwned : persistentOwnedImages) {
+      if (!containsImage(desired, desired.length, previouslyOwned)) {
+        ImageDrawingBridge.releasePersistentOwner(this, previouslyOwned);
+      }
+    }
+    persistentOwnedImages = desired;
+  }
+
+  private boolean isPersistentImageOwned(Image image) {
+    return containsImage(persistentOwnedImages, persistentOwnedImages.length, image);
+  }
+
+  private static boolean containsImage(Image[] images, int count, Image candidate) {
+    for (int i = 0; i < count; i++) {
+      if (images[i] == candidate) {
+        return true;
+      }
+    }
+    return false;
   }
 
   @Override
@@ -263,6 +314,7 @@ public class ImageControl extends Control {
         // keep original image
       }
     }
+    syncPersistentImageOwnership();
   }
 
   private Image safeScale(int w, int h) throws ImageException {
@@ -277,7 +329,7 @@ public class ImageControl extends Control {
 
   @Override
   public void onPaint(Graphics g) {
-    paint(g, true);
+    paint(g, true, parent != null);
   }
 
   @Override
@@ -298,16 +350,16 @@ public class ImageControl extends Control {
     context.add(imgBack, destinationScale);
   }
 
-  private void paint(Graphics g, boolean drawBack) {
+  private void paint(Graphics g, boolean drawBack, boolean persistentDrawing) {
     g.backColor = isEnabled() ? backColor : Color.interpolate(backColor, parent.backColor);
     if (!transparentBackground) {
       g.fillRect(0, 0, width, height);
     }
     if (img != null) {
-      drawImage(g, false);
+      drawImage(g, false, persistentDrawing);
     }
     if (drawBack && imgBack != null) {
-      drawImage(g, true);
+      drawImage(g, true, persistentDrawing);
     }
     if (borderColor != -1) {
       g.foreColor = borderColor;
@@ -318,7 +370,7 @@ public class ImageControl extends Control {
     }
   }
 
-  private void drawImage(Graphics g, boolean isBack) {
+  private void drawImage(Graphics g, boolean isBack, boolean persistentDrawing) {
     Image temp = isBack ? imgBack : tempHwScale == NOTEMP ? img : img0;
     double dw = temp.hwScaleW, dh = temp.hwScaleH;
     double scaleX = 1, scaleY = 1;
@@ -345,9 +397,17 @@ public class ImageControl extends Control {
       temp.hwScaleH = tempHwScale / scaleY;
     }
     if (allowBeyondLimits) {
-      g.drawImage(temp, lastX, lastY, true);
+      if (persistentDrawing && isPersistentImageOwned(temp)) {
+        ImageDrawingBridge.drawPersistentImage(g, temp, lastX, lastY, true);
+      } else {
+        g.drawImage(temp, lastX, lastY, true);
+      }
     } else {
-      g.copyRect(temp, 0, 0, temp.getWidth(), temp.getHeight(), lastX, lastY);
+      if (persistentDrawing && isPersistentImageOwned(temp)) {
+        ImageDrawingBridge.copyPersistentImage(g, temp, 0, 0, temp.getWidth(), temp.getHeight(), lastX, lastY);
+      } else {
+        g.copyRect(temp, 0, 0, temp.getWidth(), temp.getHeight(), lastX, lastY);
+      }
     }
     temp.hwScaleW = dw;
     temp.hwScaleH = dh;
@@ -388,6 +448,7 @@ public class ImageControl extends Control {
   /** Sets the given image as a freezed background of this image control. */
   public void setBackground(Image img) {
     imgBack = img;
+    syncPersistentImageOwnership();
   }
 
   /** Returns the background image set with setBackground */
@@ -407,11 +468,11 @@ public class ImageControl extends Control {
       ret = new Image(rImg.width, rImg.height);
       Graphics g = ret.getGraphics();
       if (!includeBackground) {
-        paint(getGraphics(), false); // remove the background image
+        paint(getGraphics(), false, false); // remove the background image
       }
       g.copyRect(this, rImg.x, rImg.y, rImg.width, rImg.height, 0, 0);
       if (!includeBackground) {
-        paint(getGraphics(), true);
+        paint(getGraphics(), true, false);
       }
     }
     return ret;

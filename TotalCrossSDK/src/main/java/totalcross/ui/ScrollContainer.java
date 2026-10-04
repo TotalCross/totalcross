@@ -633,7 +633,14 @@ public class ScrollContainer extends Container implements Scrollable, UpdateList
   @Override
   public void remove(Control control) {
     changed = true;
-    bag.remove(control);
+    if (control == bag) {
+      return;
+    }
+    if (control.parent == bag0) {
+      bag0.remove(control);
+    } else {
+      bag.remove(control);
+    }
   }
 
   @Override
@@ -1086,6 +1093,13 @@ public class ScrollContainer extends Container implements Scrollable, UpdateList
   @Override
   public void removeAll() {
     bag.removeAll();
+    for (Control child = bag0.children; child != null;) {
+      Control next = child.next;
+      if (child != bag) {
+        bag0.remove(child);
+      }
+      child = next;
+    }
   }
 
   /** Returns the children of the bag. If you call ScrollContainer.getChildren, it will not return

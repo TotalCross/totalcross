@@ -1515,6 +1515,19 @@ public final class Graphics {
    * @param dstY the destination y location on the current surface
    */
   public void copyRect(GfxSurface surface, int x, int y, int width, int height, int dstX, int dstY) {
+    copyRect(surface, x, y, width, height, dstX, dstY,
+        ImageDrawingBridge.AdmissionMode.SECOND_OBSERVATION);
+  }
+
+  /** @hidden */
+  @Deprecated
+  public void copyRectForPersistentConsumer(GfxSurface surface, int x, int y, int width, int height,
+      int dstX, int dstY) {
+    copyRect(surface, x, y, width, height, dstX, dstY, ImageDrawingBridge.AdmissionMode.IMMEDIATE);
+  }
+
+  private void copyRect(GfxSurface surface, int x, int y, int width, int height, int dstX, int dstY,
+      ImageDrawingBridge.AdmissionMode admissionMode) {
     if (surface instanceof Image) {
       Image image = (Image) surface;
       boolean usedCachedFinalRaster = false;
@@ -1538,7 +1551,7 @@ public final class Graphics {
         }
       }
       if (!usedCachedFinalRaster) {
-        surface = resolveImageForDrawing(image);
+        surface = resolveImageForDrawing(image, admissionMode);
       }
     }
     if (!Settings.onJavaSE) {
@@ -1696,6 +1709,17 @@ public final class Graphics {
    * @since SuperWaba 3.3
    */
   public void drawImage(totalcross.ui.image.Image image, int x, int y, boolean doClip) {
+    drawImage(image, x, y, doClip, ImageDrawingBridge.AdmissionMode.SECOND_OBSERVATION);
+  }
+
+  /** @hidden */
+  @Deprecated
+  public void drawImageForPersistentConsumer(totalcross.ui.image.Image image, int x, int y, boolean doClip) {
+    drawImage(image, x, y, doClip, ImageDrawingBridge.AdmissionMode.IMMEDIATE);
+  }
+
+  private void drawImage(totalcross.ui.image.Image image, int x, int y, boolean doClip,
+      ImageDrawingBridge.AdmissionMode admissionMode) {
     Object drawPlan = resolveDrawPlanForDrawing(image);
     if (!Settings.onJavaSE && drawPlan != null) {
       int drawStatus = drawGeometryNative(drawPlan, x, y, doClip,
@@ -1706,7 +1730,7 @@ public final class Graphics {
       }
       ImageRasterFeatureBridge.recordRasterFallback();
     }
-    image = resolveImageForDrawing(image);
+    image = resolveImageForDrawing(image, admissionMode);
     if (!Settings.onJavaSE) {
       int drawStatus = drawImageNative(image, x, y, doClip,
           opaqueWritePixelsEnabledForDrawing());
@@ -1792,11 +1816,15 @@ public final class Graphics {
   }
 
   private Image resolveImageForDrawing(Image image) {
+    return resolveImageForDrawing(image, ImageDrawingBridge.AdmissionMode.SECOND_OBSERVATION);
+  }
+
+  private Image resolveImageForDrawing(Image image, ImageDrawingBridge.AdmissionMode admissionMode) {
     if (image == null) {
       throw new NullPointerException("image");
     }
     try {
-      return ImageDrawingBridge.resolveForDrawing(image, getContentScale());
+      return ImageDrawingBridge.resolveForDrawing(image, getContentScale(), admissionMode);
     } catch (ImageException failure) {
       throw new IllegalStateException("Could not resolve image for drawing", failure);
     }
