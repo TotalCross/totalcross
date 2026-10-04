@@ -223,23 +223,21 @@ jar {
     // collect all runtime dependencies shipped in dist/libs
     int i = 0
     String classpathVar = configurations.runtimeClasspath.collect { " libs/" + (i++ == 0 ? String.format("%-50s", it.getName()) : String.format("%-62s", it.getName())) }.join(" ")
+    doFirst {
+        def identity = buildIdentityProvider.get()
+        manifest.attributes(
+            'TotalCross-Build-Identity-Version': identity.build.identityVersion.toString(),
+            'TotalCross-Build-ID': identity.build.id,
+            'TotalCross-Source-Commit': identity.source.commit,
+            'TotalCross-Source-Tree': identity.source.tree,
+            'TotalCross-Source-Dirty': identity.source.dirty.toString()
+        )
+    }
     manifest {
         attributes('Main-Class': 'totalcross.Launcher')
-        doFirst {
-            def identity = buildIdentityProvider.get()
-            manifest.attributes(
-                'TotalCross-Build-Identity-Version': identity.build.identityVersion.toString(),
-                'TotalCross-Build-ID': identity.build.id,
-                'TotalCross-Source-Commit': identity.source.commit,
-                'TotalCross-Source-Tree': identity.source.tree,
-                'TotalCross-Source-Dirty': identity.source.dirty.toString()
-            )
-        }
-        manifest {
-            attributes(
-                "Class-Path": classpathVar
-            )
-        }
+        attributes(
+            "Class-Path": classpathVar
+        )
     }
 }
 
