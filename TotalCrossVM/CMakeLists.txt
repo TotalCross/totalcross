@@ -28,17 +28,28 @@ execute_process(
   COMMAND "${TC_BUILD_IDENTITY_PYTHON}"
     "${CMAKE_CURRENT_SOURCE_DIR}/../scripts/provenance/build-identity.py"
     --repository-root "${CMAKE_CURRENT_SOURCE_DIR}/.."
-    --format json
+    --format id
   RESULT_VARIABLE TC_BUILD_IDENTITY_RESULT
-  OUTPUT_VARIABLE TC_BUILD_IDENTITY_JSON
+  OUTPUT_VARIABLE TC_BUILD_ID
   ERROR_VARIABLE TC_BUILD_IDENTITY_ERROR
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 if(NOT TC_BUILD_IDENTITY_RESULT EQUAL 0)
-  message(FATAL_ERROR "Unable to compute TotalCross build identity: ${TC_BUILD_IDENTITY_ERROR}")
+  message(FATAL_ERROR "Unable to compute TotalCross Build ID: ${TC_BUILD_IDENTITY_ERROR}")
 endif()
-string(JSON TC_BUILD_ID GET "${TC_BUILD_IDENTITY_JSON}" build id)
-string(JSON TC_SOURCE_TREE GET "${TC_BUILD_IDENTITY_JSON}" source tree)
+execute_process(
+  COMMAND "${TC_BUILD_IDENTITY_PYTHON}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../scripts/provenance/build-identity.py"
+    --repository-root "${CMAKE_CURRENT_SOURCE_DIR}/.."
+    --format source-tree
+  RESULT_VARIABLE TC_SOURCE_TREE_RESULT
+  OUTPUT_VARIABLE TC_SOURCE_TREE
+  ERROR_VARIABLE TC_SOURCE_TREE_ERROR
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+if(NOT TC_SOURCE_TREE_RESULT EQUAL 0)
+  message(FATAL_ERROR "Unable to compute TotalCross source tree: ${TC_SOURCE_TREE_ERROR}")
+endif()
 message(STATUS "TotalCross Build ID: ${TC_BUILD_ID}")
 
 if(MSVC AND NOT TC_MSVC_RUNTIME_POLICY_AVAILABLE)
