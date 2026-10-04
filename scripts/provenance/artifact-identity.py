@@ -15,7 +15,7 @@ import zlib
 
 BUILD_ID_RE = re.compile(rb"TOTALCROSS_BUILD_IDENTITY_V1:([0-9a-f]{64})")
 SOURCE_TREE_RE = re.compile(rb"TOTALCROSS_SOURCE_TREE:([0-9a-f]{40,64})")
-TCZ_IDENTITY_ENTRY = "META-INF/totalcross-build"
+TCZ_IDENTITY_ENTRY = "META-INF/totalcross-build.properties"
 
 
 def parse_properties(data):
