@@ -24,15 +24,15 @@ public final class BuildIdentity {
   }
 
   public static String buildId() {
-    return attribute(BUILD_ID);
+    return attributeOrProperty(BUILD_ID, "totalcross.build.id");
   }
 
   public static String sourceTree() {
-    return attribute(SOURCE_TREE);
+    return attributeOrProperty(SOURCE_TREE, "totalcross.source.tree");
   }
 
   public static String identityVersion() {
-    return attribute(IDENTITY_VERSION);
+    return attributeOrProperty(IDENTITY_VERSION, "totalcross.build.identity.version");
   }
 
   public static byte[] tczMetadata() {
@@ -47,6 +47,11 @@ public final class BuildIdentity {
       throw new IllegalStateException("SDK artifact is missing " + name);
     }
     return value;
+  }
+
+  private static String attributeOrProperty(String attributeName, String propertyName) {
+    String value = attribute(attributeName);
+    return value != null && !value.isEmpty() ? value : System.getProperty(propertyName);
   }
 
   private static String attribute(String name) {
