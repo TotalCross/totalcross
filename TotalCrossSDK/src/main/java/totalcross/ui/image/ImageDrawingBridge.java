@@ -31,7 +31,7 @@ public final class ImageDrawingBridge {
     }
   }
 
-  /** Internal final-raster cache admission policy used by drawing entry points. */
+  /** Internal admission policy; IMMEDIATE is reserved for persistently owned UI consumers. */
   public enum AdmissionMode {
     SECOND_OBSERVATION,
     IMMEDIATE
@@ -61,7 +61,12 @@ public final class ImageDrawingBridge {
     return image.resolveForDrawing(destinationScale, internalMode);
   }
 
-  /** Draws through the regular Graphics path while allowing immediate final-raster admission. */
+  /**
+   * Internal helper for a persistently owned UI consumer. The owner must have been
+   * registered through {@link #retainPersistentOwner(Object, Image)} in the UI attachment lifecycle.
+   *
+   * @hidden
+   */
   @Deprecated
   public static void drawPersistentImage(Graphics graphics, Image image, int x, int y, boolean doClip) {
     if (graphics == null || image == null) {
@@ -70,7 +75,12 @@ public final class ImageDrawingBridge {
     graphics.drawImageForPersistentConsumer(image, x, y, doClip);
   }
 
-  /** Copies through the regular Graphics path while allowing immediate final-raster admission. */
+  /**
+   * Internal helper for a persistently owned UI consumer. The owner must have been
+   * registered through {@link #retainPersistentOwner(Object, Image)} in the UI attachment lifecycle.
+   *
+   * @hidden
+   */
   @Deprecated
   public static void copyPersistentImage(Graphics graphics, Image image, int x, int y, int width, int height,
       int dstX, int dstY) {
@@ -80,7 +90,11 @@ public final class ImageDrawingBridge {
     graphics.copyRectForPersistentConsumer(image, x, y, width, height, dstX, dstY);
   }
 
-  /** Retains the image for an attached persistent UI consumer. */
+  /**
+   * Registers ownership from the persistent UI attachment lifecycle. Internal hook only.
+   *
+   * @hidden
+   */
   @Deprecated
   public static void retainPersistentOwner(Object owner, Image image) {
     if (owner == null) {
@@ -109,7 +123,12 @@ public final class ImageDrawingBridge {
     PERSISTENT_OWNERS.add(new PersistentOwnerEntry(owner, image, pipeline));
   }
 
-  /** Releases a persistent UI consumer and its final raster when it was the last owner. */
+  /**
+   * Releases ownership previously registered through the persistent UI attachment lifecycle.
+   * The final raster is released when this was the last owner. Internal hook only.
+   *
+   * @hidden
+   */
   @Deprecated
   public static void releasePersistentOwner(Object owner, Image image) {
     if (owner == null) {
