@@ -108,15 +108,7 @@ def manifest_source_identity(root):
     }
 
 
-def identity(root):
-    value = git_source_identity(root)
-    if value is None:
-        value = manifest_source_identity(root)
-    if value is None:
-        raise RuntimeError(
-            "unable to determine source identity: no Git worktree or build-provenance.json"
-        )
-
+def build_identity(value):
     canonical = json.dumps(
         {
             "identityVersion": IDENTITY_VERSION,
@@ -131,6 +123,35 @@ def identity(root):
         "id": hashlib.sha256(canonical).hexdigest(),
     }
     return value
+
+
+def identity(root):
+    value = git_source_identity(root)
+    if value is None:
+        value = manifest_source_identity(root)
+    if value is None:
+        raise RuntimeError(
+            "unable to determine source identity: no Git worktree or build-provenance.json"
+        )
+    return build_identity(value)
+
+
+def identity_from_manifest(path):
+    manifest = json.loads(path.read_text(encoding="utf-8"))
+    source = manifest.get("source")
+    if not isinstance(source, dict):
+        raise ValueError(f"{path} does not contain a source object")
+    value = {
+        "repository": manifest.get("repository"),
+        "source": {
+            "commit": source.get("commit"),
+            "tree": source.get("tree"),
+            "dirty": source.get("dirty"),
+        },
+    }
+    if not value["repository"] or not value["source"]["tree"]:
+        raise ValueError(f"{path} does not contain a complete source identity")
+    return build_identity(value)
 
 
 def update_manifest(path, value):
@@ -164,10 +185,11 @@ def main():
     args = parser.parse_args()
 
     root = args.repository_root.resolve()
-    value = identity(root)
-
     if args.update_manifest is not None:
+        value = identity_from_manifest(args.update_manifest)
         update_manifest(args.update_manifest, value)
+    else:
+        value = identity(root)
 
     if args.format == "id":
         print(value["build"]["id"])
