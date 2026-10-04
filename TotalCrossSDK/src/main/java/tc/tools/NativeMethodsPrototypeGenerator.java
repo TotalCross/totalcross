@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 package tc.tools;
@@ -67,6 +68,7 @@ public class NativeMethodsPrototypeGenerator {
       }
     } catch (Exception e) {
       e.printStackTrace();
+      System.exit(1);
     }
   }
 
@@ -260,7 +262,8 @@ public class NativeMethodsPrototypeGenerator {
     // check if there's already another function with this signature
     String lastfn = (String) htNames.get(functionName);
     if (lastfn != null) {
-      System.out.println(errorCount++ + " - duplicate function name " + functionName + ": \n   " + lastfn + "\n   "
+      System.out.println(errorCount++ + " - duplicate generated native function name " + functionName
+          + " (native lookup names are limited to 32 characters): \n   " + lastfn + "\n   "
           + className + " " + method);
     } else {
       htNames.put(functionName, className + " " + method);
@@ -413,7 +416,7 @@ public class NativeMethodsPrototypeGenerator {
             + "NativeMethodsPrototypes.txt");
       }
     }
-    System.exit(0);
+    System.exit(errorCount > 0 ? 1 : 0);
   }
 
   /**
