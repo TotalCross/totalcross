@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # Copyright (C) 2026 Amalgam Solucoes em TI Ltda
 #
 # SPDX-License-Identifier: LGPL-2.1-only
@@ -18,6 +19,39 @@ if (($# == 0)); then
   usage >&2
   exit 2
 fi
+
+normalize_project_dir_args() {
+  local -a normalized=()
+  local -a args=("$@")
+  local index=0
+
+  while ((index < ${#args[@]})); do
+    case "${args[index]}" in
+      -p|--project-dir)
+        if ((index + 1 < ${#args[@]})) \
+          && [[ "${args[index + 1]}" == "TotalCrossSDK" \
+            || "${args[index + 1]}" == "./TotalCrossSDK" ]]
+        then
+          echo "gradlew-agent: ignoring redundant ${args[index]} ${args[index + 1]}; the wrapper already runs from TotalCrossSDK" >&2
+          ((index += 2))
+          continue
+        fi
+        ;;
+      --project-dir=TotalCrossSDK|--project-dir=./TotalCrossSDK)
+        echo "gradlew-agent: ignoring redundant ${args[index]}; the wrapper already runs from TotalCrossSDK" >&2
+        ((index += 1))
+        continue
+        ;;
+    esac
+
+    normalized+=("${args[index]}")
+    ((index += 1))
+  done
+
+  gradle_args=("${normalized[@]}")
+}
+
+normalize_project_dir_args "$@"
 
 mkdir -p agent-logs
 
@@ -54,7 +88,6 @@ fi
 full_log="agent-logs/${timestamp}-${slug}-full.log"
 agent_log="agent-logs/${timestamp}-${slug}-agent.log"
 
-gradle_args=("$@")
 has_console=false
 has_warning_mode=false
 has_problems_report=false
