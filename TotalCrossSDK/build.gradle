@@ -3,6 +3,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
+import groovy.json.JsonSlurper
+
 apply plugin: 'java'
 apply plugin: 'maven-publish'
 apply plugin: 'me.champeau.gradle.japicmp'
@@ -20,8 +22,6 @@ java {
 base {
     archivesName = 'totalcross-sdk'
 }
-
-import groovy.json.JsonSlurper
 
 def repositoryRoot = project.rootDir.parentFile
 def buildIdentityProvider = providers.exec {
@@ -442,6 +442,21 @@ task copySdkDependencies(type: Copy) {
 
 tasks.withType(JavaExec).configureEach {
     classpath.from(tasks.named('totalcrossRuntimeJavaJar').flatMap { it.archiveFile })
+    doFirst {
+        def identity = buildIdentityProvider.get()
+        systemProperty 'totalcross.build.identity.version', identity.build.identityVersion.toString()
+        systemProperty 'totalcross.build.id', identity.build.id
+        systemProperty 'totalcross.source.tree', identity.source.tree
+    }
+}
+
+tasks.withType(Test).configureEach {
+    doFirst {
+        def identity = buildIdentityProvider.get()
+        systemProperty 'totalcross.build.identity.version', identity.build.identityVersion.toString()
+        systemProperty 'totalcross.build.id', identity.build.id
+        systemProperty 'totalcross.source.tree', identity.source.tree
+    }
 }
 
 task dist(dependsOn: [build, copySdkDependencies, 'sourcesJar', 'javadocJar']) {
