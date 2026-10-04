@@ -1,9 +1,8 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
-
-
 
 extern TCObject testfont;
 extern TCObject pngImage, jpegImage;
@@ -145,7 +144,7 @@ static void drawImage(Context currentContext, TCObject g, TCObject img)
    setObjectLock(gimg, UNLOCKED);
    Graphics_surface(gimg) = img;
    createGfxSurface(w, h, gimg, SURF_IMAGE);
-   drawSurface(currentContext, g, gimg, 0, 0, w, h, 0, 0, true);
+   drawSurface(currentContext, g, gimg, 0, 0, w, h, 0, 0, true, false, null);
    updateScreen(mainContext);
 }
 

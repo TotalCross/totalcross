@@ -122,9 +122,9 @@ void skia_setSurfaceScale(int32 skiaSurface, double contentScale) {
 static bool skia_canWritePixels(const SkCanvas* targetCanvas, const SkBitmap* texture,
                                 float srcLeft, float srcTop, float srcRight, float srcBottom,
                                 float dstLeft, float dstTop, float dstRight, float dstBottom,
-                                int32 alphaMask) {
+                                int32 alphaMask, bool allowOpaqueWritePixels) {
 #if USE_WRITE_PIXELS
-    if (!targetCanvas || !texture || !texture->isOpaque() || alphaMask != 255 ||
+    if (!allowOpaqueWritePixels || !targetCanvas || !texture || !texture->isOpaque() || alphaMask != 255 ||
         !targetCanvas->getTotalMatrix().isIdentity() || targetCanvas->getSaveCount() != 1 ||
         srcLeft != 0.0f || srcTop != 0.0f || srcRight != texture->width() ||
         srcBottom != texture->height() || (srcRight - srcLeft) != (dstRight - dstLeft) ||
@@ -145,8 +145,12 @@ static bool skia_canWritePixels(const SkCanvas* targetCanvas, const SkBitmap* te
 
 void skia_drawSurface(int32 skiaSurface, int32 id, float srcLeft, float srcTop,
                      float srcRight, float srcBottom, float dstLeft, float dstTop,
-                     float dstRight, float dstBottom, int32 alphaMask) {
+                     float dstRight, float dstBottom, int32 alphaMask,
+                     bool allowOpaqueWritePixels, int32* opaqueWriteStatus) {
     SKIA_TRACE()
+    if (opaqueWriteStatus) {
+        *opaqueWriteStatus = allowOpaqueWritePixels ? SKIA_IMAGE_DRAW_OPAQUE_WRITE_ATTEMPT : 0;
+    }
     SkCanvas* targetCanvas = skiaGetCanvas(skiaSurface);
     SkBitmap* texture = skiaGetBitmap(id);
     if (!targetCanvas || !texture) {
@@ -160,17 +164,22 @@ void skia_drawSurface(int32 skiaSurface, int32 id, float srcLeft, float srcTop,
         (srcBottom - srcTop) == (dstBottom - dstTop);
 
     if (skia_canWritePixels(targetCanvas, texture, srcLeft, srcTop, srcRight, srcBottom,
-                            dstLeft, dstTop, dstRight, dstBottom, alphaMask)) {
-        targetCanvas->writePixels(
+                            dstLeft, dstTop, dstRight, dstBottom, alphaMask,
+                            allowOpaqueWritePixels)) {
+        if (targetCanvas->writePixels(
             texture->info(), texture->getPixels(), texture->rowBytes(),
-            static_cast<int>(dstLeft), static_cast<int>(dstTop));
-    } else {
-        alphaPaint.setAlpha(alphaMask);
-        alphaPaint.setFilterQuality(sameSize ? kNone_SkFilterQuality : kLow_SkFilterQuality);
-        targetCanvas->drawBitmapRect(
-            *texture, srcRect, dstRect, &alphaPaint,
-            fullSource ? SkCanvas::kFast_SrcRectConstraint : SkCanvas::kStrict_SrcRectConstraint);
+            static_cast<int>(dstLeft), static_cast<int>(dstTop))) {
+            if (opaqueWriteStatus) {
+                *opaqueWriteStatus |= SKIA_IMAGE_DRAW_OPAQUE_WRITE_HIT;
+            }
+            return;
+        }
     }
+    alphaPaint.setAlpha(alphaMask);
+    alphaPaint.setFilterQuality(sameSize ? kNone_SkFilterQuality : kLow_SkFilterQuality);
+    targetCanvas->drawBitmapRect(
+        *texture, srcRect, dstRect, &alphaPaint,
+        fullSource ? SkCanvas::kFast_SrcRectConstraint : SkCanvas::kStrict_SrcRectConstraint);
 }
 
 Pixel skia_getPixel(int32 skiaSurface, int32 x, int32 y) {

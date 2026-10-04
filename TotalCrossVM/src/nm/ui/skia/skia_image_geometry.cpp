@@ -33,6 +33,7 @@ using skia_image_backing_internal::rasterVariantStore;
 namespace {
 
 static bool failNextPhysicalCopyWritePixelsForTest;
+static bool failNextOpaqueWritePixelsForTest;
 
 static Pixel geometryFillColor(const SkiaImageDrawPlanData* plan, int32 publicColor) {
     if (publicColor == 0) {
@@ -525,6 +526,189 @@ static bool memoryRangesOverlap(const void* first, size_t firstSize,
     return firstStart < secondStart + secondSize && secondStart < firstStart + firstSize;
 }
 
+static bool backingProvenOpaque(NativeImageBackingRecord* source, const SkPixmap& pixels,
+                                int32 sourceOpacityState) {
+    if (!source || sourceOpacityState == 2) {
+        return false;
+    }
+    if (sourceOpacityState == 1 || pixels.info().alphaType() == kOpaque_SkAlphaType) {
+        source->opacityAnalysisValid = true;
+        source->opacityAnalysisOpaque = true;
+        source->opacityAnalysisGeneration = source->generation;
+        return true;
+    }
+    if (sourceOpacityState != 0 || !knownDirectCopyAlphaType(pixels.info().alphaType())) {
+        return false;
+    }
+    if (source->opacityAnalysisValid
+        && source->opacityAnalysisGeneration == source->generation) {
+        return source->opacityAnalysisOpaque;
+    }
+    const uint8_t* row = static_cast<const uint8_t*>(pixels.addr());
+    bool opaque = row != nullptr;
+    for (int y = 0; opaque && y < pixels.height(); ++y) {
+        const uint8_t* pixel = row;
+        for (int x = 0; x < pixels.width(); ++x, pixel += 4) {
+            if (pixel[3] != 0xFF) {
+                opaque = false;
+                break;
+            }
+        }
+        row += pixels.rowBytes();
+    }
+    source->opacityAnalysisValid = true;
+    source->opacityAnalysisOpaque = opaque;
+    source->opacityAnalysisGeneration = source->generation;
+    return opaque;
+}
+
+static bool writeOpaqueDevicePixels(SkCanvas* canvas, NativeImageBackingRecord* source,
+                                    const SkRect& sourceRect, const SkRect& destinationRect,
+                                    int32 alphaMask, int32 sourceOpacityState) {
+    if (!canvas || !source || alphaMask != 255 || !canvas->isClipRect()) {
+        return false;
+    }
+    SkSurface* target = canvas->getSurface();
+    const SkMatrix& matrix = canvas->getTotalMatrix();
+    if (!target || target->recordingContext() || matrix.hasPerspective()
+        || matrix.getSkewX() != 0 || matrix.getSkewY() != 0
+        || !std::isfinite(matrix.getScaleX()) || !std::isfinite(matrix.getScaleY())
+        || matrix.getScaleX() <= 0 || matrix.getScaleY() <= 0
+        || !integerCoordinate(matrix.getTranslateX()) || !integerCoordinate(matrix.getTranslateY())
+        || !integerCoordinate(sourceRect.left()) || !integerCoordinate(sourceRect.top())
+        || !integerCoordinate(sourceRect.right()) || !integerCoordinate(sourceRect.bottom())
+        || !integerCoordinate(destinationRect.left()) || !integerCoordinate(destinationRect.top())
+        || !integerCoordinate(destinationRect.right()) || !integerCoordinate(destinationRect.bottom())) {
+        return false;
+    }
+
+    const int sourceX = static_cast<int>(sourceRect.left());
+    const int sourceY = static_cast<int>(sourceRect.top());
+    const int sourceRight = static_cast<int>(sourceRect.right());
+    const int sourceBottom = static_cast<int>(sourceRect.bottom());
+    const int copyWidth = sourceRight - sourceX;
+    const int copyHeight = sourceBottom - sourceY;
+    if (copyWidth <= 0 || copyHeight <= 0 || sourceX < 0 || sourceY < 0
+        || sourceRight > source->width || sourceBottom > source->height
+        || sourceRect.width() != destinationRect.width() * matrix.getScaleX()
+        || sourceRect.height() != destinationRect.height() * matrix.getScaleY()) {
+        return false;
+    }
+
+    SkRect deviceBounds;
+    matrix.mapRect(&deviceBounds, destinationRect);
+    if (!integerCoordinate(deviceBounds.left()) || !integerCoordinate(deviceBounds.top())
+        || !integerCoordinate(deviceBounds.right()) || !integerCoordinate(deviceBounds.bottom())
+        || deviceBounds.width() != copyWidth || deviceBounds.height() != copyHeight) {
+        return false;
+    }
+    const SkImageInfo targetInfo = target->imageInfo();
+    SkIRect deviceRect = SkIRect::MakeLTRB(static_cast<int>(deviceBounds.left()),
+        static_cast<int>(deviceBounds.top()), static_cast<int>(deviceBounds.right()),
+        static_cast<int>(deviceBounds.bottom()));
+    SkIRect deviceClip;
+    if (targetInfo.width() <= 0 || targetInfo.height() <= 0
+        || !canvas->getDeviceClipBounds(&deviceClip)
+        || !deviceRect.intersect(deviceClip)
+        || !deviceRect.intersect(SkIRect::MakeWH(targetInfo.width(), targetInfo.height()))
+        || deviceRect.isEmpty()) {
+        return false;
+    }
+
+    SkPixmap sourcePixels;
+    SkPixmap targetPixels;
+    if (source->image) {
+        if (!source->image->peekPixels(&sourcePixels)) {
+            return false;
+        }
+    } else if (!source->surface || !source->surface->peekPixels(&sourcePixels)) {
+        return false;
+    }
+    if (!target->peekPixels(&targetPixels)) {
+        return false;
+    }
+    const SkImageInfo sourceInfo = sourcePixels.info();
+    const SkImageInfo targetPixelInfo = targetPixels.info();
+    const SkColorType sourceType = sourceInfo.colorType();
+    if (sourceInfo.width() != source->width || sourceInfo.height() != source->height
+        || (sourceType != kRGBA_8888_SkColorType && sourceType != kBGRA_8888_SkColorType)
+        || (sourceType == kRGBA_8888_SkColorType
+            && source->format != skia_image_backing_internal::BackingFormat::RGBA8888)
+        || (sourceType == kBGRA_8888_SkColorType
+            && source->format != skia_image_backing_internal::BackingFormat::UNKNOWN)
+        || targetPixelInfo.width() != targetInfo.width()
+        || targetPixelInfo.height() != targetInfo.height()
+        || targetPixelInfo.colorType() != targetInfo.colorType()
+        || targetPixelInfo.alphaType() != targetInfo.alphaType()
+        || targetPixelInfo.colorSpace() != targetInfo.colorSpace()
+        || sourceInfo.colorType() != targetPixelInfo.colorType()
+        || sourceInfo.alphaType() != targetPixelInfo.alphaType()
+        || sourceInfo.colorSpace() != targetPixelInfo.colorSpace()
+        || !knownDirectCopyAlphaType(sourceInfo.alphaType())
+        || sourcePixels.addr() == nullptr || targetPixels.writable_addr() == nullptr
+        || sourcePixels.rowBytes() < sourceInfo.minRowBytes()
+        || targetPixels.rowBytes() < targetPixelInfo.minRowBytes()
+        || !backingProvenOpaque(source, sourcePixels, sourceOpacityState)) {
+        return false;
+    }
+    if ((sourceInfo.height() > 0
+            && sourcePixels.rowBytes() > std::numeric_limits<size_t>::max()
+                / static_cast<size_t>(sourceInfo.height()))
+        || (targetPixelInfo.height() > 0
+            && targetPixels.rowBytes() > std::numeric_limits<size_t>::max()
+                / static_cast<size_t>(targetPixelInfo.height()))) {
+        return false;
+    }
+
+    const size_t sourceBytes = sourcePixels.rowBytes() * static_cast<size_t>(sourceInfo.height());
+    const size_t targetBytes = targetPixels.rowBytes() * static_cast<size_t>(targetPixelInfo.height());
+    if (memoryRangesOverlap(sourcePixels.addr(), sourceBytes,
+            targetPixels.addr(), targetBytes)) {
+        return false;
+    }
+    const int offsetX = deviceRect.left() - static_cast<int>(deviceBounds.left());
+    const int offsetY = deviceRect.top() - static_cast<int>(deviceBounds.top());
+    SkPixmap sourceRectPixels;
+    if (!sourcePixels.extractSubset(&sourceRectPixels, SkIRect::MakeXYWH(
+            sourceX + offsetX, sourceY + offsetY, deviceRect.width(), deviceRect.height()))) {
+        return false;
+    }
+    if (failNextOpaqueWritePixelsForTest) {
+        failNextOpaqueWritePixelsForTest = false;
+        return false;
+    }
+    return canvas->writePixels(sourceRectPixels.info(), sourceRectPixels.addr(),
+        sourceRectPixels.rowBytes(), deviceRect.left(), deviceRect.top());
+}
+
+static int tryOpaqueWritePixels(SkCanvas* canvas, NativeImageBackingRecord* source,
+                                const SkRect& sourceRect, const SkRect& destinationRect,
+                                int32 alphaMask, int32 sourceOpacityState) {
+    int status = SKIA_IMAGE_DRAW_OPAQUE_WRITE_ATTEMPT;
+    if (writeOpaqueDevicePixels(canvas, source, sourceRect, destinationRect,
+            alphaMask, sourceOpacityState)) {
+        status |= SKIA_IMAGE_DRAW_OPAQUE_WRITE_HIT;
+    }
+    return status;
+}
+
+static bool tryOpaqueWritePlanPixels(const SkiaImageDrawPlanData* plan, SkCanvas* canvas,
+                                     float srcLeft, float srcTop, float srcRight, float srcBottom,
+                                     float dstLeft, float dstTop, float dstRight, float dstBottom) {
+    if (!plan || plan->alphaMask != 255 || plan->outputAlphaMask != 255
+        || plan->materializeAlphaMask != 255) {
+        return false;
+    }
+    PhysicalIdentityMapping mapping;
+    SkiaImageDrawColorFilters colorFilters;
+    return physicalIdentityMapping(plan, canvas, srcLeft, srcTop, srcRight, srcBottom,
+            dstLeft, dstTop, dstRight, dstBottom, true, &mapping)
+        && skia_image_draw_color_filters(plan, &colorFilters)
+        && !colorFilters.content && !colorFilters.fill
+        && writeOpaqueDevicePixels(canvas, mapping.source, mapping.sourceRect,
+            mapping.destinationRect, plan->alphaMask, plan->sourceOpacityState);
+}
+
 static bool physicalIdentityCopyDraw(const SkiaImageDrawPlanData* plan, SkCanvas* canvas,
                                      float srcLeft, float srcTop, float srcRight, float srcBottom,
                                      float dstLeft, float dstTop, float dstRight, float dstBottom) {
@@ -1005,6 +1189,20 @@ void skia_image_geometry_fail_next_physical_copy_write_pixels_for_test() {
     failNextPhysicalCopyWritePixelsForTest = true;
 }
 
+void skia_image_backing_fail_next_opaque_write_pixels_for_test() {
+    failNextOpaqueWritePixelsForTest = true;
+}
+
+int skia_image_geometry_try_opaque_write_pixels(int32 targetSurface, int64_t sourceHandle,
+    float srcLeft, float srcTop, float srcRight, float srcBottom,
+    float dstLeft, float dstTop, float dstRight, float dstBottom,
+    int32 alphaMask, int32 sourceOpacityState) {
+    NativeImageBackingRecord* source = findBacking(sourceHandle);
+    return tryOpaqueWritePixels(skiaGetCanvas(targetSurface), source,
+        SkRect::MakeLTRB(srcLeft, srcTop, srcRight, srcBottom),
+        SkRect::MakeLTRB(dstLeft, dstTop, dstRight, dstBottom), alphaMask, sourceOpacityState);
+}
+
 bool skia_image_geometry_compile(const SkiaImageDrawPlanData* plan, int frameOverride,
                                  GeometryTransform* transform) {
     return compileGeometry(plan, frameOverride, transform);
@@ -1024,11 +1222,19 @@ bool skia_image_geometry_draw_compiled(SkCanvas* canvas, const SkImage* image,
 int skia_image_backing_draw_geometry_to_surface(int32 targetSurface,
     const SkiaImageDrawPlanData* plan, float srcLeft, float srcTop, float srcRight,
     float srcBottom, float dstLeft, float dstTop, float dstRight, float dstBottom,
-    bool allowPhysicalCopy, bool physicalCopyOnly) {
+    bool allowPhysicalCopy, bool physicalCopyOnly, bool allowOpaqueWritePixels) {
     SkCanvas* canvas = skiaGetCanvas(targetSurface);
     int status = 0;
     if (plan && plan->physicalIdentityEnabled) {
         status |= SKIA_IMAGE_DRAW_PHYSICAL_IDENTITY_ATTEMPT;
+        if (allowOpaqueWritePixels) {
+            status |= SKIA_IMAGE_DRAW_OPAQUE_WRITE_ATTEMPT;
+            if (tryOpaqueWritePlanPixels(plan, canvas, srcLeft, srcTop, srcRight, srcBottom,
+                    dstLeft, dstTop, dstRight, dstBottom)) {
+                return status | SKIA_IMAGE_DRAW_OPAQUE_WRITE_HIT
+                    | SKIA_IMAGE_DRAW_PHYSICAL_IDENTITY_HIT | SKIA_IMAGE_DRAW_HANDLED;
+            }
+        }
         if (allowPhysicalCopy) {
             status |= SKIA_IMAGE_DRAW_PHYSICAL_COPY_ATTEMPT;
             if (physicalIdentityCopyDraw(plan, canvas, srcLeft, srcTop, srcRight, srcBottom,
@@ -1057,6 +1263,13 @@ int skia_image_backing_draw_geometry_to_surface(int32 targetSurface,
         && physicalVariantDraw(plan, canvas, srcLeft, srcTop, srcRight, srcBottom,
             dstLeft, dstTop, dstRight, dstBottom, &status)) {
         return status | SKIA_IMAGE_DRAW_HANDLED;
+    }
+    if (allowOpaqueWritePixels && !(status & SKIA_IMAGE_DRAW_OPAQUE_WRITE_ATTEMPT)) {
+        status |= SKIA_IMAGE_DRAW_OPAQUE_WRITE_ATTEMPT;
+        if (tryOpaqueWritePlanPixels(plan, canvas, srcLeft, srcTop, srcRight, srcBottom,
+                dstLeft, dstTop, dstRight, dstBottom)) {
+            return status | SKIA_IMAGE_DRAW_OPAQUE_WRITE_HIT | SKIA_IMAGE_DRAW_HANDLED;
+        }
     }
     if (!geometryDraw(plan, canvas, srcLeft, srcTop, srcRight, srcBottom,
                       dstLeft, dstTop, dstRight, dstBottom, -1)) {

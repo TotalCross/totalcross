@@ -181,8 +181,8 @@ class RuntimeDiagnosticsTest {
     byte[] domains = (byte[]) domainsField.get(snapshot);
 
     int[] expectedDomains = {0, 1, 2, 3, 4};
-    int[] groupSizes = {5, 21, 5, 10, 4};
-    assertEquals(45, snapshot.size());
+    int[] groupSizes = {5, 24, 5, 10, 4};
+    assertEquals(48, snapshot.size());
     int offset = 0;
     for (int group = 0; group < expectedDomains.length; group++) {
       for (int i = 0; i < groupSizes[group]; i++) {
@@ -193,12 +193,13 @@ class RuntimeDiagnosticsTest {
     assertEquals(0x2002, ids[4]);
     assertEquals(0x3001, ids[5]);
     assertEquals(0x3015, ids[25]);
-    assertEquals(0x4001, ids[26]);
-    assertEquals(0x4005, ids[30]);
-    assertEquals(0x5001, ids[31]);
-    assertEquals(0x500A, ids[40]);
-    assertEquals(0x6001, ids[41]);
-    assertEquals(0x6004, ids[44]);
+    assertEquals(0x3018, ids[28]);
+    assertEquals(0x4001, ids[29]);
+    assertEquals(0x4005, ids[33]);
+    assertEquals(0x5001, ids[34]);
+    assertEquals(0x500A, ids[43]);
+    assertEquals(0x6001, ids[44]);
+    assertEquals(0x6004, ids[47]);
   }
 
   @Test

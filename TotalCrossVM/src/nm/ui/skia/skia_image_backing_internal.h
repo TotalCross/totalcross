@@ -51,6 +51,9 @@ struct NativeImageBackingRecord {
     size_t rowBytes = 0;
     uint64_t backingBytes = 0;
     uint64_t generation = 0;
+    bool opacityAnalysisValid = false;
+    bool opacityAnalysisOpaque = false;
+    uint64_t opacityAnalysisGeneration = 0;
     bool applyColor2AnalysisValid = false;
     uint64_t applyColor2AnalysisGeneration = 0;
     uint8_t applyColor2HighestRed = 0;

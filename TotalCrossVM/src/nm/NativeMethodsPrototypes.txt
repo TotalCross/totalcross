@@ -168,16 +168,16 @@ TC_API void tugG_drawPolyline_IIi(NMParams p);
 TC_API void tugG_drawText_siii(NMParams p);
 TC_API void tugG_drawRoundRect_iiiii(NMParams p);
 TC_API void tugG_fillRoundRect_iiiii(NMParams p);
-TC_API void tugG_copyRectNative_giiiiii(NMParams p);
+TC_API void tugG_copyRectNative_giiiiiib(NMParams p);
 TC_API void tugG_drawRoundGradient_iiiiiiiii(NMParams p);
-TC_API void tugG_drawImageNative_iiib(NMParams p);
-TC_API void tugG_drawGeometryNative_oiib(NMParams p);
-TC_API void tugG_copyGeometryNative_oiiiib(NMParams p);
+TC_API void tugG_drawImageNative_iiibb(NMParams p);
+TC_API void tugG_drawGeometryNative_oiibb(NMParams p);
+TC_API void tugG_copyGeometryNative_oiiiibb(NMParams p);
 TC_API void tugG_copyRectPlanNative_oiiiiiib(NMParams p);
-TC_API void tugG_copyImageRectNative_iiiiib(NMParams p);
+TC_API void tugG_copyImageRectNative_iiiiibb(NMParams p);
 TC_API void tugG_setPixels_IIi(NMParams p);
 TC_API void tugG_refresh_iiiiiif(NMParams p);
-TC_API void tugG_drawImageNative_iii(NMParams p);
+TC_API void tugG_drawImageNative_iiib(NMParams p);
 TC_API void tugG_fillEllipseGradient_iiii(NMParams p);
 TC_API void tugG_fillPieGradient_iiidd(NMParams p);
 TC_API void tugG_fillEllipticalPieGradient_i(NMParams p);
@@ -1278,7 +1278,7 @@ TC_API void tugG_fillRoundRect_iiiii(NMParams p) // totalcross/ui/gfx/Graphics n
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tugG_copyRectNative_giiiiii(NMParams p) // totalcross/ui/gfx/Graphics native private void copyRectNative(totalcross.ui.gfx.GfxSurface surface, int x, int y, int width, int height, int dstX, int dstY);
+TC_API void tugG_copyRectNative_giiiiiib(NMParams p) // totalcross/ui/gfx/Graphics native private int copyRectNative(totalcross.ui.gfx.GfxSurface surface, int x, int y, int width, int height, int dstX, int dstY, boolean allowOpaqueWritePixels);
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -1286,20 +1286,20 @@ TC_API void tugG_drawRoundGradient_iiiiiiiii(NMParams p) // totalcross/ui/gfx/Gr
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tugG_drawImageNative_iiib(NMParams p) // totalcross/ui/gfx/Graphics native private void drawImageNative(totalcross.ui.image.Image image, int x, int y, boolean doClip);
+TC_API void tugG_drawImageNative_iiibb(NMParams p) // totalcross/ui/gfx/Graphics native private int drawImageNative(totalcross.ui.image.Image image, int x, int y, boolean doClip, boolean allowOpaqueWritePixels);
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tugG_drawGeometryNative_oiib(NMParams p) // totalcross/ui/gfx/Graphics native private int drawGeometryNative(Object plan, int x, int y, boolean doClip);
+TC_API void tugG_drawGeometryNative_oiibb(NMParams p) // totalcross/ui/gfx/Graphics native private int drawGeometryNative(Object plan, int x, int y, boolean doClip, boolean allowOpaqueWritePixels);
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tugG_copyGeometryNative_oiiiib(NMParams p) // totalcross/ui/gfx/Graphics native private int copyGeometryNative(Object plan, int x, int y, int width, int height, boolean doClip);
+TC_API void tugG_copyGeometryNative_oiiiibb(NMParams p) // totalcross/ui/gfx/Graphics native private int copyGeometryNative(Object plan, int x, int y, int width, int height, boolean doClip, boolean allowOpaqueWritePixels);
 TC_API void tugG_copyRectPlanNative_oiiiiiib(NMParams p) // totalcross/ui/gfx/Graphics native private int copyRectPlanNative(Object plan, int x, int y, int width, int height, int dstX, int dstY, boolean doClip);
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tugG_copyImageRectNative_iiiiib(NMParams p) // totalcross/ui/gfx/Graphics native private void copyImageRectNative(totalcross.ui.image.Image image, int x, int y, int width, int height, boolean doClip);
+TC_API void tugG_copyImageRectNative_iiiiibb(NMParams p) // totalcross/ui/gfx/Graphics native private int copyImageRectNative(totalcross.ui.image.Image image, int x, int y, int width, int height, boolean doClip, boolean allowOpaqueWritePixels);
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -1311,7 +1311,7 @@ TC_API void tugG_refresh_iiiiiif(NMParams p) // totalcross/ui/gfx/Graphics nativ
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tugG_drawImageNative_iii(NMParams p) // totalcross/ui/gfx/Graphics native private void drawImageNative(totalcross.ui.image.Image image, int x, int y);
+TC_API void tugG_drawImageNative_iiib(NMParams p) // totalcross/ui/gfx/Graphics native private int drawImageNative(totalcross.ui.image.Image image, int x, int y, boolean allowOpaqueWritePixels);
 {
 }
 //////////////////////////////////////////////////////////////////////////
