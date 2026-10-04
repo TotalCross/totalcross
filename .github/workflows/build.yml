@@ -101,6 +101,27 @@ jobs:
         pr-base-sha: ${{ github.event.pull_request.base.sha }}
         pr-head-sha: ${{ github.event.pull_request.head.sha }}
 
+    - name: Record build provenance
+      if: ${{ steps.select_build_scope.outputs.scope != 'none' }}
+      shell: bash
+      run: |
+        python3 - <<'PY'
+        import json
+        import os
+        from pathlib import Path
+
+        Path("build-provenance.json").write_text(
+            json.dumps({
+                "schemaVersion": 1,
+                "repository": os.environ["GITHUB_REPOSITORY"],
+                "sourceCommit": os.environ["GITHUB_SHA"],
+                "workflowRunId": os.environ["GITHUB_RUN_ID"],
+                "workflowRunAttempt": os.environ["GITHUB_RUN_ATTEMPT"],
+            }, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+        PY
+
     - name: Pack source code
       if: ${{ steps.select_build_scope.outputs.scope != 'none' }}
       run: tar --exclude=.git -czf "${RUNNER_TEMP}/source-code.tar.gz" .
@@ -384,7 +405,9 @@ jobs:
       uses: actions/upload-artifact@v7
       with:
         name: ${{ matrix.project }}
-        path: build
+        path: |
+          build
+          build-provenance.json
 
   build-linux-arm32v7-cross:
     name: Build `linux-arm32v7-cross`
@@ -517,6 +540,7 @@ jobs:
         path: |
           TotalCrossVM/vc2022/Release/*.dll
           TotalCrossVM/vc2022/Release/*.exe
+          build-provenance.json
 
   build-windows-native-legacy:
     if: ${{ needs.checkout-source.outputs.scope == 'full' }}
@@ -648,6 +672,7 @@ jobs:
         path: |
           build/libtcvm.dylib
           build/Launcher
+          build-provenance.json
 
   build-sdk:
     if: ${{ needs.checkout-source.outputs.scope == 'full' || needs.checkout-source.outputs.scope == 'sdk' }}
@@ -690,7 +715,7 @@ jobs:
         if-no-files-found: warn
 
     - name: Pack SDK build artifacts
-      run: tar -czf sdk-build.tar.gz build/TotalCross
+      run: tar -czf sdk-build.tar.gz build/TotalCross build-provenance.json
 
     - name: Upload SDK build artifacts
       uses: actions/upload-artifact@v7
@@ -790,7 +815,9 @@ jobs:
       uses: actions/upload-artifact@v7
       with:
         name: android
-        path: build/TotalCross/dist/vm/android/TotalCross.aab
+        path: |
+          build/TotalCross/dist/vm/android/TotalCross.aab
+          build-provenance.json
 
   build-ios:
     if: ${{ needs.checkout-source.outputs.scope == 'full' }}
@@ -1010,4 +1037,6 @@ jobs:
       uses: actions/upload-artifact@v7
       with:
         name: ios
-        path: ios.tar.gz
+        path: |
+          ios.tar.gz
+          build-provenance.json
