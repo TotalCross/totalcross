@@ -109,14 +109,24 @@ jobs:
         import json
         import os
         from pathlib import Path
+        import subprocess
 
         Path("build-provenance.json").write_text(
             json.dumps({
                 "schemaVersion": 1,
                 "repository": os.environ["GITHUB_REPOSITORY"],
-                "sourceCommit": os.environ["GITHUB_SHA"],
-                "workflowRunId": os.environ["GITHUB_RUN_ID"],
-                "workflowRunAttempt": os.environ["GITHUB_RUN_ATTEMPT"],
+                "source": {
+                    "commit": os.environ["GITHUB_SHA"],
+                    "tree": subprocess.check_output(
+                        ["git", "rev-parse", "HEAD^{tree}"], text=True
+                    ).strip(),
+                    "dirty": False,
+                },
+                "producer": {
+                    "kind": "github-actions",
+                    "runId": os.environ["GITHUB_RUN_ID"],
+                    "runAttempt": os.environ["GITHUB_RUN_ATTEMPT"],
+                },
             }, sort_keys=True) + "\n",
             encoding="utf-8",
         )
