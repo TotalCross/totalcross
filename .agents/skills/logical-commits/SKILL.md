@@ -91,47 +91,32 @@ This skill changes Git state. Confirm that committing is explicitly requested by
    footer describing the compatibility impact. For `revert` commits, name the
    reverted commit hash or hashes in the body.
 
-7. Commit without amending or rewriting history unless explicitly requested.
+7. Before creating the commit, write the exact proposed message to a temporary
+   file and validate that file with the repository's source-of-truth validator:
 
-8. Validate the created commit message against the same rules embedded in
-   `.github/workflows/commit.yml`. There is no standalone repository script;
-   run this focused local check:
+       python3 .github/scripts/validate-commit-message.py \
+         --message-file <message-file>
 
-       python3 - <<'PY'
-       import re
-       import subprocess
-       import sys
+   Resolve every reported body-line warning before committing, even though CI
+   currently reports those lines as warnings rather than failures. This avoids
+   creating a commit that immediately requires a follow-up formatting repair.
 
-       message = subprocess.check_output(["git", "show", "-s", "--format=%B", "HEAD"], text=True).rstrip("\n")
-       title = message.split("\n", 1)[0]
-       title_format = re.compile(
-           r"^(fix|feat|refactor|perf|style|test|docs|build|ci|chore|revert)"
-           r"(!\([A-Za-z0-9_-]+(,[a-z0-9_-]+)?\)|"
-           r"\([A-Za-z0-9_-]+(,[a-z0-9_-]+)?\)!?): [a-z0-9 ].*$"
-       )
-       link_urls_removed = lambda line: re.sub(r"\[([^\]]*)\]\([^)]+\)", r"\1", line)
-       failures = []
-       if not title_format.match(title): failures.append("invalid title format")
-       if re.search(r"[A-Z]", title[:1]): failures.append("title starts uppercase")
-       if not re.match(r"^[^ ]+([ \t]+[^ ]+){2,}$", title): failures.append("title has fewer than 3 words")
-       if len(title) > 80: failures.append("title exceeds 80 characters")
-       if title.endswith("."): failures.append("title ends with a period")
-       if len(message) > len(title) and not message.startswith(title + "\n\n"):
-           failures.append("body is not separated by a blank line")
-       if any(len(link_urls_removed(line)) > 80 for line in message.split("\n")[1:]):
-           failures.append("body line exceeds 80 characters")
-       if failures:
-           print("; ".join(failures), file=sys.stderr)
-           sys.exit(1)
-       print("Commit message validation passed.")
-       PY
+8. Create the commit from the same validated message file:
 
-   This mirrors the workflow's structural checks for the current `HEAD`.
-   Keep the title and body in English and use the repository's imperative
-   wording convention; CI remains the authoritative automated check.
+       git commit -F <message-file>
 
-9. Update the active ExecPlan state after the logical commit. Update the active
-   plan only when this commit reaches a functional-family, architecture, ABI,
-   release-policy, or milestone checkpoint.
+   Do not amend or rewrite history unless explicitly requested.
 
-10. Report the commit hash, subject, paths, focused validations, and any deferred expensive validation. Do not push unless explicitly requested.
+9. Validate the created commit with the same repository validator:
+
+       python3 .github/scripts/validate-commit-message.py --commit HEAD
+
+   Do not maintain a second inline implementation of commit-message rules in
+   this skill. The standalone validator is the source of truth shared with CI.
+
+10. Update the active ExecPlan state after the logical commit. Update the active
+    plan only when this commit reaches a functional-family, architecture, ABI,
+    release-policy, or milestone checkpoint.
+
+11. Report the commit hash, subject, paths, focused validations, and any deferred
+    expensive validation. Do not push unless explicitly requested.
