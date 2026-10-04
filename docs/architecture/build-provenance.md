@@ -47,7 +47,7 @@ The SDK JAR stores its identity in `META-INF/MANIFEST.MF`.
 
 Converter-produced TCZ files contain the reserved resource:
 
-`META-INF/totalcross-build`
+`META-INF/totalcross-build.properties`
 
 Native VM and Launcher binaries contain stable textual markers for the Build ID
 and source tree. These markers are intended for build diagnostics and artifact
