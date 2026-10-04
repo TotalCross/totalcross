@@ -27,6 +27,9 @@ jobs:
       version: ${{ steps.totalcross-version.outputs.version }}
 
     steps:
+    - name: Checkout packaging validation
+      uses: actions/checkout@v6
+
     - name: Download SDK build artifacts
       uses: actions/download-artifact@v4.1.7
       with:
@@ -151,6 +154,33 @@ jobs:
         tar -xzf ios/ios.tar.gz -C ios/extracted
         cp -p -a -R ios/extracted/TotalCross.xcarchive build/TotalCross/etc/tools/iOSCodesign/
         cp -p -a ios/extracted/TotalCross.ipa/TotalCross.ipa build/TotalCross/dist/vm/ios/
+
+    - name: Validate build artifact provenance
+      shell: bash
+      env:
+        EXPECTED_SOURCE_COMMIT: ${{ github.sha }}
+      run: |
+        provenance_files=(
+          build-provenance.json
+          linux-amd64/build-provenance.json
+          linux-arm32v7/build-provenance.json
+          linux-arm64/build-provenance.json
+          macos-arm64/build-provenance.json
+          windows/build-provenance.json
+          android/build-provenance.json
+          ios/build-provenance.json
+        )
+
+        for provenance in "${provenance_files[@]}"; do
+          if [ -f "${provenance}" ]; then
+            python3 scripts/validate-build-provenance.py               --manifest "${provenance}"               --repository "${GITHUB_REPOSITORY}"               --source-commit "${EXPECTED_SOURCE_COMMIT}"
+          fi
+        done
+
+        if [ ! -f build-provenance.json ]; then
+          echo "SDK build provenance is missing" >&2
+          exit 1
+        fi
 
     - name: Read TotalCross version
       id: totalcross-version
