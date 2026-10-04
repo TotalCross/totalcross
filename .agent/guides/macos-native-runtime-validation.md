@@ -31,25 +31,38 @@ Only this lane proves changed native VM and Skia behavior.
 
 Record the lane explicitly in every evidence entry.
 
-## Build identity
+## Fresh-worktree bootstrap and build identity
 
-From the repository worktree:
+Start from repository-owned inputs. Do not copy an SDK jar, Launcher, native
+library, or dependency cache from another checkout merely to make the smoke run.
+
+From the repository root, fetch the pinned depot-tools metadata first:
+
+    TotalCrossVM/deps/fetch-depot-tools.sh
+
+Build the SDK that the fixture will compile and deploy against:
 
     cd TotalCrossSDK
     ./gradlew-agent dist -x test --no-daemon --console=plain \
       > ../artifacts/logical-ui-scaling/logs/sdk-dist.log 2>&1
 
-Then:
+Then build both the native VM and Launcher from the same worktree:
 
     cd ..
     cmake -S TotalCrossVM -B build-logical-ui \
       -DCMAKE_BUILD_TYPE=Release -G Ninja \
       > artifacts/logical-ui-scaling/logs/macos-cmake.log 2>&1
-    ninja -C build-logical-ui tcvm \
+    cmake --build build-logical-ui --target tcvm Launcher --parallel \
       > artifacts/logical-ui-scaling/logs/macos-tcvm.log 2>&1
 
-Use the current repository's supported target names when they differ. Do not use a
-packaged dylib from another checkout or revision.
+Use the current repository's supported target names when they differ. The
+fixture compile task must consume the generated SDK distribution from this
+worktree, not arbitrary compiled classes or a jar from another checkout. When a
+deploy/smoke task stages `Launcher`, stage the freshly built Launcher through
+the repository's existing smoke mechanism rather than reusing a packaged
+Launcher from another revision.
+
+Do not use a packaged dylib from another checkout or revision.
 
 Record:
 

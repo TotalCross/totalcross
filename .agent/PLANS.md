@@ -6,8 +6,9 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Codex Execution Plans (ExecPlans)
 
-An ExecPlan is a living design and execution document for a complex feature or
-significant refactor. It must let a new contributor make the next safe change,
+An ExecPlan is a living design and execution document for a complex feature,
+release-process change, platform addition, or significant refactor. It must let
+a new contributor make the next safe change,
 verify it proportionally, and recover after interruption without reconstructing
 the entire project history.
 
@@ -17,7 +18,7 @@ Apply instructions in this order:
 
 1. Safety and data-preservation instructions.
 2. Explicit instructions from the user for the current task.
-3. The token, output, and validation budget in `AGENTS.md`.
+3. The token, output, commit, and validation budget in `AGENTS.md`.
 4. This document.
 5. Instructions specific to the active ExecPlan.
 
@@ -63,13 +64,17 @@ uses no auxiliary files:
 - `Current Architecture and Scope`: only context needed for remaining work.
 - `Plan of Work`: completed milestone summaries, active milestone, and next
   milestones.
+- `Surprises & Discoveries`: observations that materially affect remaining
+  work.
 - `Decision Log`: decisions that change future architecture, semantics,
   compatibility, validation, or operational policy.
 - `Validation and Acceptance`: behavior to prove and the applicable validation
   level from `AGENTS.md`.
 - `Risks and Open Questions`: unresolved issues that can change implementation.
-- `Idempotence and Recovery`: safe retry and local-change handling.
+- `Idempotence and Recovery`: safe retry, concurrency, and local-change
+  handling.
 - `Outcomes & Retrospective`: a short milestone-level summary, not a diary.
+- `Revision Note`: only material plan-policy or milestone consolidations.
 
 An active plan may reference a separate editorial report. The report is required
 for a completed plan, but need only be synthesized at important milestone
@@ -92,7 +97,8 @@ validation. Create them only when they simplify resumption:
   wrapper, status, counts, log/artifact paths, necessary hashes, and scope or
   limitation. It is searched selectively, not read during ordinary resumption.
 - `.agent/archive/<plan-name>-history.md` stores completed milestone detail,
-  retired revision notes, and references to immutable source snapshots. It is
+  rejected alternatives whose rationale remains useful, retired revision notes,
+  and references to immutable source snapshots. It is
   not read by default.
 - `.agent/reports/<plan-name>-editorial.md` is a concise factual handoff. It is
   updated at major milestone completion and final plan completion, not after
@@ -139,6 +145,12 @@ not convert a historical full matrix into a perpetual slice requirement.
 Preserve full tool output in logs; record compact result summaries and paths in
 the evidence index.
 
+Before an expensive, remote, one-shot, or process-limited validation, exercise
+the harness itself with a cheap preflight. Verify the applicable CLI parsing,
+schema round-trip, required metadata fields, sentinel or unavailable values,
+and at least one known-pass and known-failure path before consuming the
+expensive validation opportunity.
+
 Benchmarking is evidence only for the workload and hot path measured. Do not
 benchmark a newly added semantic operation when the benchmark does not execute
 it and its measured hot path did not change. Use a small smoke benchmark only
@@ -146,6 +158,13 @@ for an affected measured hot path. Run full checkpoints at milestone closure,
 optimization, measurement-regime changes, or explicit user request. Start with
 60 and 200 samples; run more than 200 only for observed variance or an explicit
 request. Raw samples stay in artifacts and their index, not repeated in plans.
+
+Before the first authoritative measurement of a benchmark intended to reproduce
+an existing workload, validate a workload-fidelity contract against the
+reference. Record and verify the applicable dataset identity and count, logical
+resolution, control hierarchy, geometry, traversal or interaction sequence,
+cold/warm state, and configuration defaults. Do not label measurements
+authoritative until this gate passes.
 
 ## Writing guidance
 
@@ -164,18 +183,55 @@ Do not dump generated code, large logs, raw manifests, full matrices, or every
 differential case into an ExecPlan. Keep evidence reproducible through commands,
 small excerpts, paths, and evidence-index records.
 
-## Milestones and completion
+## Milestones
 
-Milestones describe goal, work, result, and proof. Each must make an incremental
-observable contribution and state what is accepted, what remains fallback, and
-which validation level is expected. Prototypes and parallel paths are acceptable
-when explicitly bounded, additive, and independently testable.
+A milestone describes the goal and why it matters, the files and contracts
+changed, the behavior that exists at its end, the proof required, fallback or
+compatibility paths that remain, and the next boundary.
 
-At plan completion, reconcile the final state with `Outcomes & Retrospective`
-and the editorial report. The report must distinguish delivered work from plans,
-measurements from estimates, and supported platforms from aspirations. It must
-state limitations and claims requiring human review. It is a factual handoff,
-not an incremental execution diary.
+Milestones should produce incremental observable value. Prototypes and parallel
+paths are acceptable when they are bounded, additive, independently testable,
+and have clear promotion or removal criteria.
+
+## Releases and state-changing work
+
+A plan that creates commits, tags, pushes, releases, or metadata updates must
+state which operations are automatic and which require explicit user execution,
+how races are rechecked, how retries remain idempotent, which commit a tag or
+release points to, how partial publication is detected and recovered, and how
+unrelated local changes remain untouched.
+
+Prefer dry-run or build-only validation before enabling release operations.
+
+## Completion
+
+Before declaring an ExecPlan complete, reconstruct the applicable requirements
+from the user request, the plan, milestone acceptance criteria, and later
+approved decisions. Verify each requirement against the current final state.
+Intermediate evidence does not satisfy a requirement when later changes could
+have invalidated it.
+
+The final reconciliation must cover, when applicable:
+
+- explicit user requirements and milestone acceptance criteria;
+- required real fixtures or scenarios and fallback/error paths;
+- structural or file-size constraints;
+- commit and history constraints;
+- final plan, state, evidence, and report hygiene;
+- deferred validation, limitations, and unsupported targets.
+
+Then reconcile the final state with `Outcomes & Retrospective` and the
+editorial report. Distinguish delivered work from planned work, measurements
+from estimates, and supported targets from aspirations. State limitations and
+claims requiring human review. The report is a factual handoff, not an
+incremental execution diary.
+
+A completed editorial report should use these headings when applicable:
+`Editorial Summary`, `Original Plan versus Actual Outcome`, `What Changed`,
+`Decisions and Trade-offs`, `Unexpected Problems and Discoveries`,
+`Validation and Measurable Results`, `Useful Evidence and Examples`,
+`Limitations, Remaining Work, and Open Questions`, `Possible Article Angles`,
+`Suggested Narrative`, and `Claims Requiring Human Review`.
 
 ## Minimal skeleton
 
@@ -207,6 +263,11 @@ not an incremental execution diary.
     Describe completed milestones concisely, the active milestone, and next
     milestones with observable acceptance.
 
+    ## Surprises & Discoveries
+
+    - Observation: ...
+      Evidence: ...
+
     ## Decision Log
 
     - Decision: …
@@ -224,7 +285,8 @@ not an incremental execution diary.
 
     ## Idempotence and Recovery
 
-    State safe retries and local paths that must remain untouched.
+    State safe retries, concurrency behavior, and local paths that must remain
+    untouched.
 
     ## Outcomes & Retrospective
 
