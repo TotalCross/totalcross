@@ -4,7 +4,6 @@
 
 package totalcross.ui.image;
 
-import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
@@ -18,25 +17,15 @@ import totalcross.ui.gfx.Graphics;
  */
 @Deprecated
 public final class ImageDrawingBridge {
-  private static final ReferenceQueue<Object> PERSISTENT_OWNER_QUEUE = new ReferenceQueue<>();
   private static final ArrayList<PersistentOwnerEntry> PERSISTENT_OWNERS = new ArrayList<>();
 
-  private static final class PersistentOwnerReference extends WeakReference<Object> {
-    PersistentOwnerEntry entry;
-
-    PersistentOwnerReference(Object owner) {
-      super(owner, PERSISTENT_OWNER_QUEUE);
-    }
-  }
-
   private static final class PersistentOwnerEntry {
-    final PersistentOwnerReference owner;
+    final WeakReference<Object> owner;
     final WeakReference<Image> image;
     WeakReference<ImagePipeline> pipeline;
 
     PersistentOwnerEntry(Object owner, Image image, ImagePipeline pipeline) {
-      this.owner = new PersistentOwnerReference(owner);
-      this.owner.entry = this;
+      this.owner = new WeakReference<>(owner);
       this.image = new WeakReference<>(image);
       this.pipeline = new WeakReference<>(pipeline);
     }
@@ -101,18 +90,23 @@ public final class ImageDrawingBridge {
       throw new NullPointerException("image");
     }
     synchronized (image) {
-      synchronized (ImageDrawingBridge.class) {
-        cleanPersistentOwners();
-        if (findPersistentOwner(owner, image) != null) {
-          return;
-        }
-        ImagePipeline pipeline = image.pipelineForDrawingOwnership();
-        if (pipeline != null) {
-          pipeline.retainPersistentDrawingOwner();
-        }
-        PERSISTENT_OWNERS.add(new PersistentOwnerEntry(owner, image, pipeline));
-      }
+      retainPersistentOwnerForLockedImage(owner, image);
     }
+  }
+
+  private static synchronized void retainPersistentOwnerForLockedImage(Object owner, Image image) {
+    cleanPersistentOwners();
+    if (findPersistentOwner(owner, image) == null) {
+      addPersistentOwner(owner, image);
+    }
+  }
+
+  private static void addPersistentOwner(Object owner, Image image) {
+    ImagePipeline pipeline = image.pipelineForDrawingOwnership();
+    if (pipeline != null) {
+      pipeline.retainPersistentDrawingOwner();
+    }
+    PERSISTENT_OWNERS.add(new PersistentOwnerEntry(owner, image, pipeline));
   }
 
   /** Releases a persistent UI consumer and its final raster when it was the last owner. */
@@ -125,19 +119,21 @@ public final class ImageDrawingBridge {
       throw new NullPointerException("image");
     }
     synchronized (image) {
-      synchronized (ImageDrawingBridge.class) {
-        cleanPersistentOwners();
-        PersistentOwnerEntry entry = findPersistentOwner(owner, image);
-        if (entry == null) {
-          throw new IllegalStateException("Persistent image drawing owner underflow");
-        }
-        ImagePipeline pipeline = image.pipelineForDrawingOwnership();
-        if (pipeline != null) {
-          pipeline.releasePersistentDrawingOwner();
-        }
-        PERSISTENT_OWNERS.remove(entry);
-      }
+      releasePersistentOwnerForLockedImage(owner, image);
     }
+  }
+
+  private static synchronized void releasePersistentOwnerForLockedImage(Object owner, Image image) {
+    cleanPersistentOwners();
+    PersistentOwnerEntry entry = findPersistentOwner(owner, image);
+    if (entry == null) {
+      throw new IllegalStateException("Persistent image drawing owner underflow");
+    }
+    ImagePipeline pipeline = image.pipelineForDrawingOwnership();
+    if (pipeline != null) {
+      pipeline.releasePersistentDrawingOwner();
+    }
+    PERSISTENT_OWNERS.remove(entry);
   }
 
   static synchronized int persistentOwnerCount(Image image) {
@@ -174,10 +170,10 @@ public final class ImageDrawingBridge {
   }
 
   private static void cleanPersistentOwners() {
-    PersistentOwnerReference owner;
-    while ((owner = (PersistentOwnerReference) PERSISTENT_OWNER_QUEUE.poll()) != null) {
-      PersistentOwnerEntry entry = owner.entry;
-      if (entry != null && PERSISTENT_OWNERS.remove(entry)) {
+    for (int i = PERSISTENT_OWNERS.size() - 1; i >= 0; i--) {
+      PersistentOwnerEntry entry = PERSISTENT_OWNERS.get(i);
+      if (entry.owner.get() == null || entry.image.get() == null) {
+        PERSISTENT_OWNERS.remove(i);
         ImagePipeline pipeline = entry.pipeline.get();
         if (pipeline != null) {
           pipeline.releasePersistentDrawingOwner();
