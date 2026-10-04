@@ -160,6 +160,7 @@ jobs:
       env:
         EXPECTED_SOURCE_COMMIT: ${{ github.sha }}
       run: |
+        expected_source_tree="$(git rev-parse "HEAD^{tree}")"
         provenance_files=(
           build-provenance.json
           linux-amd64/build-provenance.json
@@ -173,7 +174,12 @@ jobs:
 
         for provenance in "${provenance_files[@]}"; do
           if [ -f "${provenance}" ]; then
-            python3 scripts/validate-build-provenance.py               --manifest "${provenance}"               --repository "${GITHUB_REPOSITORY}"               --source-commit "${EXPECTED_SOURCE_COMMIT}"
+            python3 scripts/validate-build-provenance.py \
+              --manifest "${provenance}" \
+              --repository "${GITHUB_REPOSITORY}" \
+              --source-commit "${EXPECTED_SOURCE_COMMIT}" \
+              --source-tree "${expected_source_tree}" \
+              --require-clean-source
           fi
         done
 
