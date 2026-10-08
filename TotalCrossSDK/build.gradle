@@ -200,6 +200,25 @@ tasks.register('generateDeployedJavaApiManifest', JavaExec) {
     outputs.file deployedJavaApiManifest
 }
 
+def nativeBridgeOutputDir = layout.buildDirectory.dir('generated/native-bridges')
+
+tasks.register('generateNativeBridgeModel', JavaExec) {
+    group = 'verification'
+    description = 'Generates Java-derived native bridge metadata and compares it with legacy VM inventories.'
+    dependsOn tasks.named('compileJava')
+
+    mainClass = 'tc.tools.converter.NativeBridgeGenerator'
+    classpath = sourceSets.main.runtimeClasspath
+    args '--output', nativeBridgeOutputDir.get().asFile.absolutePath
+    args '--legacy-root', file('../TotalCrossVM').absolutePath
+    args sourceSets.main.output.classesDirs.files.collect { it.absolutePath }
+    outputs.dir nativeBridgeOutputDir
+}
+
+tasks.named('check') {
+    dependsOn tasks.named('generateNativeBridgeModel')
+}
+
 test {
     useJUnitPlatform()
     def awtHeadless = System.getProperty('java.awt.headless')
