@@ -162,6 +162,31 @@ tasks.register('aggregateCompatibilityCheck', me.champeau.gradle.japicmp.Japicmp
     txtOutputFile = layout.buildDirectory.file('reports/aggregate-compatibility.txt').get().asFile
 }
 
+def deployedJavaApiValidationJars = [
+    'tcbaselangJar',
+    'tcbaseutilJar',
+    'tcbasemiscJar',
+    'tcuiJar'
+]
+
+tasks.register('validateDeployedJavaApi', JavaExec) {
+    group = 'verification'
+    description = 'Validates TCZ-bound SDK bytecode against the device Java API model.'
+    dependsOn deployedJavaApiValidationJars
+
+    mainClass = 'tc.tools.converter.DeployedJavaApiValidator'
+    classpath = sourceSets.main.runtimeClasspath
+    doFirst {
+        setArgs(deployedJavaApiValidationJars.collect {
+            tasks.named(it, Jar).get().archiveFile.get().asFile.absolutePath
+        })
+    }
+}
+
+tasks.named('check') {
+    dependsOn tasks.named('validateDeployedJavaApi')
+}
+
 test {
     useJUnitPlatform()
     def awtHeadless = System.getProperty('java.awt.headless')

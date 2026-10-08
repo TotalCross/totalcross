@@ -37,10 +37,17 @@ For code that can reach a deployed application:
 
 1. Treat a successful host-JDK compile, JUnit run, or JavaSE/AWT Launcher run
    only as host-side evidence.
-2. Prefer the existing converter/device-resolution path as the compatibility
-   check instead of manually auditing compatibility source files.
-3. When a focused pre-deploy validator is not available for the changed path,
-   run the smallest converter/deployer validation that reaches the new API.
+2. Run the focused bytecode validator before deploy when changing deployable
+   SDK/runtime code:
+
+   ```bash
+   cd TotalCrossSDK
+   ./gradlew-agent validateDeployedJavaApi
+   ```
+
+   The normal Gradle `check` lifecycle also runs this validator.
+3. Use converter/deployer smoke validation only when the change needs evidence
+   beyond API availability, such as lowering behavior or native execution.
 4. If validation reports an unavailable class, method, or constructor, inspect the mapped
    implementation under `totalcross`, `jdkcompat`, or `jdkcompatx` to decide
    whether to use an existing supported API or add device support.
@@ -77,9 +84,10 @@ include one of these proofs:
 - a focused deploy smoke that exercises the converted call;
 - a new device implementation with focused converter/native coverage.
 
-The preferred direction is to move direct method and constructor availability
-checks earlier in the build by reusing the same resolver over compiled
-bytecode. This does not make the resolver a complete model for fields,
-`invokedynamic` lowering, or other bytecode/runtime contracts. Do not create a
-separately maintained compatibility list; any human- or machine-readable API
-index should be generated from the resolver's device model.
+The deterministic availability check runs over direct method and constructor
+calls in compiled bytecode and reuses the same `MethodDeclarationResolver`
+model as deploy. Bytecode that requires converter lowering, including
+`invokedynamic`, still requires the focused converter/deployer validation for
+that lowering path. Do not create a separately maintained compatibility list;
+any human- or machine-readable API index should be generated from that device
+model.
