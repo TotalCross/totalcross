@@ -270,10 +270,11 @@ deployed Java class, method, and constructor availability, and for new
 `java.*` or `javax.*` calls in deployable code, use the compatibility model
 resolved by `tc.tools.converter.MethodDeclarationResolver`;
 do not infer support from the host JDK or from one `*4D` source tree. Follow
-`.agent/guides/deployed-java-api-compatibility.md` and use the smallest
-converter/deployer validation that reaches the changed call. Inspect mapped
-`totalcross`, `jdkcompat`, or `jdkcompatx` sources only when diagnosing a
-reported compatibility gap.
+`.agent/guides/deployed-java-api-compatibility.md` and run
+`cd TotalCrossSDK && ./gradlew-agent validateDeployedJavaApi` for deployable
+SDK/runtime changes. The normal Gradle `check` lifecycle includes the same
+validation. Inspect mapped `totalcross`, `jdkcompat`, or `jdkcompatx` sources
+only when diagnosing a reported compatibility gap.
 
 ## Native Method Bridges
 

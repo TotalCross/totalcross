@@ -5,7 +5,6 @@ package tc.tools.converter;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -22,6 +21,7 @@ import totalcross.util.Hashtable;
 /** Resolves source declaration owners from conversion-owned and device-owned models. */
 public final class MethodDeclarationResolver {
   private static final Map<String, JavaClass> programClasses = new HashMap<String, JavaClass>();
+  private static final Map<String, JavaClass> deviceClasses = new HashMap<String, JavaClass>();
   private static final Map<String, String[]> explicitJavaSupers = new HashMap<String, String[]>();
 
   static {
@@ -33,11 +33,19 @@ public final class MethodDeclarationResolver {
 
   public static void beginConversionRun() {
     programClasses.clear();
+    deviceClasses.clear();
   }
 
   public static void registerProgramClass(JavaClass type) {
     register(type.originalClassName, type);
     register(type.className, type);
+  }
+
+  public static void registerDeviceClass(JavaClass type) {
+    String owner = deployedOwner(type.originalClassName);
+    if (owner != null) {
+      deviceClasses.put(owner, type);
+    }
   }
 
   public static Resolution resolve(String symbolicOwner, String name, String descriptor) {
@@ -66,12 +74,25 @@ public final class MethodDeclarationResolver {
     boolean classFound = false;
     String[] candidates = includeExplicitSupers ? candidates(owner) : new String[] { owner };
     for (String candidate : candidates) {
+      JavaClass compiledDeviceClass = deviceClasses.get(candidate);
+      if (compiledDeviceClass != null) {
+        classFound = true;
+        String declaration =
+            findMemberDeclaration(compiledDeviceClass, name, matcher, new HashSet<String>());
+        if (declaration != null) {
+          return new DeviceResolution(
+              declaration, compiledDeviceClass.originalClassName, true, true);
+        }
+        continue;
+      }
+
       Class<?> deviceClass = findDeviceClass(candidate);
       if (deviceClass == null) continue;
       classFound = true;
       Class<?> declaration = findMemberDeclaration(deviceClass, name, matcher, new HashSet<String>());
       if (declaration != null) {
-        return new DeviceResolution(javaFacingOwner(declaration, candidate), deviceClass.getName(), true, true);
+        return new DeviceResolution(DeviceTypeMapping.javaFacingOwner(declaration, candidate),
+            deviceClass.getName(), true, true);
       }
     }
     return new DeviceResolution(null, null, classFound, false);
@@ -124,48 +145,61 @@ public final class MethodDeclarationResolver {
     return null;
   }
 
+  private static String findMemberDeclaration(JavaClass deviceClass, String name,
+      ParameterMatcher matcher, Set<String> visited) {
+    if (deviceClass == null) return null;
+    String owner = deployedOwner(deviceClass.originalClassName);
+    if (owner == null || !visited.add(owner)) return null;
+
+    if (isConstructor(name)) {
+      if (deviceClass.methods != null) {
+        for (JavaMethod method : deviceClass.methods) {
+          if ("<init>".equals(method.name) && matcher.matches(method.params)) {
+            return owner;
+          }
+        }
+      }
+      return null;
+    }
+
+    Set<String> names = new HashSet<String>();
+    if (deviceClass.methods != null) {
+      for (JavaMethod method : deviceClass.methods) names.add(method.name);
+      for (JavaMethod method : deviceClass.methods) {
+        String candidateName = method.name;
+        if (candidateName.endsWith("4D")) {
+          candidateName = candidateName.substring(0, candidateName.length() - 2);
+        } else if (names.contains(candidateName + "4D")) {
+          continue;
+        }
+        if (candidateName.equals(name) && matcher.matches(method.params)) {
+          return owner;
+        }
+      }
+    }
+
+    String declaration = findMemberDeclaration(
+        deviceClasses.get(deployedOwner(deviceClass.originalSuperClass)),
+        name, matcher, visited);
+    if (declaration != null) return declaration;
+
+    if (deviceClass.originalInterfaces != null) {
+      for (String iface : deviceClass.originalInterfaces) {
+        declaration = findMemberDeclaration(
+            deviceClasses.get(deployedOwner(iface)), name, matcher, visited);
+        if (declaration != null) return declaration;
+      }
+    }
+    return null;
+  }
+
   private static Class<?>[] mappedHierarchyTypes(Class<?> type) {
-    if (type == null) return new Class<?>[0];
-    if (isDeviceOwned(type)) return new Class<?>[] { type };
-    String name = type.getName();
-    return name.startsWith("java.") || name.startsWith("javax.")
-        ? findDeviceClasses(name.replace('.', '/')) : new Class<?>[0];
+    return DeviceTypeMapping.mappedHierarchyTypes(type);
   }
 
   private static Class<?> findDeviceClass(String javaOwner) {
-    Class<?>[] candidates = findDeviceClasses(javaOwner);
+    Class<?>[] candidates = DeviceTypeMapping.findDeviceClasses(javaOwner);
     return candidates.length == 0 ? null : candidates[0];
-  }
-
-  private static Class<?>[] findDeviceClasses(String javaOwner) {
-    String dotted = javaOwner.replace('/', '.');
-    if (!dotted.startsWith("java.") && !dotted.startsWith("javax.")) return new Class<?>[0];
-    ArrayList<Class<?>> foundClasses = new ArrayList<Class<?>>(2);
-    String[] prefixes = { "totalcross", "jdkcompat" };
-    for (String prefix : prefixes) {
-      String mapped = prefix + dotted.substring(4);
-      int nested = mapped.indexOf('$');
-      String replacement = nested < 0 ? mapped + "4D"
-          : mapped.substring(0, nested) + "4D" + mapped.substring(nested);
-      Class<?> found = loadOwned(replacement);
-      if (found != null) {
-        foundClasses.add(found);
-        continue;
-      }
-      found = loadOwned(mapped);
-      if (found != null) foundClasses.add(found);
-    }
-    return foundClasses.toArray(new Class<?>[foundClasses.size()]);
-  }
-
-  private static Class<?> loadOwned(String className) {
-    if (!className.startsWith("totalcross.") && !className.startsWith("jdkcompat.")
-        && !className.startsWith("jdkcompatx.")) return null;
-    try {
-      return Class.forName(className, false, MethodDeclarationResolver.class.getClassLoader());
-    } catch (ClassNotFoundException e) {
-      return null;
-    }
   }
 
   private static String findProgramDeclaration(String owner, String name, String descriptor, Set<String> visited) {
@@ -192,19 +226,9 @@ public final class MethodDeclarationResolver {
     return slash(type.originalClassName == null ? type.className : type.originalClassName);
   }
 
-  private static String javaFacingOwner(Class<?> declaration, String candidate) {
-    String name = declaration.getName();
-    if (!isDeviceOwned(declaration)) return candidate;
-    if (name.endsWith("4D")) name = name.substring(0, name.length() - 2);
-    if (name.startsWith("totalcross.")) name = "java." + name.substring("totalcross.".length());
-    else if (name.startsWith("jdkcompat.")) name = "java." + name.substring("jdkcompat.".length());
-    else if (name.startsWith("jdkcompatx.")) name = "javax." + name.substring("jdkcompatx.".length());
-    return slash(name);
-  }
-
-  private static boolean isDeviceOwned(Class<?> type) {
-    String name = type.getName();
-    return name.startsWith("totalcross.") || name.startsWith("jdkcompat.") || name.startsWith("jdkcompatx.");
+  private static String deployedOwner(String name) {
+    return name == null || name.length() == 0
+        ? null : DeviceTypeMapping.deployedOwner(slash(name));
   }
 
   private static boolean isConstructor(String name) {
@@ -217,6 +241,7 @@ public final class MethodDeclarationResolver {
 
   private interface ParameterMatcher {
     boolean matches(Class<?>[] deviceParameters);
+    boolean matches(String[] deviceParameters);
   }
 
   private static final class DescriptorMatcher implements ParameterMatcher {
@@ -232,6 +257,18 @@ public final class MethodDeclarationResolver {
       for (int i = 0; i < sourceParameters.length; i++) {
         String source = GlobalConstantPool.javaType2TCType(sourceParameters[i].getDescriptor());
         String device = GlobalConstantPool.javaType2TCType(Type.getDescriptor(deviceParameters[i]));
+        if (!compatibleType(source, device)) return false;
+      }
+      return true;
+    }
+
+    @Override
+    public boolean matches(String[] deviceParameters) {
+      int deviceCount = deviceParameters == null ? 0 : deviceParameters.length;
+      if (sourceParameters.length != deviceCount) return false;
+      for (int i = 0; i < sourceParameters.length; i++) {
+        String source = GlobalConstantPool.javaType2TCType(sourceParameters[i].getDescriptor());
+        String device = GlobalConstantPool.javaType2TCType(deviceParameters[i]);
         if (!compatibleType(source, device)) return false;
       }
       return true;
@@ -252,6 +289,19 @@ public final class MethodDeclarationResolver {
       for (int i = 0; i < count; i++) {
         String source = GlobalConstantPool.getClassName(sourceParameters[i + 2]);
         String device = validationDeviceType(deviceParameters[i]);
+        if (!compatibleType(source, device)) return false;
+      }
+      return true;
+    }
+
+    @Override
+    public boolean matches(String[] deviceParameters) {
+      int count = sourceParameters.length - 2;
+      int deviceCount = deviceParameters == null ? 0 : deviceParameters.length;
+      if (count != deviceCount) return false;
+      for (int i = 0; i < count; i++) {
+        String source = GlobalConstantPool.getClassName(sourceParameters[i + 2]);
+        String device = GlobalConstantPool.javaType2TCType(deviceParameters[i]);
         if (!compatibleType(source, device)) return false;
       }
       return true;

@@ -2209,36 +2209,15 @@ public class Bytecode2TCCode implements JConstants, TCConstants {
   }
 
   public static String removeSuffix4D(String name) {
-    int i;
-    if (name.endsWith("4D")) {
-      return name.substring(0, name.length() - 2);
-    } else if ((i = name.indexOf("4D$")) >= 0) {
-      name = name.substring(0, i).concat(name.substring(i + 2));
-    }
-    return name;
+    return DeviceTypeMapping.removeReplacementSuffix(name);
   }
 
   public static String removeSuffix4D(String name, String sign) {
-    int i, len = name.length();
-    if (name.endsWith("4D")) {
-      return name.substring(0, len - 2) + sign.substring(len);
-    } else if ((i = name.indexOf("4D$")) >= 0) {
-      name = name.substring(0, i).concat(name.substring(i + 2)) + sign.substring(len);
-    }
-    return sign;
+    return DeviceTypeMapping.removeReplacementSuffix(name, sign);
   }
 
   public static String replaceTotalCrossLangToJavaLang(String name) {
-    if (name.startsWith("totalcross/lang/")) {
-      return "java/lang/" + name.substring(16);
-    }
-    if (name.startsWith("totalcross/util/") && name.contains("4D") && !name.contains("/zip/")) {
-      return name.replace("totalcross", "java");
-    }
-    if (name.startsWith("jdkcompat") && name.contains("4D")) {
-      return name.replaceFirst("jdkcompat", "java");
-    }
-    return name;
+    return DeviceTypeMapping.replaceCompatibilityOwner(name);
   }
 
   public static void CheckIfIsGotoTarget(int BCIndex, ByteCode bc, OperandStack stack, Vector vcode) {

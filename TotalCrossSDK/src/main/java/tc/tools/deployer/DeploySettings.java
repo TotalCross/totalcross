@@ -105,6 +105,22 @@ public class DeploySettings {
   public static int appBuildNumber = -1;
 
   private static List<java.io.File> defaultTczs;
+
+  private static void ensureMappedClasses() {
+    if (!hmMappedClasses.isEmpty()) {
+      return;
+    }
+    hmMappedClasses.put("java.math.BigDecimal", "totalcross.util.BigDecimal");
+    hmMappedClasses.put("java.math.BigInteger", "totalcross.util.BigInteger");
+    hmMappedClasses.put("java.util.Random", "totalcross.util.Random");
+    hmMappedClasses.put("java.lang.StringBuilder", "java.lang.StringBuffer");
+  }
+
+  public static String mapClassName(String className) {
+    ensureMappedClasses();
+    String mapped = hmMappedClasses.get(className);
+    return mapped == null ? className : mapped;
+  }
   
   public static List<java.io.File> getDefaultTczs() {
     if (defaultTczs == null) {
@@ -148,10 +164,7 @@ public class DeploySettings {
     exclusionList.addElement("ras/");
     exclusionList.addElement("net/rim/");
 
-    hmMappedClasses.put("java.math.BigDecimal", "totalcross.util.BigDecimal");
-    hmMappedClasses.put("java.math.BigInteger", "totalcross.util.BigInteger");
-    hmMappedClasses.put("java.util.Random", "totalcross.util.Random");
-    hmMappedClasses.put("java.lang.StringBuilder", "java.lang.StringBuffer");
+    ensureMappedClasses();
 
     appletFontSizes.addElement(12);
 
