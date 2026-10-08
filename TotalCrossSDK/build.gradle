@@ -187,6 +187,19 @@ tasks.named('check') {
     dependsOn tasks.named('validateDeployedJavaApi')
 }
 
+def deployedJavaApiManifest = layout.buildDirectory.file('generated/deployed-java-api.txt')
+
+tasks.register('generateDeployedJavaApiManifest', JavaExec) {
+    group = 'documentation'
+    description = 'Generates the Java API index derived from the deployed device model.'
+    dependsOn tasks.named('compileJava')
+
+    mainClass = 'tc.tools.converter.DeployedJavaApiManifestGenerator'
+    classpath = sourceSets.main.runtimeClasspath
+    args deployedJavaApiManifest.get().asFile.absolutePath
+    outputs.file deployedJavaApiManifest
+}
+
 test {
     useJUnitPlatform()
     def awtHeadless = System.getProperty('java.awt.headless')

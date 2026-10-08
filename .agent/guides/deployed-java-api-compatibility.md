@@ -91,3 +91,19 @@ model as deploy. Bytecode that requires converter lowering, including
 that lowering path. Do not create a separately maintained compatibility list;
 any human- or machine-readable API index should be generated from that device
 model.
+
+## Generated API index
+
+For discovery or agent lookup, generate a deterministic index of host-JDK
+method and constructor signatures that resolve against the deployed device
+model:
+
+```bash
+cd TotalCrossSDK
+./gradlew-agent generateDeployedJavaApiManifest
+```
+
+The output is `build/generated/deployed-java-api.txt`. It is derived by
+enumerating the JDK 17 runtime image and asking `MethodDeclarationResolver`
+about each public signature. The file is an index, not a second source of truth,
+and must not be edited or maintained manually.
