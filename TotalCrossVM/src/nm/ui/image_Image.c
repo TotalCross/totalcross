@@ -697,7 +697,7 @@ TC_API void tuiI_freeTextureNative(NMParams p) // totalcross/ui/image/Image priv
 #endif
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tuiI_createJpgNative_si(NMParams p) // totalcross/ui/image/Image private void createJpgNative(totalcross.io.Stream s, int quality);
+TC_API void tuiI_createJpgImpl_si(NMParams p) // totalcross/ui/image/Image private void createJpgImpl(totalcross.io.Stream s, int quality);
 {
    TCObject stream = p->obj[1];
    int32 quality = p->i32[0];
