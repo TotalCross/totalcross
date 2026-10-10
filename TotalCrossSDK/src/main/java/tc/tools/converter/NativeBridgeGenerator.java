@@ -10,9 +10,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -29,51 +32,86 @@ public final class NativeBridgeGenerator {
   public static void main(String[] args) throws Exception {
     Arguments parsed = Arguments.parse(args);
     NativeBridgeModel.Result model = NativeBridgeModel.fromPaths(parsed.classRoots);
-    writeOutputs(parsed.output, model);
+    NativeBridgeCompatibility compatibility = NativeBridgeCompatibility.read(parsed.compatibility);
+    compatibility.validateOverrides(model.entries);
+    if (parsed.strict) {
+      compatibility.validateMinimality(model.entries);
+    }
+    List<Collision> collisions = effectiveCollisions(model.entries, compatibility);
+    if (parsed.strict && !collisions.isEmpty()) {
+      throw new IllegalStateException(formatCollisions(collisions));
+    }
+    writeOutputs(parsed.output, model, compatibility, collisions);
     if (parsed.legacyRoot != null) {
-      writeLegacyComparison(parsed.output.resolve("legacy-comparison.txt"), parsed.legacyRoot, model);
+      writeLegacyComparison(parsed.output.resolve("legacy-comparison.txt"),
+          parsed.legacyRoot, model, compatibility, collisions);
     }
     System.out.println("Generated native bridge model: " + model.entries.size()
-        + " entries, " + model.collisions.size() + " collision(s) at " + parsed.output.toAbsolutePath());
+        + " Java entries, " + collisions.size() + " effective collision(s) at "
+        + parsed.output.toAbsolutePath());
   }
 
-  static void writeOutputs(Path output, NativeBridgeModel.Result model) throws IOException {
+  static void writeOutputs(Path output, NativeBridgeModel.Result model,
+      NativeBridgeCompatibility compatibility, List<Collision> collisions) throws IOException {
     Files.createDirectories(output);
-    writeManifest(output.resolve("native-bridges.json"), model);
-    writeHeader(output.resolve("NativeMethods.generated.h"), model);
-    writeRegistrations(output.resolve("nativeProcAddressesTC.generated.inc"), model);
+    writeManifest(output.resolve("native-bridges.json"), model, compatibility, collisions);
+    writeHeader(output.resolve("NativeMethods.generated.h"), model, compatibility);
+    writeRegistrations(output.resolve("nativeProcAddressesTC.generated.inc"), model, compatibility);
   }
 
-  private static void writeManifest(Path output, NativeBridgeModel.Result model) throws IOException {
+  private static void writeManifest(Path output, NativeBridgeModel.Result model,
+      NativeBridgeCompatibility compatibility, List<Collision> collisions) throws IOException {
     List<String> lines = new ArrayList<String>();
     lines.add("{");
     lines.add("  \"generated\": true,");
     lines.add("  \"entries\": [");
     for (int i = 0; i < model.entries.size(); i++) {
       NativeBridgeModel.Entry entry = model.entries.get(i);
+      String effective = compatibility.effectiveSymbol(entry);
       String comma = i + 1 == model.entries.size() ? "" : ",";
       lines.add("    {\"sourceOwner\":\"" + json(entry.sourceOwner)
           + "\",\"deployedOwner\":\"" + json(entry.deployedOwner)
+          + "\",\"module\":\"" + json(compatibility.moduleFor(entry))
           + "\",\"name\":\"" + json(entry.deployedName)
           + "\",\"descriptor\":\"" + json(entry.descriptor)
-          + "\",\"symbol\":\"" + json(entry.symbol)
+          + "\",\"derivedSymbol\":\"" + json(entry.symbol)
+          + "\",\"symbol\":\"" + json(effective)
           + "\",\"kind\":\"" + json(entry.kind) + "\"}" + comma);
     }
     lines.add("  ],");
+    lines.add("  \"compatibilityBridges\": [");
+    List<String> compatibilityBridges = new ArrayList<String>(compatibility.bridgeSymbols());
+    Collections.sort(compatibilityBridges);
+    for (int i = 0; i < compatibilityBridges.size(); i++) {
+      String symbol = compatibilityBridges.get(i);
+      String guard = compatibility.guardFor(symbol);
+      String comma = i + 1 == compatibilityBridges.size() ? "" : ",";
+      lines.add("    {\"symbol\":\"" + json(symbol) + "\",\"guard\":"
+          + (guard == null ? "null" : "\"" + json(guard) + "\"") + "}" + comma);
+    }
+    lines.add("  ],");
     lines.add("  \"collisions\": [");
-    for (int i = 0; i < model.collisions.size(); i++) {
-      NativeBridgeModel.Collision collision = model.collisions.get(i);
-      String comma = i + 1 == model.collisions.size() ? "" : ",";
-      lines.add("    {\"symbol\":\"" + json(collision.symbol)
-          + "\",\"first\":\"" + json(collision.first.identity())
-          + "\",\"second\":\"" + json(collision.second.identity()) + "\"}" + comma);
+    for (int i = 0; i < collisions.size(); i++) {
+      Collision collision = collisions.get(i);
+      String comma = i + 1 == collisions.size() ? "" : ",";
+      lines.add("    {\"module\":\"" + json(collision.module)
+          + "\",\"symbol\":\"" + json(collision.symbol)
+          + "\",\"first\":\"" + json(collision.first)
+          + "\",\"second\":\"" + json(collision.second) + "\"}" + comma);
     }
     lines.add("  ]");
     lines.add("}");
     Files.write(output, lines, StandardCharsets.UTF_8);
   }
 
-  private static void writeHeader(Path output, NativeBridgeModel.Result model) throws IOException {
+  private static void writeHeader(Path output, NativeBridgeModel.Result model,
+      NativeBridgeCompatibility compatibility) throws IOException {
+    Set<String> symbols = effectiveCoreJavaSymbols(model, compatibility);
+    symbols.addAll(compatibility.bridgeSymbols());
+    symbols.addAll(compatibility.headerOnlySymbols());
+    List<String> sorted = new ArrayList<String>(symbols);
+    Collections.sort(sorted);
+
     List<String> lines = new ArrayList<String>();
     lines.add("// Generated from compiled device Java classes. Do not edit.");
     lines.add("#ifndef TC_NATIVE_METHODS_GENERATED_H");
@@ -83,11 +121,8 @@ public final class NativeBridgeGenerator {
     lines.add("extern \"C\" {");
     lines.add("#endif");
     lines.add("");
-    Set<String> emitted = new LinkedHashSet<String>();
-    for (NativeBridgeModel.Entry entry : model.entries) {
-      if (emitted.add(entry.symbol)) {
-        lines.add("TC_API void " + entry.symbol + "(NMParams p);");
-      }
+    for (String symbol : sorted) {
+      lines.add("TC_API void " + symbol + "(NMParams p);");
     }
     lines.add("");
     lines.add("#ifdef __cplusplus");
@@ -98,46 +133,109 @@ public final class NativeBridgeGenerator {
     Files.write(output, lines, StandardCharsets.UTF_8);
   }
 
-  private static void writeRegistrations(Path output, NativeBridgeModel.Result model) throws IOException {
+  private static void writeRegistrations(Path output, NativeBridgeModel.Result model,
+      NativeBridgeCompatibility compatibility) throws IOException {
+    Set<String> symbols = effectiveCoreJavaSymbols(model, compatibility);
+    symbols.addAll(compatibility.bridgeSymbols());
+
+    List<String> unguarded = new ArrayList<String>();
+    Map<String, List<String>> guarded = new TreeMap<String, List<String>>();
+    for (String symbol : symbols) {
+      String guard = compatibility.guardFor(symbol);
+      if (guard == null) {
+        unguarded.add(symbol);
+      } else {
+        guarded.computeIfAbsent(guard, unused -> new ArrayList<String>()).add(symbol);
+      }
+    }
+    Collections.sort(unguarded);
+    for (List<String> values : guarded.values()) Collections.sort(values);
+
     List<String> lines = new ArrayList<String>();
     lines.add("/* Generated from compiled device Java classes. Do not edit. */");
-    Set<String> emitted = new LinkedHashSet<String>();
-    for (NativeBridgeModel.Entry entry : model.entries) {
-      if (emitted.add(entry.symbol)) {
-        lines.add("htPutPtr(&htNativeProcAddresses, hashCode(\"" + entry.symbol
-            + "\"), &" + entry.symbol + ");");
-      }
+    for (String symbol : unguarded) lines.add(registration(symbol));
+    for (Map.Entry<String, List<String>> group : guarded.entrySet()) {
+      lines.add("#if defined(" + group.getKey() + ")");
+      for (String symbol : group.getValue()) lines.add(registration(symbol));
+      lines.add("#endif");
     }
     Files.write(output, lines, StandardCharsets.UTF_8);
   }
 
+  private static String registration(String symbol) {
+    return "htPutPtr(&htNativeProcAddresses, hashCode(\"" + symbol + "\"), &" + symbol + ");";
+  }
+
+  private static Set<String> effectiveCoreJavaSymbols(NativeBridgeModel.Result model,
+      NativeBridgeCompatibility compatibility) {
+    Set<String> values = new LinkedHashSet<String>();
+    for (NativeBridgeModel.Entry entry : model.entries) {
+      if ("core".equals(compatibility.moduleFor(entry))) {
+        values.add(compatibility.effectiveSymbol(entry));
+      }
+    }
+    return values;
+  }
+
+  private static List<Collision> effectiveCollisions(List<NativeBridgeModel.Entry> entries,
+      NativeBridgeCompatibility compatibility) {
+    Map<String, Map<String, String>> firstByModuleAndSymbol = new LinkedHashMap<String, Map<String, String>>();
+    List<Collision> collisions = new ArrayList<Collision>();
+    for (NativeBridgeModel.Entry entry : entries) {
+      String module = compatibility.moduleFor(entry);
+      String symbol = compatibility.effectiveSymbol(entry);
+      String identity = entry.identity();
+      Map<String, String> firstBySymbol = firstByModuleAndSymbol.computeIfAbsent(
+          module, unused -> new LinkedHashMap<String, String>());
+      String previous = firstBySymbol.putIfAbsent(symbol, identity);
+      if (previous != null && !previous.equals(identity)) {
+        collisions.add(new Collision(module, symbol, previous, identity));
+      }
+    }
+    return collisions;
+  }
+
+  private static String formatCollisions(List<Collision> collisions) {
+    StringBuilder message = new StringBuilder("Native bridge symbol collision(s):");
+    for (Collision collision : collisions) {
+        message.append(System.lineSeparator()).append(" - [").append(collision.module).append("] ")
+            .append(collision.symbol)
+          .append(": ").append(collision.first).append(" <> ").append(collision.second);
+    }
+    return message.toString();
+  }
+
   private static void writeLegacyComparison(Path output, Path legacyRoot,
-      NativeBridgeModel.Result model) throws IOException {
+      NativeBridgeModel.Result model, NativeBridgeCompatibility compatibility,
+      List<Collision> collisions) throws IOException {
     Path header = legacyRoot.resolve("src/nm/NativeMethods.h");
     Path registrations = legacyRoot.resolve("src/init/nativeProcAddressesTC.c");
-    Set<String> generated = new LinkedHashSet<String>();
-    for (NativeBridgeModel.Entry entry : model.entries) generated.add(entry.symbol);
+    Set<String> generatedHeader = effectiveCoreJavaSymbols(model, compatibility);
+    generatedHeader.addAll(compatibility.bridgeSymbols());
+    generatedHeader.addAll(compatibility.headerOnlySymbols());
+    Set<String> generatedRegistrations = effectiveCoreJavaSymbols(model, compatibility);
+    generatedRegistrations.addAll(compatibility.bridgeSymbols());
     Set<String> headerSymbols = readSymbols(header, HEADER_SYMBOL);
     Set<String> registrationSymbols = readSymbols(registrations, REGISTRATION_SYMBOL);
     registrationSymbols.remove("getMainContext");
 
     List<String> lines = new ArrayList<String>();
     lines.add("# Shadow comparison only; differences are expected until classified.");
-    lines.add("generated=" + generated.size());
+    lines.add("generatedHeader=" + generatedHeader.size());
+    lines.add("generatedRegistrations=" + generatedRegistrations.size());
     lines.add("legacyHeader=" + headerSymbols.size());
     lines.add("legacyRegistrations=" + registrationSymbols.size());
-    appendDifference(lines, "generated-not-in-header", generated, headerSymbols);
-    appendDifference(lines, "header-not-generated", headerSymbols, generated);
-    appendDifference(lines, "generated-not-registered", generated, registrationSymbols);
-    appendDifference(lines, "registration-not-generated", registrationSymbols, generated);
+    appendDifference(lines, "generated-not-in-header", generatedHeader, headerSymbols);
+    appendDifference(lines, "header-not-generated", headerSymbols, generatedHeader);
+    appendDifference(lines, "generated-not-registered", generatedRegistrations, registrationSymbols);
+    appendDifference(lines, "registration-not-generated", registrationSymbols, generatedRegistrations);
     lines.add("");
     lines.add("[collisions]");
-    if (model.collisions.isEmpty()) {
+    if (collisions.isEmpty()) {
       lines.add("(none)");
     } else {
-      for (NativeBridgeModel.Collision collision : model.collisions) {
-        lines.add(collision.symbol + "\t" + collision.first.identity()
-            + "\t" + collision.second.identity());
+      for (Collision collision : collisions) {
+        lines.add(collision.module + "\t" + collision.symbol + "\t" + collision.first + "\t" + collision.second);
       }
     }
     Files.write(output, lines, StandardCharsets.UTF_8);
@@ -167,26 +265,50 @@ public final class NativeBridgeGenerator {
     return value.replace("\\", "\\\\").replace("\"", "\\\"");
   }
 
+  static final class Collision {
+    final String module;
+    final String symbol;
+    final String first;
+    final String second;
+
+    Collision(String module, String symbol, String first, String second) {
+      this.module = module;
+      this.symbol = symbol;
+      this.first = first;
+      this.second = second;
+    }
+  }
+
   private static final class Arguments {
     final Path output;
     final Path legacyRoot;
+    final Path compatibility;
+    final boolean strict;
     final List<Path> classRoots;
 
-    Arguments(Path output, Path legacyRoot, List<Path> classRoots) {
+    Arguments(Path output, Path legacyRoot, Path compatibility, boolean strict, List<Path> classRoots) {
       this.output = output;
       this.legacyRoot = legacyRoot;
+      this.compatibility = compatibility;
+      this.strict = strict;
       this.classRoots = classRoots;
     }
 
     static Arguments parse(String[] args) {
       Path output = Paths.get("build/generated/native-bridges");
       Path legacyRoot = null;
+      Path compatibility = null;
+      boolean strict = false;
       List<Path> roots = new ArrayList<Path>();
       for (int i = 0; i < args.length; i++) {
         if ("--output".equals(args[i])) {
           output = Paths.get(args[++i]);
         } else if ("--legacy-root".equals(args[i])) {
           legacyRoot = Paths.get(args[++i]);
+        } else if ("--compat".equals(args[i])) {
+          compatibility = Paths.get(args[++i]);
+        } else if ("--strict".equals(args[i])) {
+          strict = true;
         } else {
           roots.add(Paths.get(args[i]));
         }
@@ -194,7 +316,7 @@ public final class NativeBridgeGenerator {
       if (roots.isEmpty()) {
         throw new IllegalArgumentException("Pass one or more compiled class directories.");
       }
-      return new Arguments(output, legacyRoot, roots);
+      return new Arguments(output, legacyRoot, compatibility, strict, roots);
     }
   }
 }
