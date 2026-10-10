@@ -43,10 +43,7 @@ class RuntimeDiagnosticsConverterTest {
   void optionalNativeBridgeAndRegistrationAreCompileTimeGated() throws Exception {
     Path vmRoot = Path.of("..", "TotalCrossVM");
     String cmake = Files.readString(vmRoot.resolve("CMakeLists.txt"));
-    String declarations = Files.readString(vmRoot.resolve("src/nm/NativeMethods.txt"));
-    String prototypes = Files.readString(vmRoot.resolve("src/nm/NativeMethodsPrototypes.txt"));
-    String header = Files.readString(vmRoot.resolve("src/nm/NativeMethods.h"));
-    String registrations = Files.readString(vmRoot.resolve("src/init/nativeProcAddressesTC.c"));
+    String compatibility = Files.readString(vmRoot.resolve("src/nm/native-bridge-compat.txt"));
     String implementation = Files.readString(vmRoot.resolve("src/nm/sys/RuntimeDiagnostics.c"));
 
     assertTrue(cmake.contains("option(" + FLAG
@@ -54,17 +51,13 @@ class RuntimeDiagnosticsConverterTest {
     assertTrue(cmake.contains("if(" + FLAG + ")\n  target_compile_definitions(tcvm PRIVATE " + FLAG + "=1)\nendif()"));
     assertTrue(cmake.contains("if(" + FLAG + ")\n  list(APPEND SOURCES ${TC_SRCDIR}/nm/sys/RuntimeDiagnostics.c)\nendif()"));
     for (String symbol : SYMBOLS) {
-      assertTrue(prototypes.contains("TC_API void " + symbol + "(NMParams p);"), symbol);
-      assertTrue(header.contains("TC_API void " + symbol + "(NMParams p);"), symbol);
-      assertTrue(registrations.contains("hashCode(\"" + symbol + "\"), &" + symbol), symbol);
+      assertTrue(compatibility.contains("guard\t" + FLAG + "\t" + symbol),
+          "generated registration must retain compile-time guard for " + symbol);
       assertTrue(implementation.contains("TC_API void " + symbol + "(NMParams p)"), symbol);
-      assertTrue(declarations.contains("totalcross/sys/RuntimeDiagnosticsSupport|"), symbol);
     }
 
-    String defaultRegistration = withoutFlag(registrations, FLAG);
     String defaultImplementation = withoutFlag(implementation, FLAG);
     for (String symbol : SYMBOLS) {
-      assertFalse(defaultRegistration.contains(symbol), symbol);
       assertFalse(defaultImplementation.contains(symbol), symbol);
     }
     assertFalse(defaultImplementation.contains("runtimeDiagnosticNativeCounter"));
@@ -136,7 +129,6 @@ class RuntimeDiagnosticsConverterTest {
 
   @Test
   void nativeSignaturesStayPrivateAndThePublicSurfaceHasNoKeysIdsOrMasks() throws Exception {
-    String declarations = Files.readString(Path.of("../TotalCrossVM/src/nm/NativeMethods.txt"));
     String support = Files.readString(
         Path.of("src/runtimeDiagnostics/java/totalcross/sys/RuntimeDiagnosticsSupport.java"));
     String publicApi = Files.readString(Path.of("src/main/java/totalcross/sys/RuntimeDiagnostics.java"));
@@ -145,8 +137,9 @@ class RuntimeDiagnosticsConverterTest {
 
     for (String method : new String[] {"readMetricNative", "readMetricsNative", "resetMetricsNative",
         "addNativeCountNative", "setNativeGaugeNative"}) {
-      assertTrue(support.contains("private static native"));
-      assertTrue(declarations.contains("|native private static"));
+      String returnType = method.equals("readMetricNative") ? "long" : "void";
+      assertTrue(support.contains("private static native " + returnType + " " + method + "("),
+          "Missing private native declaration: " + method);
       assertFalse(publicApi.contains(method));
       assertFalse(publicSnapshot.contains(method));
     }

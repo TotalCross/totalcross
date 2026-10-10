@@ -1,0 +1,76 @@
+# Native bridge compatibility exceptions.
+#
+# This is not a native-method inventory. Java native/@ReplacedByNativeOnDeploy
+# declarations are authoritative. Keep entries here only when ABI history,
+# VM-only symbols, or compile-time feature guards cannot be derived from the
+# compiled Java model.
+#
+# Format (TAB-separated):
+# override<TAB>deployed-owner#method(descriptor)return<TAB>symbol
+# bridge<TAB>symbol
+# header<TAB>symbol
+# guard<TAB>PREPROCESSOR_MACRO<TAB>symbol
+# module<TAB>module-name<TAB>deployed-owner-prefix/
+
+# These Java declarations are implemented and exported by the optional Windows
+# Sync DLL, not by the core VM linked through nativeProcAddressesTC.
+module	sync	totalcross/io/sync/
+
+# Historical ABI alias: the old generator's 32-character truncation does not
+# match the symbol already shipped by the VM implementation.
+override	totalcross/ui/image/NativeImageBacking#createFromArgbPixelsNative([III)J	tuiNIB_createFromArgbPixels_Iii
+
+# Legacy/VM bridges present in the native registration surface but outside the
+# Java-derived model. Strict generation rejects bridge/header entries that are
+# already derivable from Java.
+bridge	tnsSSLCM_startHandshake
+
+# Retain historical native entry points used by already-deployed TCZ bytecode.
+# Each symbol still has a concrete C definition; these declarations either no
+# longer exist in the current Java sources or now have Java implementations.
+bridge	jlS_getBytes
+bridge	rU_getConfigInfo
+bridge	rU_getDeviceInfo
+bridge	rU_getProductInfo
+bridge	tnCM_open
+bridge	tpSMS_receive
+bridge	tpSMS_send_ss
+bridge	tpcbIPOIC_GetAllAppointments
+bridge	tpcbIPOIC_GetAllContacts
+bridge	tpcbIPOIC_GetAllTasks
+bridge	tpcbIPOIC_NewContact
+bridge	tpcbIPOIC_ViewAllAppointments
+bridge	tpcbIPOIC_ViewAllContacts
+bridge	tpcbIPOIC_ViewAllTasks
+bridge	tpcbIPOIC_editIAppointment_sssss
+bridge	tpcbIPOIC_editIContact_sssssssss
+bridge	tpcbIPOIC_editITask_ssssssssssss
+bridge	tpcbIPOIC_getIAppointmentString_
+bridge	tpcbIPOIC_getIContactString_s
+bridge	tpcbIPOIC_getITaskString_s
+bridge	tpcbIPOIC_newAppointment
+bridge	tpcbIPOIC_newTask
+bridge	tpcbIPOIC_removeIAppointment_s
+bridge	tpcbIPOIC_removeIContact_s
+bridge	tpcbIPOIC_removeITask_s
+bridge	tsC_numberPad_ii
+bridge	tsC_numberPad_si
+
+# C helpers that need declarations but are not runtime address-table entries.
+header	tugG_drawText_Ciiii
+header	tugG_drawText_Ciiiibi
+header	tugG_drawText_sii
+header	tugG_drawText_siibi
+header	tugG_drawText_siiibi
+header	tugG_drawText_siiiibi
+header	tugG_drawText_siiiiibi
+header	tugG_drawThickLine_iiiii
+
+# Optional bridges retain their native compile-time gates even when their Java
+# declaration is compiled in an opt-in source set.
+guard	TC_ENABLE_RUNTIME_DIAGNOSTICS	tsRDS_readMetricNative_i
+guard	TC_ENABLE_RUNTIME_DIAGNOSTICS	tsRDS_readMetricsNative_IL
+guard	TC_ENABLE_RUNTIME_DIAGNOSTICS	tsRDS_resetMetricsNative_i
+guard	TC_ENABLE_RUNTIME_DIAGNOSTICS	tsRDS_addNativeCountNative_l
+guard	TC_ENABLE_RUNTIME_DIAGNOSTICS	tsRDS_setNativeGaugeNative_l
+guard	TC_ENABLE_SEMAPHORE_TEST_DIAGNOSTICS	tucSTD_awaitWaiters_si
