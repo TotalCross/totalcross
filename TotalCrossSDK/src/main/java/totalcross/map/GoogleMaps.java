@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -175,7 +176,6 @@ public class GoogleMaps {
    * @see #showRoute(String, String, String, int)
    */
   @Deprecated
-  @ReplacedByNativeOnDeploy
   public static boolean showRoute(String addressI, String addressF, String traversedPoints, boolean showSatellitePhotos)
       throws NotInstalledException {
     return showRoute(addressI, addressF, traversedPoints, SHOW_SATELLITE_PHOTOS);

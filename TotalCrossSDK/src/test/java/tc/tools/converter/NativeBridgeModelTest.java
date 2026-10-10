@@ -70,6 +70,19 @@ class NativeBridgeModelTest {
   }
 
   @Test
+  void deprecatedGoogleMapsBooleanRouteRemainsJavaDelegation() throws Exception {
+    try (java.io.InputStream stream = getClass().getClassLoader()
+        .getResourceAsStream("totalcross/map/GoogleMaps.class")) {
+      assertTrue(stream != null, "GoogleMaps must be compiled for bridge validation");
+      List<NativeBridgeModel.Entry> entries = NativeBridgeModel.fromClassBytes(stream.readAllBytes());
+      assertTrue(entries.stream().anyMatch(entry ->
+          entry.identity().equals("totalcross/map/GoogleMaps#showRoute(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;I)Z")));
+      assertTrue(entries.stream().noneMatch(entry ->
+          entry.identity().equals("totalcross/map/GoogleMaps#showRoute(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Z)Z")));
+    }
+  }
+
+  @Test
   void discoversNativeMethodFromCompiledReplacementClass() throws Exception {
     ClassWriter writer = new ClassWriter(0);
     writer.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC, "jdkcompat/lang/System4D", null,
