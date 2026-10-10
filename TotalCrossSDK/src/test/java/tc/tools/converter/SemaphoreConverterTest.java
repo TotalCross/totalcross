@@ -131,54 +131,31 @@ class SemaphoreConverterTest {
   }
 
   @Test
-  void nativeRegistrationsAndSourceInventoriesStaySynchronized() throws Exception {
+  void javaDerivedBridgesAndOptionalDiagnosticStaySynchronized() throws Exception {
     Path vmRoot = Path.of("..", "TotalCrossVM");
-    String declarations = Files.readString(vmRoot.resolve("src/nm/NativeMethods.txt"));
-    String prototypes = Files.readString(vmRoot.resolve("src/nm/NativeMethodsPrototypes.txt"));
-    String header = Files.readString(vmRoot.resolve("src/nm/NativeMethods.h"));
-    String registrations = Files.readString(vmRoot.resolve("src/init/nativeProcAddressesTC.c"));
     String cmake = Files.readString(vmRoot.resolve("CMakeLists.txt"));
     String implementation = Files.readString(vmRoot.resolve("src/nm/util/concurrent_Semaphore.c"));
+    String compatibility = Files.readString(vmRoot.resolve("src/nm/native-bridge-compat.txt"));
     String diagnosticSource = Files.readString(
         Path.of("src/smokeTest/java/totalcross/util/concurrent/SemaphoreTestDiagnostics.java"));
     Path productionDiagnosticSource = Path.of(
         "src/main/java/totalcross/util/concurrent/SemaphoreTestDiagnostics.java");
-    String[] expectedDeclarations = {
-        OWNER + "|native private void create(int permits);",
-        OWNER + "|native private void destroy();",
-        OWNER + "|native public void acquire() throws InterruptedException;",
-        OWNER + "|native public void acquireUninterruptibly();",
-        OWNER + "|native public boolean tryAcquire();",
-        OWNER + "|native public void release();"
-    };
-    assertEquals(expectedDeclarations.length,
-        declarations.lines().filter(line -> line.startsWith(OWNER + "|")).count());
-    for (int i = 0; i < SYMBOLS.length; i++) {
-      assertTrue(declarations.contains(expectedDeclarations[i]),
-          "missing source-of-truth declaration " + expectedDeclarations[i]);
-      assertTrue(prototypes.contains("TC_API void " + SYMBOLS[i] + "(NMParams p);"),
-          "missing generated prototype for " + SYMBOLS[i]);
-      assertTrue(header.contains("TC_API void " + SYMBOLS[i] + "(NMParams p);"),
-          "missing native header declaration for " + SYMBOLS[i]);
-      assertTrue(registrations.contains("hashCode(\"" + SYMBOLS[i] + "\"), &" + SYMBOLS[i]),
-          "missing native-address registration for " + SYMBOLS[i]);
-      assertTrue(implementation.contains("TC_API void " + SYMBOLS[i] + "(NMParams p)"),
-          "missing native implementation for " + SYMBOLS[i]);
+
+    java.util.Set<String> derived =
+        NativeBridgeTestSupport.symbolsFor(Class.forName("jdkcompat.util.concurrent.Semaphore4D"));
+    for (String symbol : SYMBOLS) {
+      assertTrue(derived.contains(symbol), "missing Java-derived native bridge " + symbol);
+      assertTrue(implementation.contains("TC_API void " + symbol + "(NMParams p)"),
+          "missing native implementation for " + symbol);
     }
 
-    String diagnosticDeclaration = DIAGNOSTIC_OWNER
-        + "|native public static int awaitWaiters(java.util.concurrent.Semaphore semaphore, int minimumWaiters);";
-    assertTrue(declarations.contains(diagnosticDeclaration), "missing smoke diagnostic declaration");
-    assertFalse(declarations.contains(OWNER + "|native public static int awaitWaiters"),
-        "the diagnostic must not extend java.util.concurrent.Semaphore");
-    assertEquals(6, declarations.lines().filter(line -> line.startsWith(OWNER + "|")).count(),
-        "the public Semaphore v1 native surface must remain unchanged");
+    assertFalse(derived.contains(DIAGNOSTIC_SYMBOL),
+        "test diagnostic must not become part of the production Java bridge model");
     assertTrue(diagnosticSource.contains("native int awaitWaiters(Semaphore semaphore, int minimumWaiters)"),
         "missing smoke-source-only diagnostic bridge");
     assertFalse(Files.exists(productionDiagnosticSource), "diagnostic bridge must stay out of SDK main sources");
-    assertTrue(prototypes.contains("TC_API void " + DIAGNOSTIC_SYMBOL + "(NMParams p);"));
-    assertTrue(header.contains("TC_API void " + DIAGNOSTIC_SYMBOL + "(NMParams p);"));
-    assertTrue(registrations.contains("hashCode(\"" + DIAGNOSTIC_SYMBOL + "\"), &" + DIAGNOSTIC_SYMBOL));
+    assertTrue(compatibility.contains("guard\t" + DIAGNOSTIC_FLAG + "\t" + DIAGNOSTIC_SYMBOL),
+        "diagnostic registration guard must remain an explicit non-production compatibility exception");
     assertTrue(implementation.contains("TC_API void " + DIAGNOSTIC_SYMBOL + "(NMParams p)"));
 
     String defaultImplementation = withoutSemaphoreDiagnostics(implementation);
@@ -188,18 +165,11 @@ class SemaphoreConverterTest {
         "default acquire path must omit diagnostic branches");
     assertFalse(defaultImplementation.contains(DIAGNOSTIC_SYMBOL),
         "default VM must not compile the diagnostic native method");
-    assertFalse(withoutSemaphoreDiagnostics(registrations).contains(DIAGNOSTIC_SYMBOL),
-        "default VM must not register the diagnostic native method");
     assertTrue(implementation.contains("#if defined(" + DIAGNOSTIC_FLAG
         + ")\n   THREAD_CONDITION_TYPE diagnosticCondition;"),
         "diagnostic state fields must be behind the opt-in flag");
     assertTrue(implementation.contains("#if defined(" + DIAGNOSTIC_FLAG + ")\nTC_API void "
         + DIAGNOSTIC_SYMBOL + "(NMParams p)"), "diagnostic native method must be opt-in");
-    String diagnosticRegistration = "   htPutPtr(&htNativeProcAddresses, hashCode(\""
-        + DIAGNOSTIC_SYMBOL + "\"), &" + DIAGNOSTIC_SYMBOL + ");";
-    assertTrue(registrations.contains("#if defined(" + DIAGNOSTIC_FLAG + ")\n"
-        + diagnosticRegistration + "\n#endif"),
-        "diagnostic native address must be registered only in diagnostic builds");
     assertTrue(cmake.contains("option(" + DIAGNOSTIC_FLAG
         + "\n  \"Enable test-only Semaphore native diagnostics\"\n  OFF\n)"),
         "diagnostics must be disabled by default");

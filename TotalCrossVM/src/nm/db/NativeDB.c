@@ -1,3 +1,8 @@
+// Copyright (C) 2020-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
+//
+// SPDX-License-Identifier: LGPL-2.1-only
+
 /*
  * Copyright (c) 2007 David Crawshaw <david@zentus.com>
  *
@@ -18,7 +23,6 @@
 #include "sqlite3.h"
 
 //TC_API void tdsNDB_exec_s(NMParams p) // totalcross/db/sqlite/NativeDB native void exec(String sql) throws SQLException;
-//TC_API void tdsNDB_result_error_ls(NMParams p) // totalcross/db/sqlite/NativeDB native void result_error(long context, String err);
 
 // NativeDB extends DB
 
@@ -656,6 +660,23 @@ TC_API void tdsNDB_result_text_ls(NMParams p) // totalcross/db/sqlite/NativeDB n
    UNLOCKDB
 }
 
+TC_API void tdsNDB_result_error_ls(NMParams p) // totalcross/db/sqlite/NativeDB native void result_error(long context, String err);
+{
+   TRACE("tdsNDB_result_error_ls")
+   static const JChar emptyMessage[1] = { 0 };
+   int64 context = p->i64[0];
+   TCObject value = p->obj[1];
+   JChar *message = value == NULL ? (JChar*)emptyMessage : String_charsStart(value);
+   int32 size = value == NULL ? 0 : String_charsLen(value);
+
+   LOCKDB
+   if (size > 0x7fffffff / (int32)sizeof(JChar))
+      sqlite3_result_error_toobig(toref(context));
+   else
+      sqlite3_result_error16(toref(context), message, size * (int32)sizeof(JChar));
+   UNLOCKDB
+}
+
 TC_API void tdsNDB_result_blob_lB(NMParams p) // totalcross/db/sqlite/NativeDB native void result_blob(long context, byte []val);
 {
    TRACE("tdsNDB_result_blob_lB")
@@ -890,4 +911,3 @@ TC_API void tdsNDB_restore_ssp(NMParams p) // totalcross/db/sqlite/NativeDB nati
   p->retI = rc;
    UNLOCKDB
 }
-
