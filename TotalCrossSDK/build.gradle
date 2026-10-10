@@ -162,6 +162,52 @@ tasks.register('aggregateCompatibilityCheck', me.champeau.gradle.japicmp.Japicmp
     txtOutputFile = layout.buildDirectory.file('reports/aggregate-compatibility.txt').get().asFile
 }
 
+def deployedJavaApiManifest = layout.buildDirectory.file('generated/deployed-java-api.txt')
+
+tasks.register('generateDeployedJavaApiManifest', JavaExec) {
+    group = 'documentation'
+    description = 'Generates the Java API index derived from the deployed device model.'
+    dependsOn tasks.named('compileJava')
+
+    mainClass = 'tc.tools.converter.DeployedJavaApiManifestGenerator'
+    classpath = sourceSets.main.runtimeClasspath
+    args deployedJavaApiManifest.get().asFile.absolutePath
+    outputs.file deployedJavaApiManifest
+}
+
+def nativeBridgeOutputDir = layout.buildDirectory.dir('generated/native-bridges')
+def nativeBridgeCompatibility = file('../TotalCrossVM/src/nm/native-bridge-compat.txt')
+
+tasks.register('generateNativeBridgeSources', JavaExec) {
+    group = 'build'
+    description = 'Generates native bridge headers and registrations from compiled device Java classes.'
+    dependsOn 'tcbaselangJar', 'tcbaseutilJar', 'tcbasemiscJar', 'tcuiJar'
+
+    mainClass = 'tc.tools.converter.NativeBridgeGenerator'
+    classpath = sourceSets.main.runtimeClasspath
+    args '--output', nativeBridgeOutputDir.get().asFile.absolutePath
+    args '--compat', nativeBridgeCompatibility.absolutePath
+    args '--strict'
+    doFirst {
+        def archives = ['tcbaselangJar', 'tcbaseutilJar', 'tcbasemiscJar', 'tcuiJar']
+        setArgs(['--output', nativeBridgeOutputDir.get().asFile.absolutePath,
+                 '--compat', nativeBridgeCompatibility.absolutePath, '--strict'] +
+                archives.collect { tasks.named(it, Jar).get().archiveFile.get().asFile.absolutePath })
+    }
+    inputs.file nativeBridgeCompatibility
+    outputs.dir nativeBridgeOutputDir
+}
+
+tasks.register('generateNativeBridgeModel') {
+    group = 'verification'
+    description = 'Compatibility alias for the native bridge generation task.'
+    dependsOn tasks.named('generateNativeBridgeSources')
+}
+
+tasks.named('check') {
+    dependsOn tasks.named('generateNativeBridgeSources')
+}
+
 def deployedJavaApiValidationJars = [
     'tcbaselangJar',
     'tcbaseutilJar',
@@ -185,38 +231,6 @@ tasks.register('validateDeployedJavaApi', JavaExec) {
 
 tasks.named('check') {
     dependsOn tasks.named('validateDeployedJavaApi')
-}
-
-def deployedJavaApiManifest = layout.buildDirectory.file('generated/deployed-java-api.txt')
-
-tasks.register('generateDeployedJavaApiManifest', JavaExec) {
-    group = 'documentation'
-    description = 'Generates the Java API index derived from the deployed device model.'
-    dependsOn tasks.named('compileJava')
-
-    mainClass = 'tc.tools.converter.DeployedJavaApiManifestGenerator'
-    classpath = sourceSets.main.runtimeClasspath
-    args deployedJavaApiManifest.get().asFile.absolutePath
-    outputs.file deployedJavaApiManifest
-}
-
-def nativeBridgeOutputDir = layout.buildDirectory.dir('generated/native-bridges')
-
-tasks.register('generateNativeBridgeModel', JavaExec) {
-    group = 'verification'
-    description = 'Generates Java-derived native bridge metadata and compares it with legacy VM inventories.'
-    dependsOn tasks.named('compileJava')
-
-    mainClass = 'tc.tools.converter.NativeBridgeGenerator'
-    classpath = sourceSets.main.runtimeClasspath
-    args '--output', nativeBridgeOutputDir.get().asFile.absolutePath
-    args '--legacy-root', file('../TotalCrossVM').absolutePath
-    args sourceSets.main.output.classesDirs.files.collect { it.absolutePath }
-    outputs.dir nativeBridgeOutputDir
-}
-
-tasks.named('check') {
-    dependsOn tasks.named('generateNativeBridgeModel')
 }
 
 test {
