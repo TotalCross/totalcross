@@ -78,10 +78,6 @@
 	public protected <fields>;
 	public protected <methods>;
 }
--keep class tc.tools.NativeMethodsPrototypeGenerator {
-	public protected <fields>;
-	public protected <methods>;
-}
 -keep class tc.tools.FontGenerator {
 	public protected <fields>;
 	public protected <methods>;
