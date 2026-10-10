@@ -354,6 +354,16 @@ xcodebuild -workspace TotalCross.xcworkspace -scheme TotalCross archive
 
 The main reusable build workflow is `.github/workflows/build.yml`.
 
+Before adding a new workflow, ad-hoc platform build, or alternate package path,
+inspect `.github/workflows/build.yml`, `.github/workflows/package.yml`, and
+the corresponding `scripts/package-*.sh` entry point. Reuse or parameterize
+the canonical path when it can express the required validation. Do not recreate
+Linux/macOS/Windows setup independently just to obtain an equivalent build.
+
+When an ExecPlan intentionally diverges from a canonical workflow, record the
+missing capability that requires the divergence and the condition for removing
+or upstreaming the alternate path.
+
 Current CI patterns:
 
 - Source is packed once by `checkout-source` and then consumed by build jobs.
