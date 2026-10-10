@@ -278,22 +278,27 @@ only when diagnosing a reported compatibility gap.
 
 ## Native Method Bridges
 
-Java declarations are the long-term source of truth for Java-to-native bridge
-metadata. The shadow generator inspects compiled device classes for `native`
-and `@ReplacedByNativeOnDeploy` methods and applies the converter's shared
-device-type mapping and the legacy 32-character symbol ABI.
+Compiled device Java declarations are the source of truth for Java-to-native
+bridges. Do not maintain native method inventories, C symbols, headers, or
+address-table entries in parallel with Java.
 
-For bridge changes, run:
+When adding or renaming a `native` or `@ReplacedByNativeOnDeploy` method,
+run:
 
 ```bash
 cd TotalCrossSDK
-./gradlew-agent generateNativeBridgeModel
+./gradlew-agent generateNativeBridgeSources
 ```
 
-Inspect `build/generated/native-bridges/legacy-comparison.txt` for unclassified
-differences and `native-bridges.json` for symbol collisions. During the shadow
-migration, the versioned VM inventories remain build inputs; do not hand-edit
-them to hide a generator discrepancy. Follow
+The generator shares device-owner mapping with the converter, enforces the
+legacy 32-character symbol ABI, fails on effective symbol collisions, and writes
+native build inputs under `build/generated/native-bridges/`.
+
+Use `TotalCrossVM/src/nm/native-bridge-compat.txt` only for non-derivable
+compatibility facts: historical ABI aliases, VM/legacy bridges outside the Java
+model, header-only C helpers, or compile-time feature guards. Strict generation
+rejects explicit bridge/header entries already derivable from Java. Do not add
+an ordinary Java native method to that file. Follow
 `.agent/guides/generated-native-bridges.md`.
 
 ## iOS Build Notes

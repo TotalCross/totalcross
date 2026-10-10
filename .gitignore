@@ -75,3 +75,6 @@ CMakeFiles
 _deps
 CMakeCache.txt
 .cxx
+
+# Derived Java-to-native bridge metadata
+TotalCrossSDK/build/generated/native-bridges/
