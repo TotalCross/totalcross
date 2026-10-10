@@ -2477,12 +2477,7 @@ public class Image extends GfxSurface {
   /** Tries decoding into the final backing; unsupported or transient cases return false. */
   @ReplacedByNativeOnDeploy
   private boolean decodeEncodedSourceDirect(EncodedImageSource source) throws ImageException {
-    return decodeEncodedSourceDirectJavaSe(source);
-  }
-
-  @ReplacedByNativeOnDeploy
-  private boolean decodeEncodedSourceDirectJavaSe(EncodedImageSource source) throws ImageException {
-    if (!Settings.onJavaSE || source == null || source.getFrameCount() != 1
+    if (source == null || source.getFrameCount() != 1
         || (source.getFormat() != ImageEncodedStructure.Format.PNG
             && source.getFormat() != ImageEncodedStructure.Format.JPEG)) {
       return false;
@@ -2512,7 +2507,23 @@ public class Image extends GfxSurface {
       javax.imageio.ImageReadParam param = reader.getDefaultReadParam();
       param.setDestination(destination);
       BufferedImage decoded = reader.read(0, param);
-      if (decoded != destination || !canAdoptIntArgbRaster(decoded, expectedWidth, expectedHeight)) {
+      if (decoded != destination || decoded == null
+          || decoded.getType() != BufferedImage.TYPE_INT_ARGB || decoded.isAlphaPremultiplied()
+          || decoded.getWidth() != expectedWidth || decoded.getHeight() != expectedHeight) {
+        return false;
+      }
+      java.awt.image.Raster raster = decoded.getRaster();
+      if (!(raster.getDataBuffer() instanceof DataBufferInt)
+          || !(raster.getSampleModel() instanceof SinglePixelPackedSampleModel)
+          || raster.getMinX() != 0 || raster.getMinY() != 0
+          || raster.getSampleModelTranslateX() != 0 || raster.getSampleModelTranslateY() != 0) {
+        return false;
+      }
+      DataBufferInt data = (DataBufferInt) raster.getDataBuffer();
+      SinglePixelPackedSampleModel sampleModel = (SinglePixelPackedSampleModel) raster.getSampleModel();
+      long pixelCount = (long) expectedWidth * expectedHeight;
+      if (sampleModel.getScanlineStride() != expectedWidth || data.getNumBanks() != 1
+          || data.getOffset() != 0 || pixelCount > Integer.MAX_VALUE || data.getData().length != pixelCount) {
         return false;
       }
       int opacity = ImageBacking.OPACITY_UNKNOWN;
@@ -2521,7 +2532,7 @@ public class Image extends GfxSurface {
       } else if (rawType != null && !rawType.getColorModel().hasAlpha()) {
         opacity = ImageBacking.OPACITY_OPAQUE;
       }
-      int[] pixels = ((DataBufferInt) decoded.getRaster().getDataBuffer()).getData();
+      int[] pixels = data.getData();
       replaceBacking(new RasterImageBacking(expectedWidth, expectedHeight, 1, expectedWidth, pixels, null));
       backing.setOpacityState(opacity);
       width = expectedWidth;
@@ -2552,26 +2563,6 @@ public class Image extends GfxSurface {
         }
       }
     }
-  }
-
-  @ReplacedByNativeOnDeploy
-  private static boolean canAdoptIntArgbRaster(BufferedImage image, int expectedWidth, int expectedHeight) {
-    if (image == null || image.getType() != BufferedImage.TYPE_INT_ARGB || image.isAlphaPremultiplied()
-        || image.getWidth() != expectedWidth || image.getHeight() != expectedHeight) {
-      return false;
-    }
-    java.awt.image.Raster raster = image.getRaster();
-    if (!(raster.getDataBuffer() instanceof DataBufferInt)
-        || !(raster.getSampleModel() instanceof SinglePixelPackedSampleModel)
-        || raster.getMinX() != 0 || raster.getMinY() != 0
-        || raster.getSampleModelTranslateX() != 0 || raster.getSampleModelTranslateY() != 0) {
-      return false;
-    }
-    DataBufferInt data = (DataBufferInt) raster.getDataBuffer();
-    SinglePixelPackedSampleModel sampleModel = (SinglePixelPackedSampleModel) raster.getSampleModel();
-    long pixelCount = (long) expectedWidth * expectedHeight;
-    return sampleModel.getScanlineStride() == expectedWidth && data.getNumBanks() == 1
-        && data.getOffset() == 0 && pixelCount <= Integer.MAX_VALUE && data.getData().length == pixelCount;
   }
 
   /** Deploy replacement uses the encoded native bag and jpegLoad's target sizing. */
@@ -3313,15 +3304,11 @@ public class Image extends GfxSurface {
    */
   public void createJpg(Stream s, int quality) throws ImageException, IOException {
     materializeCanonicalChecked();
-    if (!Settings.onJavaSE) {
-      createJpgNative(s, quality);
-      return;
-    }
-    createJpgJava(s, quality);
+    createJpgImpl(s, quality);
   }
 
   @ReplacedByNativeOnDeploy
-  private void createJpgJava(Stream s, int quality) throws ImageException, IOException {
+  private void createJpgImpl(Stream s, int quality) throws ImageException, IOException {
     try {
       int[] visiblePixels = getPixels();
       java.awt.image.MemoryImageSource screenMis = new java.awt.image.MemoryImageSource(width, height,
@@ -3343,10 +3330,6 @@ public class Image extends GfxSurface {
     } catch (Throwable e) {
       throw new IOException(e.getMessage());
     }
-  }
-
-  @ReplacedByNativeOnDeploy
-  private void createJpgNative(Stream s, int quality) throws ImageException, IOException {
   }
 
   /** Saves this image as a 24 BPP .png file format (if useAlpha is true, it saves as 32 BPP), 

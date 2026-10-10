@@ -217,7 +217,7 @@ class ImageBackingContractTest {
       assertTrue(ImageIO.write(sourceImage, "png", output));
       EncodedImageSource source = EncodedImageSource.fromBytes(output.toByteArray());
       Image image = new Image(1, 1);
-      Method direct = Image.class.getDeclaredMethod("decodeEncodedSourceDirectJavaSe", EncodedImageSource.class);
+      Method direct = Image.class.getDeclaredMethod("decodeEncodedSourceDirect", EncodedImageSource.class);
       direct.setAccessible(true);
 
       assertTrue((Boolean) direct.invoke(image, source));
@@ -254,12 +254,15 @@ class ImageBackingContractTest {
   void unsupportedDirectDecodeKeepsThePreviousBacking() throws Exception {
     boolean previousJavaSe = Settings.onJavaSE;
     try {
-      Settings.onJavaSE = false;
+      Settings.onJavaSE = true;
       Image image = new Image(1, 1);
       ImageBacking previous = image.backing;
       long generation = image.backingMutationGenerationForP2();
-      EncodedImageSource source = EncodedImageSource.fromBytes(png(2, 1));
-      Method direct = Image.class.getDeclaredMethod("decodeEncodedSourceDirectJavaSe", EncodedImageSource.class);
+      BufferedImage bmpImage = new BufferedImage(2, 1, BufferedImage.TYPE_INT_RGB);
+      ByteArrayOutputStream output = new ByteArrayOutputStream();
+      assertTrue(ImageIO.write(bmpImage, "bmp", output));
+      EncodedImageSource source = EncodedImageSource.fromBytes(output.toByteArray());
+      Method direct = Image.class.getDeclaredMethod("decodeEncodedSourceDirect", EncodedImageSource.class);
       direct.setAccessible(true);
 
       assertFalse((Boolean) direct.invoke(image, source));

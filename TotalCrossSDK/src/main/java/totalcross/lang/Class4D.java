@@ -1,6 +1,7 @@
-// Copyright (C) 1998, 1999 Wabasoft <www.wabasoft.com>   
+// Copyright (C) 1998, 1999 Wabasoft <www.wabasoft.com>
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -151,7 +152,9 @@ public final class Class4D<T> {
 
   public native int getModifiers();
 
-  public native Object[] getSigners();
+  public Object[] getSigners() {
+    return null;
+  }
 
   public native Field[] getFields() throws SecurityException;
 

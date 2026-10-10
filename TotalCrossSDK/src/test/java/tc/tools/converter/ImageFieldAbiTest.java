@@ -57,12 +57,23 @@ class ImageFieldAbiTest {
     assertEquals("path", fieldName(converted.objectInstanceFields[7]));
     assertEquals("pipeline", fieldName(converted.objectInstanceFields[8]));
     assertNativeMethods(converted, "imageLoad", "imageParse", "setCurrentFrameNative", "applyChangesNative",
-        "changeColorsNative", "getPixelRowNative", "setTransparentColorNative", "freeTextureNative", "createJpgNative",
+        "changeColorsNative", "getPixelRowNative", "setTransparentColorNative", "freeTextureNative", "createJpgImpl",
         "applyColorNative", "applyColor2Native", "applyFadeNative", "decodeEncodedSource",
         "decodeEncodedSourceDirect",
         "failNextNativeMaterializationForTestNative", "nativeResizeJpeg",
         "getModifiedNative");
-    assertJavaMethods(converted, "getJpegBestFit", "getJpegScaled");
+    assertJavaMethods(converted, "createJpg", "getJpegBestFit", "getJpegScaled");
+  }
+
+  @Test
+  void jpegReplacementUsesTheNewDerivedBridgeSymbol() throws Exception {
+    try (InputStream stream = totalcross.ui.image.Image.class.getResourceAsStream("Image.class")) {
+      assertNotNull(stream, "Image.class resource");
+      java.util.List<NativeBridgeModel.Entry> entries = NativeBridgeModel.fromClassBytes(stream.readAllBytes());
+
+      assertTrue(entries.stream().anyMatch(entry -> "tuiI_createJpgImpl_si".equals(entry.symbol)));
+      assertTrue(entries.stream().noneMatch(entry -> "createJpgNative".equals(entry.sourceName)));
+    }
   }
 
   @Test

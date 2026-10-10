@@ -14,6 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -134,6 +135,10 @@ class ImageLazyMaterializationTest {
     image.createJpg(output, 80);
 
     assertTrue(output.getPos() > 0);
+    BufferedImage jpeg = ImageIO.read(new ByteArrayInputStream(output.toByteArray()));
+    assertNotNull(jpeg);
+    assertEquals(2, jpeg.getWidth());
+    assertEquals(1, jpeg.getHeight());
     assertNull(pipeline(image));
     assertNotNull(image.getPixels());
   }
