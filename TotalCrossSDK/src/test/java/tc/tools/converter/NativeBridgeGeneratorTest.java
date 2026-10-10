@@ -68,6 +68,28 @@ class NativeBridgeGeneratorTest {
     assertTrue(failure.getMessage().contains("collision"));
   }
 
+  @Test
+  void strictGenerationRejectsPrototypeWithoutNativeDefinition(@TempDir Path tempDir) throws Exception {
+    Path classes = tempDir.resolve("classes");
+    writeNativeClass(classes, "totalcross/test/MissingNativeFixture", "missingNative");
+    NativeBridgeModel.Entry entry = NativeBridgeModel.fromPaths(java.util.List.of(classes)).entries.get(0);
+    Path nativeSources = tempDir.resolve("native");
+    Files.createDirectories(nativeSources);
+    Files.writeString(nativeSources.resolve("prototype.h"),
+        "TC_API void " + entry.symbol + "(NMParams p);\n");
+    Files.writeString(nativeSources.resolve("string.c"),
+        "const char *fake = \"TC_API void " + entry.symbol + "(NMParams p) {\";\n");
+
+    IllegalStateException failure = assertThrows(IllegalStateException.class,
+        () -> NativeBridgeGenerator.main(new String[] {
+            "--strict", "--output", tempDir.resolve("generated").toString(),
+            "--native-source-root", nativeSources.toString(), classes.toString()
+        }));
+    assertTrue(failure.getMessage().contains(entry.identity()));
+    assertTrue(failure.getMessage().contains(entry.symbol));
+    assertTrue(failure.getMessage().contains("lack source definitions"));
+  }
+
   private static void writeNativeClass(Path root, String owner, String methodName) throws Exception {
     ClassWriter writer = new ClassWriter(0);
     writer.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC, owner, null, "java/lang/Object", null);

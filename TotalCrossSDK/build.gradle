@@ -177,6 +177,7 @@ tasks.register('generateDeployedJavaApiManifest', JavaExec) {
 
 def nativeBridgeOutputDir = layout.buildDirectory.dir('generated/native-bridges')
 def nativeBridgeCompatibility = file('../TotalCrossVM/src/nm/native-bridge-compat.txt')
+def nativeBridgeSources = file('../TotalCrossVM/src')
 
 tasks.register('generateNativeBridgeSources', JavaExec) {
     group = 'build'
@@ -187,14 +188,17 @@ tasks.register('generateNativeBridgeSources', JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
     args '--output', nativeBridgeOutputDir.get().asFile.absolutePath
     args '--compat', nativeBridgeCompatibility.absolutePath
+    args '--native-source-root', nativeBridgeSources.absolutePath
     args '--strict'
     doFirst {
         def archives = ['tcbaselangJar', 'tcbaseutilJar', 'tcbasemiscJar', 'tcuiJar']
         setArgs(['--output', nativeBridgeOutputDir.get().asFile.absolutePath,
-                 '--compat', nativeBridgeCompatibility.absolutePath, '--strict'] +
+                 '--compat', nativeBridgeCompatibility.absolutePath,
+                 '--native-source-root', nativeBridgeSources.absolutePath, '--strict'] +
                 archives.collect { tasks.named(it, Jar).get().archiveFile.get().asFile.absolutePath })
     }
     inputs.file nativeBridgeCompatibility
+    inputs.dir nativeBridgeSources
     outputs.dir nativeBridgeOutputDir
 }
 

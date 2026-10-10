@@ -41,6 +41,11 @@ public final class NativeBridgeGenerator {
     if (parsed.strict && !collisions.isEmpty()) {
       throw new IllegalStateException(formatCollisions(collisions));
     }
+    int sourceDefinitionsValidated = 0;
+    if (parsed.strict && parsed.nativeSourceRoot != null) {
+      sourceDefinitionsValidated = NativeBridgeNativeSources.validate(
+          parsed.nativeSourceRoot, model, compatibility);
+    }
     writeOutputs(parsed.output, model, compatibility, collisions);
     if (parsed.legacyRoot != null) {
       writeLegacyComparison(parsed.output.resolve("legacy-comparison.txt"),
@@ -48,7 +53,9 @@ public final class NativeBridgeGenerator {
     }
     System.out.println("Generated native bridge model: " + model.entries.size()
         + " Java entries, " + collisions.size() + " effective collision(s) at "
-        + parsed.output.toAbsolutePath());
+        + parsed.output.toAbsolutePath()
+        + (parsed.strict && parsed.nativeSourceRoot != null
+            ? "; validated " + sourceDefinitionsValidated + " native source definitions" : ""));
   }
 
   static void writeOutputs(Path output, NativeBridgeModel.Result model,
@@ -283,13 +290,16 @@ public final class NativeBridgeGenerator {
     final Path output;
     final Path legacyRoot;
     final Path compatibility;
+    final Path nativeSourceRoot;
     final boolean strict;
     final List<Path> classRoots;
 
-    Arguments(Path output, Path legacyRoot, Path compatibility, boolean strict, List<Path> classRoots) {
+    Arguments(Path output, Path legacyRoot, Path compatibility, Path nativeSourceRoot,
+        boolean strict, List<Path> classRoots) {
       this.output = output;
       this.legacyRoot = legacyRoot;
       this.compatibility = compatibility;
+      this.nativeSourceRoot = nativeSourceRoot;
       this.strict = strict;
       this.classRoots = classRoots;
     }
@@ -298,6 +308,7 @@ public final class NativeBridgeGenerator {
       Path output = Paths.get("build/generated/native-bridges");
       Path legacyRoot = null;
       Path compatibility = null;
+      Path nativeSourceRoot = null;
       boolean strict = false;
       List<Path> roots = new ArrayList<Path>();
       for (int i = 0; i < args.length; i++) {
@@ -307,6 +318,8 @@ public final class NativeBridgeGenerator {
           legacyRoot = Paths.get(args[++i]);
         } else if ("--compat".equals(args[i])) {
           compatibility = Paths.get(args[++i]);
+        } else if ("--native-source-root".equals(args[i])) {
+          nativeSourceRoot = Paths.get(args[++i]);
         } else if ("--strict".equals(args[i])) {
           strict = true;
         } else {
@@ -316,7 +329,7 @@ public final class NativeBridgeGenerator {
       if (roots.isEmpty()) {
         throw new IllegalArgumentException("Pass one or more compiled class directories.");
       }
-      return new Arguments(output, legacyRoot, compatibility, strict, roots);
+      return new Arguments(output, legacyRoot, compatibility, nativeSourceRoot, strict, roots);
     }
   }
 }
