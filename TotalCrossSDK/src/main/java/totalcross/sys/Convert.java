@@ -151,6 +151,7 @@ public final class Convert {
   static final char[] TITLE = "\u01c4\u01c5\u01c5\u01c5\u01c6\u01c5\u01c7\u01c8\u01c8\u01c8\u01c9\u01c8\u01ca\u01cb\u01cb\u01cb\u01cc\u01cb\u01f1\u01f2\u01f2\u01f2\u01f3\u01f2"
       .toCharArray();
 
+  // Device deployment replaces toString(long); its JavaSE body delegates back to this radix overload.
   static final boolean useNative = !Settings.onJavaSE;
 
   private Convert() {
@@ -560,7 +561,8 @@ public final class Convert {
     return toString(l, 10);
   }
 
-  /** Converts the int to a String in the given radix. Radix can be 2, 8, 10 or 16. */
+  /** Converts the int to a String in the given radix. Radix can be 2, 8, 10 or 16.
+   * Negative values use a sign only in base 10; other bases format their magnitude. */
   public static String toString(int i, int radix) {
     if (radix < 2 || radix > 16) {
       throw new java.lang.IllegalArgumentException("Invalid value for argument 'radix'");
@@ -588,7 +590,8 @@ public final class Convert {
     return new String(buf, pos, buf.length - pos);
   }
 
-  /** Converts the long to a String in the given radix. Radix can be 2, 8, 10 or 16. */
+  /** Converts the long to a String in the given radix. Radix can be 2, 8, 10 or 16.
+   * Negative values use a sign only in base 10; other bases format their magnitude. */
   public static String toString(long i, int radix) {
     if (radix < 2 || radix > 16) {
       throw new java.lang.IllegalArgumentException("Invalid value for argument 'radix'");
