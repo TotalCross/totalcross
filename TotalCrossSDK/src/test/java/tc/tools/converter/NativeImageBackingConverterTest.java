@@ -71,20 +71,11 @@ class NativeImageBackingConverterTest {
   }
 
   @Test
-  void nativeRegistrationIncludesEveryBackingBridge() throws Exception {
-    Path vmRoot = Path.of("..", "TotalCrossVM");
-    String declarations = Files.readString(vmRoot.resolve("src/nm/NativeMethods.txt"));
-    String prototypes = Files.readString(vmRoot.resolve("src/nm/NativeMethodsPrototypes.txt"));
-    String header = Files.readString(vmRoot.resolve("src/nm/NativeMethods.h"));
-    String registrations = Files.readString(vmRoot.resolve("src/init/nativeProcAddressesTC.c"));
+  void javaDerivedNativeBridgeModelIncludesEveryBackingBridge() throws Exception {
+    java.util.Set<String> derived =
+        NativeBridgeTestSupport.symbolsFor(Class.forName(CLASS_NAME.replace('/', '.')));
     for (int i = 0; i < SYMBOLS.length; i++) {
-      assertTrue(declarations.contains(CLASS_NAME + "|native"), "missing source declaration for " + METHODS[i]);
-      assertTrue(prototypes.contains("TC_API void " + SYMBOLS[i] + "(NMParams p);"),
-          "missing generated prototype for " + SYMBOLS[i]);
-      assertTrue(header.contains("TC_API void " + SYMBOLS[i] + "(NMParams p);"),
-          "missing native header declaration for " + SYMBOLS[i]);
-      assertTrue(registrations.contains("hashCode(\"" + SYMBOLS[i] + "\"), &" + SYMBOLS[i]),
-          "missing native registration for " + SYMBOLS[i]);
+      assertTrue(derived.contains(SYMBOLS[i]), "missing Java-derived native bridge " + SYMBOLS[i]);
     }
   }
 

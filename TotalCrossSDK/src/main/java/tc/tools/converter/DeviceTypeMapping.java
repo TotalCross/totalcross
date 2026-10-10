@@ -4,8 +4,13 @@
 package tc.tools.converter;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import tc.tools.deployer.DeploySettings;
+import tc.tools.converter.java.JavaClass;
+import tc.tools.converter.java.JavaMethod;
 
 /**
  * Shared mapping rules between host-facing Java owners and TotalCross device
@@ -51,6 +56,64 @@ final class DeviceTypeMapping {
 
   static String deployedOwner(String deviceOwner) {
     return removeReplacementSuffix(replaceCompatibilityOwner(deviceOwner));
+  }
+
+  /** Selects and maps the class files that the device converter will deploy. */
+  static List<JavaClass> selectDeployedClasses(List<JavaClass> classes) {
+    Set<String> names = new HashSet<String>();
+    for (JavaClass type : classes) {
+      names.add(replacementComparableName(type.originalClassName));
+    }
+
+    List<JavaClass> deployed = new ArrayList<JavaClass>();
+    for (JavaClass type : classes) {
+      String normalized = replacementComparableName(type.originalClassName);
+      boolean replacement = isReplacementClass(normalized);
+      if (!replacement && isReplacedBy4D(normalized, names)) continue;
+      if (!replacement && isInnerOfReplacedClass(normalized, names)) continue;
+
+      type.className = removeReplacementSuffix(normalized);
+      deployed.add(type);
+    }
+    return deployed;
+  }
+
+  static boolean isReplacementClass(String normalizedName) {
+    return !normalizedName.equals(removeReplacementSuffix(normalizedName));
+  }
+
+  static boolean shouldSkipBaseClass(String normalizedName, boolean hasReplacement) {
+    return hasReplacement && !"totalcross/util/Vector".equals(normalizedName)
+        && !"totalcross/util/Hashtable".equals(normalizedName);
+  }
+
+  static boolean shouldSkipInnerClass(String normalizedName, boolean hasReplacementOuter) {
+    return !isReplacementClass(normalizedName) && normalizedName.indexOf('$') >= 0
+        && hasReplacementOuter;
+  }
+
+  static boolean isReplacedBy4DMethod(JavaClass type, JavaMethod method) {
+    if (method.name.endsWith("4D") || type.methods == null) return false;
+    String replacementSignature = method.name + "4D" + method.signature.substring(method.name.length());
+    for (JavaMethod candidate : type.methods) {
+      if (replacementSignature.equals(candidate.signature)) return true;
+    }
+    return false;
+  }
+
+  private static String replacementComparableName(String name) {
+    return replaceCompatibilityOwner(name.replace('.', '/'));
+  }
+
+  private static boolean isReplacedBy4D(String normalizedName, Set<String> names) {
+    return shouldSkipBaseClass(normalizedName, names.contains(normalizedName + "4D"));
+  }
+
+  private static boolean isInnerOfReplacedClass(String normalizedName, Set<String> names) {
+    int nested = normalizedName.indexOf('$');
+    if (nested < 0) return false;
+    return shouldSkipInnerClass(normalizedName,
+        names.contains(normalizedName.substring(0, nested) + "4D"));
   }
 
   static String converterMappedOwner(String owner) {

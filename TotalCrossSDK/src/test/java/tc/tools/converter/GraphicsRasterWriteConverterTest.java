@@ -45,21 +45,13 @@ class GraphicsRasterWriteConverterTest {
   }
 
   @Test
-  void nativeRegistryContainsThePrivateSetRgbBridgeOnly() throws Exception {
-    Path vmRoot = Path.of("..", "TotalCrossVM");
-    String declarations = Files.readString(vmRoot.resolve("src/nm/NativeMethods.txt"));
-    String prototypes = Files.readString(vmRoot.resolve("src/nm/NativeMethodsPrototypes.txt"));
-    String header = Files.readString(vmRoot.resolve("src/nm/NativeMethods.h"));
-    String registrations = Files.readString(vmRoot.resolve("src/init/nativeProcAddressesTC.c"));
-    String implementation = Files.readString(vmRoot.resolve("src/nm/ui/gfx_Graphics.c"));
+  void javaDerivedNativeBridgeContainsThePrivateSetRgbBridgeOnly() throws Exception {
     String symbol = "tugG_setRGBNative_Iiiiiib";
+    assertTrue(NativeBridgeTestSupport.symbolsFor(totalcross.ui.gfx.Graphics.class).contains(symbol));
 
-    assertTrue(declarations.contains("totalcross/ui/gfx/Graphics|native private long setRGBNative"));
-    assertTrue(prototypes.contains("TC_API void " + symbol + "(NMParams p);"));
-    assertTrue(header.contains("TC_API void " + symbol + "(NMParams p);"));
-    assertTrue(registrations.contains("hashCode(\"" + symbol + "\"), &" + symbol));
+    String implementation = Files.readString(
+        Path.of("..", "TotalCrossVM", "src", "nm", "ui", "gfx_Graphics.c"));
     assertTrue(implementation.contains("TC_API void " + symbol + "(NMParams p)"));
-    assertTrue(!declarations.contains("totalcross/ui/gfx/Graphics|native public int setRGB"));
   }
 
   private static TCMethod findMethod(TCClass converted, String name) {

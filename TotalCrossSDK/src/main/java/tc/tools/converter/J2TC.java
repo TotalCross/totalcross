@@ -121,7 +121,7 @@ public final class J2TC implements JConstants, TCConstants {
     jc.className = Bytecode2TCCode.replaceTotalCrossLangToJavaLang(jc.className);
     //  if xxx is the current class, compile it if and only if not exist a class xxx4D
     boolean has4D = htAddedClasses.exists(jc.className + "4D.class");
-    if (!has4D || jc.className.equals("totalcross/util/Vector") || jc.className.equals("totalcross/util/Hashtable")) {
+    if (!DeviceTypeMapping.shouldSkipBaseClass(jc.className, has4D)) {
       if (isInnerClassOfNon4DClass(jc.className) && !jc.className.equals("totalcross/util/Hashtable$Entry")) {
         return;
       }
@@ -142,18 +142,13 @@ public final class J2TC implements JConstants, TCConstants {
 
   private static boolean isInnerClassOfNon4DClass(String className) // guich@tc100b5_27
   {
-    // check if there are inner classes of the class that has 4D and "remove" them
-    String originalName = className;
-    className = Bytecode2TCCode.removeSuffix4D(className);
-    boolean is4D = !originalName.equals(className);
     int dollar;
-    if (!is4D && (dollar = className.indexOf('$')) >= 0) // is this not a 4D class?
-    {
-      String withoutDollar = className.substring(0, dollar);
-      if (htAddedClasses.exists(withoutDollar + "4D.class")) {
-        DeployLogger.verbose("Skipping inner " + className);
-        return true;
-      }
+    if ((dollar = className.indexOf('$')) >= 0) {
+      String outer = className.substring(0, dollar);
+      boolean skip = DeviceTypeMapping.shouldSkipInnerClass(
+          className, htAddedClasses.exists(outer + "4D.class"));
+      if (skip) DeployLogger.verbose("Skipping inner " + className);
+      return skip;
     }
     return false;
   }
@@ -421,8 +416,7 @@ public final class J2TC implements JConstants, TCConstants {
         DeployLogger.verbose("removing unsupported serializable lambda deserialization method " + jm.signature
             + " of class " + jc.className);
       } else {
-        String sign = jm.name + "4D" + jm.signature.substring(jm.name.length());
-        if (Bytecode2TCCode.hasMethodWith4D(jc, sign)) {
+        if (DeviceTypeMapping.isReplacedBy4DMethod(jc, jm)) {
           methodsIgnored.put(i, i); // put its index
           newMethodCount--;
           DeployLogger.verbose("removing method " + jm.signature + " of class " + jc.className);

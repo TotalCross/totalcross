@@ -10,6 +10,9 @@ import org.junit.jupiter.api.Test;
 class NativeBridgeSymbolEncoderTest {
   @Test
   void preservesLegacyEncodingAndThirtyTwoCharacterLimit() {
+    assertEquals("tdsNDB_backup_ssp",
+        NativeBridgeSymbolEncoder.encode("totalcross/db/sqlite/NativeDB", "backup",
+            "(Ljava/lang/String;Ljava/lang/String;Ltotalcross/db/sqlite/DB$ProgressObserver;)I"));
     assertEquals("jlS_nanoTime",
         NativeBridgeSymbolEncoder.encode("java/lang/System", "nanoTime", "()J"));
     assertEquals("tuiNIB_createFromArgbPixelsNativ",

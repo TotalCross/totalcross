@@ -23,7 +23,6 @@ import tc.tools.deployer.DeployLogger;
 public final class JavaMethod {
   private static final String REPLACED_BY_NATIVE_ON_DEPLOY_DESCRIPTOR =
       Type.getDescriptor(ReplacedByNativeOnDeploy.class);
-
   public String name, ret, signature, descriptor;
   public int rawAccessFlags;
   public JavaCode code;
@@ -162,13 +161,8 @@ public final class JavaMethod {
     signature = methodNode.name + Arrays.toString(Type.getArgumentTypes(methodNode.desc)).replace(", ", "")
         .replaceFirst("^\\[(.*)\\]$", "($1)");
 
-    if (methodNode.invisibleAnnotations != null && methodNode.invisibleAnnotations.size() > 0) {
-      for (AnnotationNode annotation : (List<AnnotationNode>) methodNode.invisibleAnnotations) {
-        if (REPLACED_BY_NATIVE_ON_DEPLOY_DESCRIPTOR.equals(annotation.desc)) {
-          replaceWithNative = true;
-        }
-      }
-    }
+    readAsmAnnotations(methodNode.invisibleAnnotations);
+    readAsmAnnotations(methodNode.visibleAnnotations);
   }
 
   public JavaMethod parse(JavaClass jc, DataStream ds, JavaConstantPool cp) throws totalcross.io.IOException {
@@ -226,6 +220,15 @@ public final class JavaMethod {
       for (int j = 0; j < pairCount; j++) {
         ds.readUnsignedShort();
         skipAnnotationElementValue(ds);
+      }
+    }
+  }
+
+  private void readAsmAnnotations(List<AnnotationNode> annotations) {
+    if (annotations == null) return;
+    for (AnnotationNode annotation : annotations) {
+      if (REPLACED_BY_NATIVE_ON_DEPLOY_DESCRIPTOR.equals(annotation.desc)) {
+        replaceWithNative = true;
       }
     }
   }
