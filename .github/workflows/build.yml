@@ -189,10 +189,50 @@ jobs:
         path: ${{ runner.temp }}/source-code.tar.gz
         retention-days: 1
 
+  generate-native-bridges:
+    if: ${{ needs.checkout-source.outputs.scope == 'full' }}
+    name: Generate native bridges
+    needs: checkout-source
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: Download source code
+      uses: actions/download-artifact@v7
+      with:
+        name: source-code
+
+    - name: Extract source code
+      run: tar -xzf source-code.tar.gz
+
+    - name: Setup JDK 17
+      uses: actions/setup-java@v5
+      with:
+        distribution: temurin
+        java-version: 17
+
+    - name: Cache Gradle packages
+      uses: actions/cache@v5
+      with:
+        path: ~/.gradle/caches
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
+        restore-keys: ${{ runner.os }}-gradle
+
+    - name: Generate native bridge sources
+      working-directory: TotalCrossSDK
+      run: ./gradlew-agent generateNativeBridgeSources
+
+    - name: Upload generated native bridges
+      uses: actions/upload-artifact@v7
+      with:
+        name: native-bridges
+        path: TotalCrossSDK/build/generated/native-bridges
+        if-no-files-found: error
+        retention-days: 1
+
   build-linux:
     if: ${{ needs.checkout-source.outputs.scope == 'full' }}
     name: Build '${{ matrix.project }}'
-    needs: checkout-source
+    needs: [checkout-source, generate-native-bridges]
     strategy:
       fail-fast: false
       matrix:
@@ -220,6 +260,12 @@ jobs:
 
     - name: Extract source code
       run: tar -xzf source-code.tar.gz
+
+    - name: Download generated native bridges
+      uses: actions/download-artifact@v7
+      with:
+        name: native-bridges
+        path: TotalCrossSDK/build/generated/native-bridges
 
     - name: Download prepared native dependencies
       uses: actions/download-artifact@v7
@@ -344,7 +390,7 @@ jobs:
     name: Build `linux-arm32v7-cross`
     # Temporarily disabled; remove this condition to re-enable the cross build.
     if: ${{ false }}
-    needs: checkout-source
+    needs: [checkout-source, generate-native-bridges]
     runs-on: ubuntu-22.04
 
     steps:
@@ -355,6 +401,12 @@ jobs:
 
     - name: Extract source code
       run: tar -xzf source-code.tar.gz
+
+    - name: Download generated native bridges
+      uses: actions/download-artifact@v7
+      with:
+        name: native-bridges
+        path: TotalCrossSDK/build/generated/native-bridges
 
     - name: Download prepared native dependencies
       uses: actions/download-artifact@v7
@@ -389,7 +441,7 @@ jobs:
   build-windows:
     if: ${{ needs.checkout-source.outputs.scope == 'full' }}
     name: Build `windows`
-    needs: checkout-source
+    needs: [checkout-source, generate-native-bridges]
     runs-on: windows-2022
 
     steps:
@@ -401,6 +453,12 @@ jobs:
     - name: Extract source code
       shell: bash
       run: tar -xzf source-code.tar.gz
+
+    - name: Download generated native bridges
+      uses: actions/download-artifact@v7
+      with:
+        name: native-bridges
+        path: TotalCrossSDK/build/generated/native-bridges
 
     - name: Download prepared native dependencies
       uses: actions/download-artifact@v7
@@ -463,7 +521,7 @@ jobs:
   build-windows-native-legacy:
     if: ${{ needs.checkout-source.outputs.scope == 'full' }}
     name: Build `windows-native-legacy`
-    needs: checkout-source
+    needs: [checkout-source, generate-native-bridges]
     runs-on: windows-2022
 
     steps:
@@ -475,6 +533,12 @@ jobs:
     - name: Extract source code
       shell: bash
       run: tar -xzf source-code.tar.gz
+
+    - name: Download generated native bridges
+      uses: actions/download-artifact@v7
+      with:
+        name: native-bridges
+        path: TotalCrossSDK/build/generated/native-bridges
 
     - name: Download prepared native dependencies
       uses: actions/download-artifact@v7
@@ -513,7 +577,7 @@ jobs:
   build-macos-arm64:
     if: ${{ needs.checkout-source.outputs.scope == 'full' }}
     name: Build `macos-arm64`
-    needs: checkout-source
+    needs: [checkout-source, generate-native-bridges]
     runs-on: macos-15
 
     steps:
@@ -524,6 +588,12 @@ jobs:
 
     - name: Extract source code
       run: tar -xzf source-code.tar.gz
+
+    - name: Download generated native bridges
+      uses: actions/download-artifact@v7
+      with:
+        name: native-bridges
+        path: TotalCrossSDK/build/generated/native-bridges
 
     - name: Download prepared native dependencies
       uses: actions/download-artifact@v7
@@ -631,7 +701,7 @@ jobs:
   build-android:
     if: ${{ needs.checkout-source.outputs.scope == 'full' }}
     name: Build `Android`
-    needs: checkout-source
+    needs: [checkout-source, generate-native-bridges]
     runs-on: ubuntu-24.04
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -644,6 +714,12 @@ jobs:
 
     - name: Extract source code
       run: tar -xzf source-code.tar.gz
+
+    - name: Download generated native bridges
+      uses: actions/download-artifact@v7
+      with:
+        name: native-bridges
+        path: TotalCrossSDK/build/generated/native-bridges
 
     - name: Download prepared native dependencies
       uses: actions/download-artifact@v7
@@ -719,7 +795,7 @@ jobs:
   build-ios:
     if: ${{ needs.checkout-source.outputs.scope == 'full' }}
     name: Build `iOS`
-    needs: checkout-source
+    needs: [checkout-source, generate-native-bridges]
     runs-on: macos-15
 
     steps:
@@ -730,6 +806,12 @@ jobs:
 
     - name: Extract source code
       run: tar -xzf source-code.tar.gz
+
+    - name: Download generated native bridges
+      uses: actions/download-artifact@v7
+      with:
+        name: native-bridges
+        path: TotalCrossSDK/build/generated/native-bridges
 
     - name: Download prepared native dependencies
       uses: actions/download-artifact@v7
