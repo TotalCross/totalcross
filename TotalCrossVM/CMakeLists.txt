@@ -581,6 +581,18 @@ endif(TC_RENDERER_SKIA)
 set(TC_SRCDIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
 set(IOS_BUNDLE_SRCDIR "${CMAKE_CURRENT_SOURCE_DIR}/xcode")
 
+set(TC_NATIVE_BRIDGE_DIR
+    "${CMAKE_CURRENT_SOURCE_DIR}/../TotalCrossSDK/build/generated/native-bridges"
+    CACHE PATH "Generated TotalCross Java-to-native bridge metadata")
+foreach(TC_NATIVE_BRIDGE_FILE NativeMethods.generated.h nativeProcAddressesTC.generated.inc)
+  if(NOT EXISTS "${TC_NATIVE_BRIDGE_DIR}/${TC_NATIVE_BRIDGE_FILE}")
+    message(FATAL_ERROR
+      "Missing generated native bridge file: ${TC_NATIVE_BRIDGE_DIR}/${TC_NATIVE_BRIDGE_FILE}\n"
+      "Run: cd TotalCrossSDK && ./gradlew-agent generateNativeBridgeSources")
+  endif()
+endforeach()
+include_directories("${TC_NATIVE_BRIDGE_DIR}")
+
 set(SOURCES
     ${TC_SRCDIR}/nm/crypto/PBKDF2WithHmacSHA1.c
 
