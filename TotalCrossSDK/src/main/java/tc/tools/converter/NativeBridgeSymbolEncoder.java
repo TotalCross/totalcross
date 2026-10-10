@@ -30,7 +30,7 @@ final class NativeBridgeSymbolEncoder {
       case 'L':
         c = descriptor.charAt(++i);
         for (; descriptor.charAt(i) != ';'; i++) {
-          if (descriptor.charAt(i) == '/') {
+          if (descriptor.charAt(i) == '/' || descriptor.charAt(i) == '$') {
             c = descriptor.charAt(i + 1);
           }
         }

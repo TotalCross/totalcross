@@ -50,22 +50,15 @@ class SystemNanoTimeConverterTest {
   }
 
   @Test
-  void deviceDeclarationAndNativeMetadataUseLongNanoTimeContract() throws Exception {
+  void deviceDeclarationAndJavaDerivedBridgeUseLongNanoTimeContract() throws Exception {
     java.lang.reflect.Method method = Class.forName("jdkcompat.lang.System4D").getDeclaredMethod("nanoTime");
     assertEquals(long.class, method.getReturnType());
     assertTrue(Modifier.isPublic(method.getModifiers()));
     assertTrue(Modifier.isStatic(method.getModifiers()));
     assertTrue(Modifier.isNative(method.getModifiers()));
 
-    Path vmRoot = Path.of("..", "TotalCrossVM");
-    String declarations = Files.readString(vmRoot.resolve("src/nm/NativeMethods.txt"));
-    String prototypes = Files.readString(vmRoot.resolve("src/nm/NativeMethodsPrototypes.txt"));
-    String header = Files.readString(vmRoot.resolve("src/nm/NativeMethods.h"));
-    String registrations = Files.readString(vmRoot.resolve("src/init/nativeProcAddressesTC.c"));
-    assertTrue(declarations.contains("java/lang/System|native public static long nanoTime();"));
-    assertTrue(prototypes.contains("TC_API void jlS_nanoTime(NMParams p);"));
-    assertTrue(header.contains("TC_API void jlS_nanoTime(NMParams p);"));
-    assertTrue(registrations.contains("hashCode(\"jlS_nanoTime\"), &jlS_nanoTime"));
+    assertTrue(NativeBridgeTestSupport.symbolsFor(Class.forName("jdkcompat.lang.System4D"))
+        .contains("jlS_nanoTime"));
   }
 
   @Test

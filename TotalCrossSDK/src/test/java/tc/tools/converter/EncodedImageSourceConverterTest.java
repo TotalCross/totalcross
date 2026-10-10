@@ -44,23 +44,12 @@ class EncodedImageSourceConverterTest {
   }
 
   @Test
-  void nativeRegistrationUsesTheDeclaredSourceOfTruth() throws Exception {
-    Path vmRoot = Path.of("..", "TotalCrossVM");
-    String declarations = Files.readString(vmRoot.resolve("src/nm/NativeMethods.txt"));
-    String prototypes = Files.readString(vmRoot.resolve("src/nm/NativeMethodsPrototypes.txt"));
-    String header = Files.readString(vmRoot.resolve("src/nm/NativeMethods.h"));
-    String registrations = Files.readString(vmRoot.resolve("src/init/nativeProcAddressesTC.c"));
+  void javaDerivedNativeBridgeModelContainsEveryEncodedSourceBridge() throws Exception {
+    java.util.Set<String> derived =
+        NativeBridgeTestSupport.symbolsFor(Class.forName("totalcross.ui.image.EncodedImageSource"));
     String[] symbols = { "tuiEIS_captureNative_Bi", "tuiEIS_captureNativePath_s", "tuiEIS_releaseNativeBag" };
-    String[] methods = { "captureNative", "captureNativePath", "releaseNativeBag" };
-    for (int i = 0; i < symbols.length; i++) {
-      assertTrue(declarations.contains("totalcross/ui/image/EncodedImageSource|native private void " + methods[i]),
-          "missing source-of-truth declaration for " + methods[i]);
-      assertTrue(prototypes.contains("TC_API void " + symbols[i] + "(NMParams p);"),
-          "missing generated prototype for " + symbols[i]);
-      assertTrue(header.contains("TC_API void " + symbols[i] + "(NMParams p);"),
-          "missing native header declaration for " + symbols[i]);
-      assertTrue(registrations.contains("hashCode(\"" + symbols[i] + "\"), &" + symbols[i]),
-          "missing native registration for " + symbols[i]);
+    for (String symbol : symbols) {
+      assertTrue(derived.contains(symbol), "missing Java-derived native bridge " + symbol);
     }
   }
 

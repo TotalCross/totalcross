@@ -5,6 +5,7 @@ package tc.tools.converter;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -16,7 +17,6 @@ import tc.tools.converter.java.JavaClass;
 import tc.tools.converter.java.JavaMethod;
 import tc.tools.converter.tclass.TClassConstants;
 import totalcross.sys.Convert;
-import totalcross.util.Hashtable;
 
 /** Resolves source declaration owners from conversion-owned and device-owned models. */
 public final class MethodDeclarationResolver {
@@ -117,14 +117,12 @@ public final class MethodDeclarationResolver {
       return null;
     }
     Method[] values = deviceClass.getDeclaredMethods();
-    Hashtable names = new Hashtable(values.length);
-    for (Object value : values) names.put(((Method) value).getName(), "");
     for (Object value : values) {
       Method method = (Method) value;
       String candidateName = method.getName();
       if (candidateName.endsWith("4D")) {
         candidateName = candidateName.substring(0, candidateName.length() - 2);
-      } else if (names.exists(candidateName + "4D")) {
+      } else if (hasReplacementMethod(values, method)) {
         continue;
       }
       if (candidateName.equals(name) && matcher.matches(method.getParameterTypes())) {
@@ -162,14 +160,12 @@ public final class MethodDeclarationResolver {
       return null;
     }
 
-    Set<String> names = new HashSet<String>();
     if (deviceClass.methods != null) {
-      for (JavaMethod method : deviceClass.methods) names.add(method.name);
       for (JavaMethod method : deviceClass.methods) {
         String candidateName = method.name;
         if (candidateName.endsWith("4D")) {
           candidateName = candidateName.substring(0, candidateName.length() - 2);
-        } else if (names.contains(candidateName + "4D")) {
+        } else if (DeviceTypeMapping.isReplacedBy4DMethod(deviceClass, method)) {
           continue;
         }
         if (candidateName.equals(name) && matcher.matches(method.params)) {
@@ -197,6 +193,18 @@ public final class MethodDeclarationResolver {
     return DeviceTypeMapping.mappedHierarchyTypes(type);
   }
 
+  private static boolean hasReplacementMethod(Object[] methods, Method method) {
+    String replacementName = method.getName() + "4D";
+    for (Object value : methods) {
+      Method candidate = (Method) value;
+      if (replacementName.equals(candidate.getName())
+          && Arrays.equals(method.getParameterTypes(), candidate.getParameterTypes())) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   private static Class<?> findDeviceClass(String javaOwner) {
     Class<?>[] candidates = DeviceTypeMapping.findDeviceClasses(javaOwner);
     return candidates.length == 0 ? null : candidates[0];
@@ -208,7 +216,9 @@ public final class MethodDeclarationResolver {
     if (type == null) return null;
     if (type.methods != null) {
       for (JavaMethod method : type.methods) {
-        if (name.equals(method.name) && descriptor.equals(method.descriptor)) return originalName(type);
+        if (name.equals(method.name) && descriptor.equals(method.descriptor)) {
+          return originalName(type);
+        }
       }
     }
     String declaration = findProgramDeclaration(slash(type.originalSuperClass), name, descriptor, visited);
