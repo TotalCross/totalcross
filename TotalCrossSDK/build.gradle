@@ -3,6 +3,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
+import groovy.json.JsonSlurper
+
 apply plugin: 'java'
 apply plugin: 'maven-publish'
 apply plugin: 'me.champeau.gradle.japicmp'
@@ -19,6 +21,19 @@ java {
 
 base {
     archivesName = 'totalcross-sdk'
+}
+
+def repositoryRoot = project.rootDir.parentFile
+def buildIdentityJsonProvider = providers.exec {
+    workingDir repositoryRoot
+    commandLine 'python3', new File(repositoryRoot, 'scripts/provenance/build-identity.py').absolutePath,
+        '--repository-root', repositoryRoot.absolutePath, '--format', 'json'
+}.standardOutput.asText.map { output -> output.trim() }
+def buildIdentityJson = providers.provider {
+    buildIdentityJsonProvider.get()
+}.get()
+def buildIdentityProvider = providers.provider {
+    new JsonSlurper().parseText(buildIdentityJson)
 }
 
 // The opt-in SDK variant must match TC_ENABLE_RUNTIME_DIAGNOSTICS in CMake.
@@ -178,11 +193,16 @@ tasks.register('generateDeployedJavaApiManifest', JavaExec) {
 def nativeBridgeOutputDir = layout.buildDirectory.dir('generated/native-bridges')
 def nativeBridgeCompatibility = file('../TotalCrossVM/src/nm/native-bridge-compat.txt')
 def nativeBridgeSources = file('../TotalCrossVM/src')
-
+def nativeBridgeArchiveTaskNames = [
+    'tcbaselangJar',
+    'tcbaseutilJar',
+    'tcbasemiscJar',
+    'tcuiJar'
+]
 tasks.register('generateNativeBridgeSources', JavaExec) {
     group = 'build'
     description = 'Generates native bridge headers and registrations from compiled device Java classes.'
-    dependsOn 'tcbaselangJar', 'tcbaseutilJar', 'tcbasemiscJar', 'tcuiJar'
+    dependsOn nativeBridgeArchiveTaskNames
 
     mainClass = 'tc.tools.converter.NativeBridgeGenerator'
     classpath = sourceSets.main.runtimeClasspath
@@ -190,12 +210,8 @@ tasks.register('generateNativeBridgeSources', JavaExec) {
     args '--compat', nativeBridgeCompatibility.absolutePath
     args '--native-source-root', nativeBridgeSources.absolutePath
     args '--strict'
-    doFirst {
-        def archives = ['tcbaselangJar', 'tcbaseutilJar', 'tcbasemiscJar', 'tcuiJar']
-        setArgs(['--output', nativeBridgeOutputDir.get().asFile.absolutePath,
-                 '--compat', nativeBridgeCompatibility.absolutePath,
-                 '--native-source-root', nativeBridgeSources.absolutePath, '--strict'] +
-                archives.collect { tasks.named(it, Jar).get().archiveFile.get().asFile.absolutePath })
+    args nativeBridgeArchiveTaskNames.collect { taskName ->
+        tasks.named(taskName, Jar).get().archiveFile.get().asFile.absolutePath
     }
     inputs.file nativeBridgeCompatibility
     inputs.dir nativeBridgeSources
@@ -212,12 +228,7 @@ tasks.named('check') {
     dependsOn tasks.named('generateNativeBridgeSources')
 }
 
-def deployedJavaApiValidationJars = [
-    'tcbaselangJar',
-    'tcbaseutilJar',
-    'tcbasemiscJar',
-    'tcuiJar'
-]
+def deployedJavaApiValidationJars = nativeBridgeArchiveTaskNames
 
 tasks.register('validateDeployedJavaApi', JavaExec) {
     group = 'verification'
@@ -226,10 +237,8 @@ tasks.register('validateDeployedJavaApi', JavaExec) {
 
     mainClass = 'tc.tools.converter.DeployedJavaApiValidator'
     classpath = sourceSets.main.runtimeClasspath
-    doFirst {
-        setArgs(deployedJavaApiValidationJars.collect {
-            tasks.named(it, Jar).get().archiveFile.get().asFile.absolutePath
-        })
+    args deployedJavaApiValidationJars.collect { taskName ->
+        tasks.named(taskName, Jar).get().archiveFile.get().asFile.absolutePath
     }
 }
 
@@ -287,15 +296,37 @@ jar {
     // collect all runtime dependencies shipped in dist/libs
     int i = 0
     String classpathVar = configurations.runtimeClasspath.collect { " libs/" + (i++ == 0 ? String.format("%-50s", it.getName()) : String.format("%-62s", it.getName())) }.join(" ")
+    inputs.property('totalcrossBuildIdentity', buildIdentityJson)
+    doFirst {
+        def identity = buildIdentityProvider.get()
+        manifest.attributes(
+            'TotalCross-Build-Identity-Version': identity.build.identityVersion.toString(),
+            'TotalCross-Build-ID': identity.build.id,
+            'TotalCross-Source-Commit': identity.source.commit,
+            'TotalCross-Source-Tree': identity.source.tree,
+            'TotalCross-Source-Dirty': identity.source.dirty.toString()
+        )
+    }
     manifest {
         attributes('Main-Class': 'totalcross.Launcher')
-        manifest {
-            attributes(
-                "Class-Path": classpathVar
-            )
-        }
+        attributes(
+            "Class-Path": classpathVar
+        )
     }
 }
+
+def implementationDependencyNames = configurations.implementation.allDependencies
+    .collect { dependency -> dependency.name }
+    .toSet()
+def testDependencyCoordinates = configurations.testImplementation.dependencies.collect { dependency ->
+    [
+        groupId: dependency.group,
+        artifactId: dependency.name,
+        version: dependency.version
+    ]
+}
+def sdkGroupId = project.group.toString()
+def sdkVersion = project.version.toString()
 
 publishing {
     publications {
@@ -309,24 +340,23 @@ publishing {
                 def dependenciesNode = asNode().getAt("dependencies")[0]
 
                 dependenciesNode.dependencies.'*'.findAll() {
-                    it.scope.text() == 'runtime' && project.configurations.implementation.allDependencies.find { dep ->
-                        dep.name == it.artifactId.text()
-                    }
+                    it.scope.text() == 'runtime'
+                        && implementationDependencyNames.contains(it.artifactId.text())
                 }.each { it.scope*.value = 'compile' }
 
                 // manually add test dependencies because they are ignored by maven-publish
-                configurations.testImplementation.dependencies.each {
+                testDependencyCoordinates.each { dependency ->
                     def dependencyNode = dependenciesNode.appendNode('dependency')
-                    dependencyNode.appendNode('groupId', it.group)
-                    dependencyNode.appendNode('artifactId', it.name)
-                    dependencyNode.appendNode('version', it.version)
+                    dependencyNode.appendNode('groupId', dependency.groupId)
+                    dependencyNode.appendNode('artifactId', dependency.artifactId)
+                    dependencyNode.appendNode('version', dependency.version)
                     dependencyNode.appendNode('scope', 'test')
                 }
 
                 def internalRuntimeDependency = dependenciesNode.appendNode('dependency')
-                internalRuntimeDependency.appendNode('groupId', project.group)
+                internalRuntimeDependency.appendNode('groupId', sdkGroupId)
                 internalRuntimeDependency.appendNode('artifactId', 'totalcross-runtime-java')
-                internalRuntimeDependency.appendNode('version', project.version)
+                internalRuntimeDependency.appendNode('version', sdkVersion)
                 internalRuntimeDependency.appendNode('scope', 'runtime')
             }
 
@@ -482,11 +512,8 @@ task deployTcui(type: JavaExec, dependsOn: [jar, tcuiJar]) {
     )
 }
 
-task copySdkDependencies(type: Copy) {
+task copySdkDependencies(type: Sync) {
     dependsOn tasks.named('totalcrossRuntimeJavaJar')
-    doFirst {
-        delete destinationDir
-    }
     from({ configurations.runtimeClasspath.findAll { it.name.endsWith('.jar') } })
     from(tasks.named('totalcrossRuntimeJavaJar').flatMap { it.archiveFile }) {
         rename { 'totalcross-runtime-java.jar' }
@@ -496,27 +523,57 @@ task copySdkDependencies(type: Copy) {
 
 tasks.withType(JavaExec).configureEach {
     classpath.from(tasks.named('totalcrossRuntimeJavaJar').flatMap { it.archiveFile })
+    inputs.property('totalcrossBuildIdentity', buildIdentityJson)
+    doFirst {
+        def identity = buildIdentityProvider.get()
+        systemProperty 'totalcross.build.identity.version', identity.build.identityVersion.toString()
+        systemProperty 'totalcross.build.id', identity.build.id
+        systemProperty 'totalcross.source.tree', identity.source.tree
+    }
 }
 
-task dist(dependsOn: [build, copySdkDependencies, 'sourcesJar', 'javadocJar']) {
-    doLast {
-        copy {
-            from 'etc/fonts/TCFont.tcz'
-            from 'build/libs/TCUI.tcz'
-            from 'build/libs/tc.base.lang.tcz'
-            from 'build/libs/tc.base.util.tcz'
-            from 'build/libs/tc.base.misc.tcz'
-            into 'dist/vm/'
-        }
-
-        copy {
-            from jar.archiveFile
-            into 'dist/'
-            rename { String fileName ->
-                fileName.replace('-' + project.version, '')
-            }
-        }
+tasks.withType(Test).configureEach {
+    inputs.property('totalcrossBuildIdentity', buildIdentityJson)
+    doFirst {
+        def identity = buildIdentityProvider.get()
+        systemProperty 'totalcross.build.identity.version', identity.build.identityVersion.toString()
+        systemProperty 'totalcross.build.id', identity.build.id
+        systemProperty 'totalcross.source.tree', identity.source.tree
     }
+}
+
+def distSdkJarArchiveName = jar.archiveFileName.get()
+def distSdkJarName = distSdkJarArchiveName.replace("-" + project.version, "")
+
+task dist(type: Copy, dependsOn: [
+    build,
+    copySdkDependencies,
+    'sourcesJar',
+    'javadocJar',
+    'deployTcbaselang',
+    'deployTcbaseutil',
+    'deployTcbasemisc',
+    'deployTcui'
+]) {
+    from 'etc/fonts/TCFont.tcz', {
+        into 'vm'
+    }
+    from 'build/libs/TCUI.tcz', {
+        into 'vm'
+    }
+    from 'build/libs/tc.base.lang.tcz', {
+        into 'vm'
+    }
+    from 'build/libs/tc.base.util.tcz', {
+        into 'vm'
+    }
+    from 'build/libs/tc.base.misc.tcz', {
+        into 'vm'
+    }
+    from(jar.archiveFile) {
+        rename distSdkJarArchiveName, distSdkJarName
+    }
+    into 'dist'
 }
 
 // All smoke applications are normal Java sources under src/smokeTest/java.
