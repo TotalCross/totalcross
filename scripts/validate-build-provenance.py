@@ -9,6 +9,10 @@ import json
 from pathlib import Path
 import sys
 
+sys.dont_write_bytecode = True
+
+from provenance.build_identity import compute_build_id
+
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Validate TotalCross build provenance.")
@@ -32,6 +36,7 @@ def parse_args():
     parser.add_argument("--source-commit", required=True)
     parser.add_argument("--source-tree", required=True)
     parser.add_argument("--require-clean-source", action="store_true")
+    parser.add_argument("--require-build-identity", action="store_true")
     return parser.parse_args()
 
 
@@ -78,7 +83,12 @@ def select_downloaded_manifests(artifact_downloads):
 
 
 def validate_manifest(
-    manifest, repository, source_commit, source_tree, require_clean_source
+    manifest,
+    repository,
+    source_commit,
+    source_tree,
+    require_clean_source,
+    require_build_identity=False,
 ):
     try:
         value = json.loads(manifest.read_text(encoding="utf-8"))
@@ -117,6 +127,25 @@ def validate_manifest(
             mismatches.append(
                 f"source.dirty: expected False, got {source.get('dirty')!r}"
             )
+        if require_build_identity:
+            build = value.get("build")
+            if not isinstance(build, dict):
+                mismatches.append(f"build: expected object, got {build!r}")
+            else:
+                if (
+                    type(build.get("identityVersion")) is not int
+                    or build.get("identityVersion") != 1
+                ):
+                    mismatches.append(
+                        "build.identityVersion: expected 1, "
+                        f"got {build.get('identityVersion')!r}"
+                    )
+                expected_build_id = compute_build_id(repository, source_tree)
+                if build.get("id") != expected_build_id:
+                    mismatches.append(
+                        f"build.id: expected {expected_build_id!r}, "
+                        f"got {build.get('id')!r}"
+                    )
 
     return mismatches
 
@@ -149,6 +178,7 @@ def main():
             args.source_commit,
             args.source_tree,
             args.require_clean_source,
+            args.require_build_identity,
         )
         if mismatches:
             failed = True

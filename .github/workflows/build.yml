@@ -43,6 +43,12 @@ jobs:
       with:
         fetch-depth: 0
 
+    - name: Validate provenance scripts
+      run: |
+        python3 scripts/test-build-provenance.py
+        python3 scripts/test-build-identity.py
+        python3 scripts/test-artifact-identity.py
+
     - name: Select build scope
       id: select_build_scope
       shell: bash
@@ -131,6 +137,10 @@ jobs:
             encoding="utf-8",
         )
         PY
+        python3 scripts/provenance/build-identity.py \
+          --repository-root . \
+          --update-manifest build-provenance.json \
+          --format id
 
     - name: Pack source code
       if: ${{ steps.select_build_scope.outputs.scope != 'none' }}
