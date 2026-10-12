@@ -27,7 +27,11 @@ jobs:
       version: ${{ steps.totalcross-version.outputs.version }}
 
     steps:
+    - name: Checkout packaging validation
+      uses: actions/checkout@v6
+
     - name: Download SDK build artifacts
+      id: download_sdk_build
       uses: actions/download-artifact@v4.1.7
       with:
         name: sdk-build
@@ -37,6 +41,7 @@ jobs:
       run: tar -xzf sdk-build.tar.gz
  
     - name: Download Linux amd64
+      id: download_linux_amd64
       continue-on-error: true
       uses: actions/download-artifact@v4.1.7
       with:
@@ -44,14 +49,22 @@ jobs:
         path: linux-amd64
 
     - name: Manage Linux amd64 files
-      if: ${{ success() }}
+      if: ${{ steps.download_linux_amd64.outcome == 'success' }}
       run: |
+        linux_vm="$(find linux-amd64 -type f -name 'libtcvm.so' -print -quit)"
+        linux_launcher="$(find linux-amd64 -type f -name 'Launcher' -print -quit)"
+        if [ -z "${linux_vm}" ] || [ -z "${linux_launcher}" ]; then
+          echo "Linux amd64 artifact is missing libtcvm.so or Launcher" >&2
+          exit 1
+        fi
+
         mkdir -p build/TotalCross/dist/vm/linux
         mkdir -p build/TotalCross/etc/launchers/linux
-        cp -p -a -R linux-amd64/libtcvm.so build/TotalCross/dist/vm/linux/
-        cp -p -a -R linux-amd64/Launcher build/TotalCross/etc/launchers/linux/
+        cp -p -a -R "${linux_vm}" build/TotalCross/dist/vm/linux/
+        cp -p -a -R "${linux_launcher}" build/TotalCross/etc/launchers/linux/
  
     - name: Download Linux arm32
+      id: download_linux_arm32
       continue-on-error: true
       uses: actions/download-artifact@v4.1.7
       with:
@@ -59,14 +72,22 @@ jobs:
         path: linux-arm32v7
  
     - name: Manage Linux arm32 files
-      if: ${{ success() }}
+      if: ${{ steps.download_linux_arm32.outcome == 'success' }}
       run: |
+        linux_vm="$(find linux-arm32v7 -type f -name 'libtcvm.so' -print -quit)"
+        linux_launcher="$(find linux-arm32v7 -type f -name 'Launcher' -print -quit)"
+        if [ -z "${linux_vm}" ] || [ -z "${linux_launcher}" ]; then
+          echo "Linux arm32 artifact is missing libtcvm.so or Launcher" >&2
+          exit 1
+        fi
+
         mkdir -p build/TotalCross/dist/vm/linux_arm
         mkdir -p build/TotalCross/etc/launchers/linux_arm
-        cp -p -a -R linux-arm32v7/libtcvm.so build/TotalCross/dist/vm/linux_arm/
-        cp -p -a -R linux-arm32v7/Launcher build/TotalCross/etc/launchers/linux_arm/
+        cp -p -a -R "${linux_vm}" build/TotalCross/dist/vm/linux_arm/
+        cp -p -a -R "${linux_launcher}" build/TotalCross/etc/launchers/linux_arm/
 
     - name: Download Linux arm64
+      id: download_linux_arm64
       continue-on-error: true
       uses: actions/download-artifact@v4.1.7
       with:
@@ -74,14 +95,22 @@ jobs:
         path: linux-arm64
 
     - name: Manage Linux arm64 files
-      if: ${{ success() }}
+      if: ${{ steps.download_linux_arm64.outcome == 'success' }}
       run: |
+        linux_vm="$(find linux-arm64 -type f -name 'libtcvm.so' -print -quit)"
+        linux_launcher="$(find linux-arm64 -type f -name 'Launcher' -print -quit)"
+        if [ -z "${linux_vm}" ] || [ -z "${linux_launcher}" ]; then
+          echo "Linux arm64 artifact is missing libtcvm.so or Launcher" >&2
+          exit 1
+        fi
+
         mkdir -p build/TotalCross/dist/vm/linux_arm64
         mkdir -p build/TotalCross/etc/launchers/linux_arm64
-        cp -p -a -R linux-arm64/libtcvm.so build/TotalCross/dist/vm/linux_arm64/
-        cp -p -a -R linux-arm64/Launcher build/TotalCross/etc/launchers/linux_arm64/
+        cp -p -a -R "${linux_vm}" build/TotalCross/dist/vm/linux_arm64/
+        cp -p -a -R "${linux_launcher}" build/TotalCross/etc/launchers/linux_arm64/
 
     - name: Download macOS ARM64
+      id: download_macos_arm64
       continue-on-error: true
       uses: actions/download-artifact@v4.1.7
       with:
@@ -89,14 +118,22 @@ jobs:
         path: macos-arm64
 
     - name: Manage macOS ARM64 files
-      if: ${{ success() }}
+      if: ${{ steps.download_macos_arm64.outcome == 'success' }}
       run: |
+        macos_vm="$(find macos-arm64 -type f -name 'libtcvm.dylib' -print -quit)"
+        macos_launcher="$(find macos-arm64 -type f -name 'Launcher' -print -quit)"
+        if [ -z "${macos_vm}" ] || [ -z "${macos_launcher}" ]; then
+          echo "macOS ARM64 artifact is missing libtcvm.dylib or Launcher" >&2
+          exit 1
+        fi
+
         mkdir -p build/TotalCross/dist/vm/macos
         mkdir -p build/TotalCross/etc/launchers/macos
-        cp -p -a -R macos-arm64/libtcvm.dylib build/TotalCross/dist/vm/macos/
-        cp -p -a -R macos-arm64/Launcher build/TotalCross/etc/launchers/macos/
+        cp -p -a -R "${macos_vm}" build/TotalCross/dist/vm/macos/
+        cp -p -a -R "${macos_launcher}" build/TotalCross/etc/launchers/macos/
 
     - name: Download Windows
+      id: download_windows
       continue-on-error: true
       uses: actions/download-artifact@v4.1.7
       with:
@@ -104,15 +141,23 @@ jobs:
         path: windows
 
     - name: Manage Windows files
-      if: ${{ success() }}
+      if: ${{ steps.download_windows.outcome == 'success' }}
       shell: bash
       run: |
+        windows_vm="$(find windows -type f -iname 'tcvm.dll' -print -quit)"
+        windows_launcher="$(find windows -type f -iname 'launcher.exe' -print -quit)"
+        if [ -z "${windows_vm}" ] || [ -z "${windows_launcher}" ]; then
+          echo "Windows artifact is missing tcvm.dll or launcher.exe" >&2
+          exit 1
+        fi
+
         mkdir -p build/TotalCross/dist/vm/win32
         mkdir -p build/TotalCross/etc/launchers/win32
-        find windows -iname "tcvm.dll" -exec cp -p -a -R {} build/TotalCross/dist/vm/win32/tcvm.dll \; -quit
-        find windows -iname "launcher.exe" -exec cp -p -a -R {} build/TotalCross/etc/launchers/win32/Launcher.exe \; -quit
+        cp -p -a -R "${windows_vm}" build/TotalCross/dist/vm/win32/tcvm.dll
+        cp -p -a -R "${windows_launcher}" build/TotalCross/etc/launchers/win32/Launcher.exe
 
     - name: Download Android
+      id: download_android
       continue-on-error: true
       uses: actions/download-artifact@v4.1.7
       with:
@@ -120,7 +165,7 @@ jobs:
         path: android
 
     - name: Manage Android files
-      if: ${{ success() }}
+      if: ${{ steps.download_android.outcome == 'success' }}
       shell: bash
       run: |
         android_artifact="$(find android -name "TotalCross.aab" -type f -print -quit)"
@@ -135,6 +180,7 @@ jobs:
         cp -p -a -R "$android_artifact" build/TotalCross/dist/vm/android/TotalCross.aab
 
     - name: Download iOS
+      id: download_ios
       continue-on-error: true
       uses: actions/download-artifact@v4.1.7
       with:
@@ -142,7 +188,7 @@ jobs:
         path: ios
 
     - name: Manage iOS files
-      if: ${{ success() }}
+      if: ${{ steps.download_ios.outcome == 'success' }}
       shell: bash
       run: |
         mkdir -p build/TotalCross/dist/vm/ios
@@ -151,6 +197,37 @@ jobs:
         tar -xzf ios/ios.tar.gz -C ios/extracted
         cp -p -a -R ios/extracted/TotalCross.xcarchive build/TotalCross/etc/tools/iOSCodesign/
         cp -p -a ios/extracted/TotalCross.ipa/TotalCross.ipa build/TotalCross/dist/vm/ios/
+
+    - name: Validate build artifact provenance
+      if: ${{ always() }}
+      shell: bash
+      env:
+        EXPECTED_SOURCE_COMMIT: ${{ github.sha }}
+        LINUX_AMD64_DOWNLOAD_OUTCOME: ${{ steps.download_linux_amd64.outcome }}
+        LINUX_ARM32_DOWNLOAD_OUTCOME: ${{ steps.download_linux_arm32.outcome }}
+        LINUX_ARM64_DOWNLOAD_OUTCOME: ${{ steps.download_linux_arm64.outcome }}
+        MACOS_ARM64_DOWNLOAD_OUTCOME: ${{ steps.download_macos_arm64.outcome }}
+        WINDOWS_DOWNLOAD_OUTCOME: ${{ steps.download_windows.outcome }}
+        ANDROID_DOWNLOAD_OUTCOME: ${{ steps.download_android.outcome }}
+        IOS_DOWNLOAD_OUTCOME: ${{ steps.download_ios.outcome }}
+      run: |
+        expected_source_tree="$(git rev-parse "HEAD^{tree}")"
+        artifact_downloads=(
+          --artifact-download "sdk=success=."
+          --artifact-download "linux-amd64=${LINUX_AMD64_DOWNLOAD_OUTCOME}=linux-amd64"
+          --artifact-download "linux-arm32v7=${LINUX_ARM32_DOWNLOAD_OUTCOME}=linux-arm32v7"
+          --artifact-download "linux-arm64=${LINUX_ARM64_DOWNLOAD_OUTCOME}=linux-arm64"
+          --artifact-download "macos-arm64=${MACOS_ARM64_DOWNLOAD_OUTCOME}=macos-arm64"
+          --artifact-download "windows=${WINDOWS_DOWNLOAD_OUTCOME}=windows"
+          --artifact-download "android=${ANDROID_DOWNLOAD_OUTCOME}=android"
+          --artifact-download "ios=${IOS_DOWNLOAD_OUTCOME}=ios"
+        )
+        python3 scripts/validate-build-provenance.py \
+          "${artifact_downloads[@]}" \
+          --repository "${GITHUB_REPOSITORY}" \
+          --source-commit "${EXPECTED_SOURCE_COMMIT}" \
+          --source-tree "${expected_source_tree}" \
+          --require-clean-source
 
     - name: Read TotalCross version
       id: totalcross-version
