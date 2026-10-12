@@ -227,7 +227,36 @@ jobs:
           --repository "${GITHUB_REPOSITORY}" \
           --source-commit "${EXPECTED_SOURCE_COMMIT}" \
           --source-tree "${expected_source_tree}" \
-          --require-clean-source
+          --require-clean-source \
+          --require-build-identity
+
+    - name: Validate embedded build identities
+      if: ${{ always() }}
+      shell: bash
+      env:
+        LINUX_AMD64_DOWNLOAD_OUTCOME: ${{ steps.download_linux_amd64.outcome }}
+        LINUX_ARM32_DOWNLOAD_OUTCOME: ${{ steps.download_linux_arm32.outcome }}
+        LINUX_ARM64_DOWNLOAD_OUTCOME: ${{ steps.download_linux_arm64.outcome }}
+        MACOS_ARM64_DOWNLOAD_OUTCOME: ${{ steps.download_macos_arm64.outcome }}
+        WINDOWS_DOWNLOAD_OUTCOME: ${{ steps.download_windows.outcome }}
+        ANDROID_DOWNLOAD_OUTCOME: ${{ steps.download_android.outcome }}
+        IOS_DOWNLOAD_OUTCOME: ${{ steps.download_ios.outcome }}
+      run: |
+        expected_source_tree="$(git rev-parse "HEAD^{tree}")"
+        artifact_downloads=(
+          --artifact-download "sdk=success=build/TotalCross"
+          --artifact-download "linux-amd64=${LINUX_AMD64_DOWNLOAD_OUTCOME}=linux-amd64"
+          --artifact-download "linux-arm32v7=${LINUX_ARM32_DOWNLOAD_OUTCOME}=linux-arm32v7"
+          --artifact-download "linux-arm64=${LINUX_ARM64_DOWNLOAD_OUTCOME}=linux-arm64"
+          --artifact-download "macos-arm64=${MACOS_ARM64_DOWNLOAD_OUTCOME}=macos-arm64"
+          --artifact-download "windows=${WINDOWS_DOWNLOAD_OUTCOME}=windows"
+          --artifact-download "android=${ANDROID_DOWNLOAD_OUTCOME}=android"
+          --artifact-download "ios=${IOS_DOWNLOAD_OUTCOME}=ios"
+        )
+        python3 scripts/provenance/artifact-identity.py \
+          "${artifact_downloads[@]}" \
+          --repository "${GITHUB_REPOSITORY}" \
+          --source-tree "${expected_source_tree}"
 
     - name: Read TotalCross version
       id: totalcross-version
