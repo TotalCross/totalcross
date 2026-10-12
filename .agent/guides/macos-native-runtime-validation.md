@@ -64,6 +64,10 @@ Launcher from another revision.
 
 Do not use a packaged dylib from another checkout or revision.
 
+Use the canonical [Build provenance and artifact identity guide](../../docs/architecture/build-provenance.md)
+to validate the SDK JAR, application TCZ, native VM, and Launcher before the
+smoke run. Stop if any identity is missing or mixed.
+
 Record:
 
     git rev-parse HEAD
