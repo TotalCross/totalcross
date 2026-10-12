@@ -8,7 +8,6 @@
 TC_API Method getMethod(TCClass c, bool searchSuperclasses, CharP methodName, int32 nparams, ...) // not used internally
 {
    int32 i,j;
-   va_list params;
    if (c)
    do
    {
@@ -20,18 +19,22 @@ TC_API Method getMethod(TCClass c, bool searchSuperclasses, CharP methodName, in
          if (strEq(methodName,mn) && nparams == mm->paramCount)
          {
             bool found = true;
-            va_start(params, nparams);
-            for (j = 0; j < nparams; j++)  // do NOT invert the loop!
+            if (nparams > 0)
             {
-               CharP pt = (CharP)(va_arg(params, CharP));
-               CharP po = c->cp->cls[mm->cpParams[j]];
-               if (!strEq(pt,po))
+               va_list params;
+               va_start(params, nparams);
+               for (j = 0; j < nparams; j++)  // do NOT invert the loop!
                {
-                  found = false;
-                  break;
+                  CharP pt = (CharP)(va_arg(params, CharP));
+                  CharP po = c->cp->cls[mm->cpParams[j]];
+                  if (!strEq(pt,po))
+                  {
+                     found = false;
+                     break;
+                  }
                }
+               va_end(params);
             }
-            va_end(params);
             if (found && (mm->code || mm->flags.isNative)) // not an abstract class?
                return mm;
          }
