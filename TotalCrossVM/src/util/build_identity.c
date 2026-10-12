@@ -1,0 +1,38 @@
+// Copyright (C) 2026 Amalgam Solucoes em TI Ltda
+//
+// SPDX-License-Identifier: LGPL-2.1-only
+
+#if defined(__has_include)
+#  if __has_include("tc_build_identity.h")
+#    include "tc_build_identity.h"
+#  endif
+#endif
+
+#ifndef TC_BUILD_ID
+#define TC_BUILD_ID "unknown"
+#endif
+
+#ifndef TC_SOURCE_TREE
+#define TC_SOURCE_TREE "unknown"
+#endif
+
+#if defined(_MSC_VER)
+#define TC_BUILD_ID_USED __declspec(selectany)
+#  if defined(_M_IX86)
+#    pragma comment(linker, "/include:_totalcrossBuildIdentityMarker")
+#    pragma comment(linker, "/include:_totalcrossSourceTreeMarker")
+#  else
+#    pragma comment(linker, "/include:totalcrossBuildIdentityMarker")
+#    pragma comment(linker, "/include:totalcrossSourceTreeMarker")
+#  endif
+#elif defined(__GNUC__) || defined(__clang__)
+#define TC_BUILD_ID_USED __attribute__((used))
+#else
+#define TC_BUILD_ID_USED
+#endif
+
+TC_BUILD_ID_USED const char totalcrossBuildIdentityMarker[] =
+    "TOTALCROSS_BUILD_IDENTITY_V1:" TC_BUILD_ID;
+
+TC_BUILD_ID_USED const char totalcrossSourceTreeMarker[] =
+    "TOTALCROSS_SOURCE_TREE:" TC_SOURCE_TREE;

@@ -20,6 +20,27 @@ include(FetchContent)
 # set the project name
 project(tcvm VERSION 7.2.2)
 
+find_program(TC_BUILD_IDENTITY_PYTHON NAMES python3 python)
+if(NOT TC_BUILD_IDENTITY_PYTHON)
+  message(FATAL_ERROR "TotalCross build identity requires Python 3")
+endif()
+set(TC_BUILD_IDENTITY_SCRIPT
+  "${CMAKE_CURRENT_SOURCE_DIR}/../scripts/provenance/build-identity.py")
+set(TC_BUILD_IDENTITY_INCLUDE_DIR
+  "${CMAKE_CURRENT_BINARY_DIR}/generated/build-identity")
+set(TC_BUILD_IDENTITY_HEADER
+  "${TC_BUILD_IDENTITY_INCLUDE_DIR}/tc_build_identity.h")
+add_custom_target(tc-build-identity
+  COMMAND "${TC_BUILD_IDENTITY_PYTHON}"
+    "${TC_BUILD_IDENTITY_SCRIPT}"
+    --repository-root "${CMAKE_CURRENT_SOURCE_DIR}/.."
+    --format c-header
+    --output "${TC_BUILD_IDENTITY_HEADER}"
+  BYPRODUCTS "${TC_BUILD_IDENTITY_HEADER}"
+  COMMENT "Refresh TotalCross build identity"
+  VERBATIM
+)
+
 if(MSVC AND NOT TC_MSVC_RUNTIME_POLICY_AVAILABLE)
   foreach(flag_var
       CMAKE_C_FLAGS
@@ -225,8 +246,10 @@ target_include_directories(
   tcvm
   PRIVATE
     "${TC_PLATFORM_GENERATED_INCLUDE_DIR}"
+    "${TC_BUILD_IDENTITY_INCLUDE_DIR}"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/tcvm"
 )
+add_dependencies(tcvm tc-build-identity)
 
 target_compile_definitions(
   tcvm
@@ -711,6 +734,8 @@ set(SOURCES
 
     ${TC_SRCDIR}/event/Event.c
     ${TC_SRCDIR}/event/specialkeys.c
+
+    ${TC_SRCDIR}/util/build_identity.c
 
     ${TC_SRCDIR}/palmdb/palmdb.c
 
@@ -1572,8 +1597,11 @@ endif(MSVC)
 if(NOT TC_GENERATOR_XCODE)
 add_executable(Launcher 
   ${TC_SRCDIR}/launchers/${LAUNCHER_PATH}/Launcher.c
+  ${TC_SRCDIR}/util/build_identity.c
   ${LAUNCHER_RESOURCES}
 )
+target_include_directories(Launcher PRIVATE "${TC_BUILD_IDENTITY_INCLUDE_DIR}")
+add_dependencies(Launcher tc-build-identity)
 
 if(TC_TARGET_WINCE)
   target_compile_options(Launcher PRIVATE /GS-)
