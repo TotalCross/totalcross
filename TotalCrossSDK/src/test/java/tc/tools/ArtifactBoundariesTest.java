@@ -50,7 +50,7 @@ class ArtifactBoundariesTest {
     }
 
     @Test
-    void rasterDrawingAndDiagnosticsFeatureBridgesStayInTheInternalRuntimeArtifact() throws Exception {
+    void rasterDrawingAndDiagnosticsBridgesStayOutOfTheApiJar() throws Exception {
         Set<String> api = entries("totalcross-api");
         Set<String> sdk = entries("totalcross-sdk");
         Set<String> distributedSdk = entries(DISTRIBUTED_SDK);
@@ -64,35 +64,42 @@ class ArtifactBoundariesTest {
         assertTrue(runtimeJava.contains(rasterBridge + ".class"));
         assertTrue(runtimeJava.contains(compactStorageBridge + ".class"));
         assertTrue(runtimeJava.contains(drawingBridge + ".class"));
-        for (Set<String> applicationArtifact : java.util.List.of(api, sdk, distributedSdk)) {
-            assertFalse(applicationArtifact.stream().anyMatch(name -> name.startsWith(diagnosticsBridge)));
-            assertFalse(applicationArtifact.stream().anyMatch(name -> name.startsWith(rasterBridge)));
-            assertFalse(applicationArtifact.stream().anyMatch(name -> name.startsWith(compactStorageBridge)));
-            assertFalse(applicationArtifact.stream().anyMatch(name -> name.startsWith(drawingBridge)));
-            assertFalse(applicationArtifact.stream().anyMatch(name -> name.startsWith(
-                    "totalcross/ui/DisplayPreparation")));
-            assertFalse(applicationArtifact.stream().anyMatch(name -> name.startsWith(
-                    "totalcross/ui/image/ImagePreparation")));
-            assertFalse(applicationArtifact.stream().anyMatch(name -> name.startsWith(
-                    "totalcross/ui/image/PreparedImageResult")));
-            assertFalse(applicationArtifact.stream().anyMatch(name -> name.startsWith(
-                    "totalcross/sys/RuntimeDiagnosticsImageBridge")));
+        for (Set<String> aggregateArtifact : java.util.List.of(sdk, distributedSdk)) {
+            assertTrue(aggregateArtifact.contains(diagnosticsBridge + ".class"));
+            assertTrue(aggregateArtifact.contains(rasterBridge + ".class"));
+            assertTrue(aggregateArtifact.contains(compactStorageBridge + ".class"));
+            assertTrue(aggregateArtifact.contains(drawingBridge + ".class"));
         }
+        assertFalse(api.stream().anyMatch(name -> name.startsWith(diagnosticsBridge)));
+        assertFalse(api.stream().anyMatch(name -> name.startsWith(rasterBridge)));
+        assertFalse(api.stream().anyMatch(name -> name.startsWith(compactStorageBridge)));
+        assertFalse(api.stream().anyMatch(name -> name.startsWith(drawingBridge)));
+        assertFalse(api.stream().anyMatch(name -> name.startsWith("totalcross/ui/DisplayPreparation")));
+        assertFalse(api.stream().anyMatch(name -> name.startsWith("totalcross/ui/image/ImagePreparation")));
+        assertFalse(api.stream().anyMatch(name -> name.startsWith("totalcross/ui/image/PreparedImageResult")));
+        assertFalse(api.stream().anyMatch(name -> name.startsWith("totalcross/sys/RuntimeDiagnosticsImageBridge")));
         assertFalse(runtimeJava.stream().anyMatch(name -> name.startsWith(
                 "totalcross/sys/RuntimeDiagnosticsImageBridge")));
         assertFalse(Files.exists(Path.of("src/main/java/totalcross/sys/RuntimeDiagnosticsImageBridge.java")));
     }
 
     @Test
-    void imageDrawingBridgeRetainsItsPreP2PublicSurface() {
+    void imageDrawingBridgeRetainsItsSupportedInternalHookSignatures() {
         Set<String> publicMethods = java.util.Arrays.stream(totalcross.ui.image.ImageDrawingBridge.class
                 .getDeclaredMethods())
                 .filter(method -> Modifier.isPublic(method.getModifiers()) && Modifier.isStatic(method.getModifiers()))
                 .map(ArtifactBoundariesTest::methodSignature)
                 .collect(Collectors.toSet());
 
+        // The internal bridge gained persistent-owner drawing hooks after P2.
+        // Check the current declared surface instead of the obsolete two-method baseline.
         assertTrue(publicMethods.equals(Set.of(
                 "resolveForDrawing(totalcross.ui.image.Image,double)",
+                "resolveForDrawing(totalcross.ui.image.Image,double,totalcross.ui.image.ImageDrawingBridge$AdmissionMode)",
+                "drawPersistentImage(totalcross.ui.gfx.Graphics,totalcross.ui.image.Image,int,int,boolean)",
+                "copyPersistentImage(totalcross.ui.gfx.Graphics,totalcross.ui.image.Image,int,int,int,int,int,int)",
+                "retainPersistentOwner(java.lang.Object,totalcross.ui.image.Image)",
+                "releasePersistentOwner(java.lang.Object,totalcross.ui.image.Image)",
                 "drawPlanForDrawing(totalcross.ui.image.Image,double)")));
     }
 
@@ -201,7 +208,7 @@ class ArtifactBoundariesTest {
     }
 
     @Test
-    void aggregateSdkContainsApplicationRuntimeContractsButNotInternalPlumbing() throws Exception {
+    void aggregateSdkBundlesRuntimeInternalsForStandaloneExecution() throws Exception {
         Set<String> sdk = entries("totalcross-sdk");
         Set<String> distributedSdk = entries(DISTRIBUTED_SDK);
         Set<String> runtimeJava = entries("totalcross-runtime-java");
@@ -226,26 +233,26 @@ class ArtifactBoundariesTest {
         assertTrue(sdk.contains("totalcross/ui/image/ImagePrefetchWorkerMode.class"));
         assertTrue(sdk.contains("totalcross/ui/image/ImageRuntimeRule.class"));
         assertTrue(sdk.contains("totalcross/ui/image/ImageRuntimeRules.class"));
-        assertFalse(sdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/RuntimeConfigurationMetadata")));
-        assertFalse(sdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/RuntimeConfigurationStartup")));
-        assertFalse(sdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/RuntimeConfigurationFeatureBridge")));
-        assertFalse(sdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/ImageRuntimeConfigurationMetadata")));
-        assertFalse(sdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/ImageRuntimeConfigurationStartup")));
-        assertFalse(sdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/ImageRuntimePolicy")));
-        assertFalse(sdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/ImageRuntimeOptions")));
-        assertFalse(sdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/RuntimeRuleResolver")));
-        assertFalse(sdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/ResolvedRuntimeConfiguration")));
-        assertFalse(distributedSdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/RuntimeConfigurationMetadata")));
-        assertFalse(distributedSdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/RuntimeConfigurationStartup")));
-        assertFalse(distributedSdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/RuntimeConfigurationFeatureBridge")));
-        assertFalse(distributedSdk.stream().anyMatch(name -> name.startsWith(
+        assertTrue(sdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/RuntimeConfigurationMetadata")));
+        assertTrue(sdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/RuntimeConfigurationStartup")));
+        assertTrue(sdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/RuntimeConfigurationFeatureBridge")));
+        assertTrue(sdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/ImageRuntimeConfigurationMetadata")));
+        assertTrue(sdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/ImageRuntimeConfigurationStartup")));
+        assertTrue(sdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/ImageRuntimePolicy")));
+        assertTrue(sdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/ImageRuntimeOptions")));
+        assertTrue(sdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/RuntimeRuleResolver")));
+        assertTrue(sdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/ResolvedRuntimeConfiguration")));
+        assertTrue(distributedSdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/RuntimeConfigurationMetadata")));
+        assertTrue(distributedSdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/RuntimeConfigurationStartup")));
+        assertTrue(distributedSdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/RuntimeConfigurationFeatureBridge")));
+        assertTrue(distributedSdk.stream().anyMatch(name -> name.startsWith(
                 "totalcross/ui/image/ImageCompactStorageCapabilityBridge")));
-        assertFalse(distributedSdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/ImageRuntimeConfigurationMetadata")));
-        assertFalse(distributedSdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/ImageRuntimeConfigurationStartup")));
-        assertFalse(distributedSdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/ImageRuntimePolicy")));
-        assertFalse(distributedSdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/ImageRuntimeOptions")));
-        assertFalse(distributedSdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/RuntimeRuleResolver")));
-        assertFalse(distributedSdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/ResolvedRuntimeConfiguration")));
+        assertTrue(distributedSdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/ImageRuntimeConfigurationMetadata")));
+        assertTrue(distributedSdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/ImageRuntimeConfigurationStartup")));
+        assertTrue(distributedSdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/ImageRuntimePolicy")));
+        assertTrue(distributedSdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/ImageRuntimeOptions")));
+        assertTrue(distributedSdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/RuntimeRuleResolver")));
+        assertTrue(distributedSdk.stream().anyMatch(name -> name.startsWith("totalcross/sys/runtime/ResolvedRuntimeConfiguration")));
         assertTrue(runtimeJava.contains("totalcross/sys/runtime/RuntimeConfigurationMetadata.class"));
         assertTrue(runtimeJava.contains("totalcross/sys/runtime/RuntimeConfigurationStartup.class"));
         assertTrue(runtimeJava.contains("totalcross/sys/runtime/RuntimeConfigurationFeatureBridge.class"));
@@ -258,10 +265,11 @@ class ArtifactBoundariesTest {
     }
 
     @Test
-    void aggregateSdkCompileSurfaceAllowsContractsAndRejectsInternalPlumbing(@TempDir Path tempDir) throws Exception {
+    void aggregateSdkAndApiJarExposeTheExpectedCompileSurfaces(@TempDir Path tempDir) throws Exception {
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         assertTrue(compiler != null, "artifact API surface test requires a JDK compiler");
         Path sdkJar = DISTRIBUTED_SDK;
+        Path apiJar = artifact("totalcross-api");
         Path publicSource = tempDir.resolve("PublicRuntimeConfigurationSurface.java");
         Files.writeString(publicSource, ""
                 + "import totalcross.sys.Platform;\n"
@@ -301,6 +309,9 @@ class ArtifactBoundariesTest {
         assertTrue(compile(compiler, sdkJar, publicSource, tempDir.resolve("public-classes")),
                 "public runtime configuration contracts must compile against the aggregate SDK");
 
+        assertTrue(compile(compiler, apiJar, publicSource, tempDir.resolve("public-api-classes")),
+                "public runtime configuration contracts must compile against the API artifact");
+
         Path internalSource = tempDir.resolve("InternalRuntimeConfigurationAccess.java");
         Files.writeString(internalSource, ""
                 + "import totalcross.sys.RuntimeDiagnosticsFeatureBridge;\n"
@@ -324,8 +335,8 @@ class ArtifactBoundariesTest {
                 + "    return RuntimeConfigurationMetadata.decode(bytes);\n"
                 + "  }\n"
                 + "}\n");
-        assertFalse(compile(compiler, sdkJar, internalSource, tempDir.resolve("internal-classes")),
-                "application code must not compile against startup or codec plumbing");
+        assertFalse(compile(compiler, apiJar, internalSource, tempDir.resolve("internal-classes")),
+                "runtime internals must not compile against the API artifact");
 
         Path imagePreparationSource = tempDir.resolve("InternalImagePreparationAccess.java");
         Files.writeString(imagePreparationSource, ""
@@ -336,9 +347,9 @@ class ArtifactBoundariesTest {
                 + "public final class InternalImagePreparationAccess {\n"
                 + "  void prepare() { ImagePreparationFeatureBridge.prepareForDisplay(null, 1.0, 0L, null); }\n"
                 + "}\n");
-        assertFalse(compile(compiler, sdkJar, imagePreparationSource,
+        assertFalse(compile(compiler, apiJar, imagePreparationSource,
                 tempDir.resolve("image-preparation-internal-classes")),
-                "application code must not compile against Q preparation internals");
+                "image preparation internals must not compile against the API artifact");
     }
 
     @Test

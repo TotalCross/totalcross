@@ -736,12 +736,34 @@ jobs:
       working-directory: scripts
       run: ./package-sdk.sh
 
+    - name: Verify packaged SDK startup and API artifact boundaries
+      working-directory: TotalCrossSDK
+      run: |
+        if ! ./gradlew-agent artifactContentTest; then
+          for log in agent-logs/*-artifactContentTest-full.log; do
+            if [ -f "$log" ]; then tail -n 180 "$log"; fi
+          done
+          exit 1
+        fi
+
+    - name: Verify graphical simulator startup with Xvfb
+      working-directory: TotalCrossSDK
+      run: |
+        if ! xvfb-run -a -s "-screen 0 1280x960x24" ./gradlew-agent simulatorGuiSmokeTest; then
+          for log in agent-logs/*-simulatorGuiSmokeTest-full.log; do
+            if [ -f "$log" ]; then tail -n 180 "$log"; fi
+          done
+          exit 1
+        fi
+
     - name: Upload SDK Gradle logs
       if: always()
       uses: actions/upload-artifact@v7
       with:
         name: sdk-gradle-logs
-        path: build/logs/sdk-gradle
+        path: |
+          build/logs/sdk-gradle
+          TotalCrossSDK/agent-logs
         if-no-files-found: warn
 
     - name: Pack SDK build artifacts
