@@ -76,3 +76,16 @@ tasks.register('artifactContentTest', Test) {
         includeTags 'artifact-boundary'
     }
 }
+
+tasks.register('simulatorGuiSmokeTest', Test) {
+    group = 'verification'
+    description = 'Runs a packaged java -jar simulator MainWindow smoke test on a graphical display.'
+    dependsOn 'dist'
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    systemProperty 'totalcross.aggregate.sdk.jar', project.file('dist/totalcross-sdk.jar').absolutePath
+    systemProperty 'java.awt.headless', 'false'
+    useJUnitPlatform {
+        includeTags 'simulator-gui'
+    }
+}
