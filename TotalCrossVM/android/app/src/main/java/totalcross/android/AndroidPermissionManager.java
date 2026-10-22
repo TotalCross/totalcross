@@ -112,7 +112,7 @@ public final class AndroidPermissionManager {
                 }
             }
             this.permissions = new ArrayList<>(ordered);
-            this.key = type.name() + ":" + (explicit ? "explicit:" : "") + String.join(",", this.permissions);
+            this.key = type.name() + ":" + String.join(",", this.permissions);
         }
     }
 
@@ -133,12 +133,14 @@ public final class AndroidPermissionManager {
         List<Stage> stages;
         int stageIndex;
         long id;
+        boolean explicit;
         boolean authorizationChangedBeforeStart;
         int pendingRequestCode;
         StageType waitingFor;
 
         Operation(Plan plan) {
             this.plan = plan;
+            this.explicit = plan.explicit;
         }
     }
 
@@ -229,6 +231,7 @@ public final class AndroidPermissionManager {
             }
             Operation operation = pending.get(plan.key);
             if (operation != null) {
+                operation.explicit |= plan.explicit;
                 operation.callbacks.add(effectiveCallback);
                 return;
             }
@@ -279,7 +282,7 @@ public final class AndroidPermissionManager {
         for (String permission : relevantPermissions(activity, active.plan)) {
             active.before.put(permission, isAuthorized(activity, permission));
         }
-        if (active.plan.type == PlanType.FILE_ACCESS && !active.plan.explicit && deniedFileAccessSnapshot != null) {
+        if (active.plan.type == PlanType.FILE_ACCESS && !active.explicit && deniedFileAccessSnapshot != null) {
             Map<String, Boolean> current = authorizationSnapshot(activity, active.plan);
             if (deniedFileAccessSnapshot.equals(current)
                     && deniedFileAccessInteractionGeneration == interactionGeneration) {
@@ -296,7 +299,7 @@ public final class AndroidPermissionManager {
                 finishActive(true);
                 return;
             }
-        } else if (active.plan.type == PlanType.FILE_ACCESS && active.plan.explicit) {
+        } else if (active.plan.type == PlanType.FILE_ACCESS && active.explicit) {
             deniedFileAccessSnapshot = null;
         }
         final long operationId = active.id;
