@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -41,18 +42,55 @@ bool getSDCardPath(char* buf, int idx)
       buf[0] = 0;
    return buf[0] != 0;               
 }
+#endif
 
-#define REQUEST_STORAGE_PERMISSION(func)                                                                       \
-   if (errno == EACCES || errno == EPERM) {                                                                    \
-	   /* ask for permission and get result */                                                                  \
-	   JNIEnv* env = getJNIEnv();                                                                               \
-	   jmethodID method = (*env)->GetStaticMethodID(env, applicationClass, "requestStoragePermission", "()I");  \
-	   jint result = (*env)->CallStaticIntMethod(env, applicationClass, method);                                \
-	   if (result <= 0) {                                                                                       \
-		   return errno;                                                                                         \
-	   }                                                                                                        \
-	   return func;                                                                                             \
+#if defined(ANDROID)
+static bool fileRequestStoragePermission(void)
+{
+   JNIEnv* env = getJNIEnv();
+   if (!env)
+      return false;
+   jmethodID method = (*env)->GetStaticMethodID(env, applicationClass, "requestStoragePermission", "()I");
+   if (!method || (*env)->ExceptionCheck(env))
+   {
+      (*env)->ExceptionClear(env);
+      return false;
    }
+   jint result = (*env)->CallStaticIntMethod(env, applicationClass, method);
+   if ((*env)->ExceptionCheck(env))
+   {
+      (*env)->ExceptionClear(env);
+      return false;
+   }
+   return result > 0;
+}
+#endif
+
+#if defined(ANDROID)
+
+#define FILE_RETRY_ACCESS(result, operation, failed, attempted) \
+   do {                                                        \
+      (result) = (operation);                                   \
+      if ((failed) && !(attempted) &&                           \
+          (errno == EACCES || errno == EPERM))                  \
+      {                                                         \
+         int savedErrno = errno;                                \
+         (attempted) = true;                                    \
+         if (fileRequestStoragePermission())                    \
+            (result) = (operation);                             \
+         else                                                   \
+            errno = savedErrno;                                 \
+      }                                                         \
+   } while (0)
+
+#else
+
+#define FILE_RETRY_ACCESS(result, operation, failed, attempted) \
+   do {                                                        \
+      (void)(attempted);                                       \
+      (result) = (operation);                                   \
+   } while (0)
+
 #endif
 /*
  *
@@ -89,31 +127,43 @@ static Err fileGetCardSerialNumber(int32 slot, CharP serialNumber)
 
 Err fileCreate(NATIVE_FILE* fref, TCHARP path, int32 mode, int32* slot)
 {
-   TCHAR * rwMode;
+   TCHAR* rwMode;
    struct stat statData;
+   bool permissionRecoveryAttempted = false;
+   int statResult = -1;
+
+   if (mode == CREATE)
+   {
+      FILE_RETRY_ACCESS(statResult, stat(path, &statData),
+                        statResult != 0, permissionRecoveryAttempted);
+
+#if defined(ANDROID)
+      if (statResult != 0 && (errno == EACCES || errno == EPERM))
+         return errno;
+#endif
+   }
 
    switch (mode)
    {
       case READ_WRITE:   rwMode = TEXT("rb+"); break;
-      case CREATE:       rwMode = stat(path, &statData) == 0 ? TEXT("rb+") : TEXT("wb+"); break; //flsobral@tc123_19: fixed behaviour of File.CREATE mode on Linux based platforms.
+      case CREATE:       rwMode = statResult == 0 ? TEXT("rb+") : TEXT("wb+"); break;
       case CREATE_EMPTY: rwMode = TEXT("wb+"); break;
       case READ_ONLY:    rwMode = TEXT("rb");  break;
+      default:           return EINVAL;
    }
-   fref->handle = fopen(path, rwMode);
+
+   FILE_RETRY_ACCESS(fref->handle, fopen(path, rwMode),
+                     fref->handle == NULL, permissionRecoveryAttempted);
+
    if (!fref->handle)
-      goto error;
+      return errno;
+
 #if defined(darwin) // TODO@ app permissions
-   else
    if (mode == CREATE || mode == CREATE_EMPTY)
       fchmod(fileno(fref->handle), S_IRWXU | S_IRWXG | S_IRWXO);
 #endif
 
-    return NO_ERROR;
-error:
-#if defined(ANDROID)
-   REQUEST_STORAGE_PERMISSION(fileCreate(fref, path, mode, slot));
-#endif
-   return errno;
+   return NO_ERROR;
 }
 
 /*
@@ -169,37 +219,65 @@ Err fileCreateDir(TCHARP path, int32 slot)
 {
    struct stat statData;
    TCHARP c;
-   
-   if (mkdir(path, S_IRWXU | S_IRWXG | S_IRWXO))
-   {
-      if (path[0] == '/')
-         c = path + 1;
-      else
-         c = path;
-      while (*c != 0)
-      {
-         if (*c == '/')
-         {
-            *c = 0;
-            if (stat(path, &statData))
-            {
-               if (mkdir(path, S_IRWXU | S_IRWXG | S_IRWXO))
-                  goto error;
-            }
-            *c = '/';
-         }
-         c++;
-      }
-      if (mkdir(path, S_IRWXU | S_IRWXG | S_IRWXO))
-         goto error;
-   }
-   return NO_ERROR;
+   bool permissionRecoveryAttempted = false;
+   int result;
+   int savedError;
 
-error:
+   FILE_RETRY_ACCESS(result, mkdir(path, S_IRWXU | S_IRWXG | S_IRWXO),
+                     result != 0, permissionRecoveryAttempted);
+   if (result == 0)
+      return NO_ERROR;
+
+   savedError = errno;
 #if defined(ANDROID)
-   REQUEST_STORAGE_PERMISSION(fileCreateDir(path, slot));
+   if (savedError == EACCES || savedError == EPERM)
+      return savedError;
 #endif
-   return errno;
+
+   if (path[0] == '/')
+      c = path + 1;
+   else
+      c = path;
+   while (*c != 0)
+   {
+      if (*c == '/')
+      {
+         int prefixError = 0;
+         *c = 0;
+         FILE_RETRY_ACCESS(result, stat(path, &statData),
+                           result != 0, permissionRecoveryAttempted);
+         if (result != 0)
+         {
+            prefixError = errno;
+#if defined(ANDROID)
+            if (prefixError != EACCES && prefixError != EPERM)
+#endif
+            {
+               FILE_RETRY_ACCESS(result, mkdir(path, S_IRWXU | S_IRWXG | S_IRWXO),
+                                 result != 0, permissionRecoveryAttempted);
+               if (result != 0)
+                  prefixError = errno;
+               else
+                  prefixError = 0;
+            }
+         }
+
+         *c = '/';
+         if (prefixError != 0)
+         {
+            errno = prefixError;
+            return prefixError;
+         }
+      }
+      c++;
+   }
+
+   FILE_RETRY_ACCESS(result, mkdir(path, S_IRWXU | S_IRWXG | S_IRWXO),
+                     result != 0, permissionRecoveryAttempted);
+   if (result != 0)
+      return errno;
+
+   return NO_ERROR;
 }
 
 /*
@@ -216,28 +294,36 @@ error:
 static Err fileDelete(NATIVE_FILE* fref, TCHARP path, int32 slot, bool isOpen)
 {
    struct stat statData;
+   bool permissionRecoveryAttempted = false;
+   int result;
 
-   if (stat(path, &statData))
+   FILE_RETRY_ACCESS(result, stat(path, &statData),
+                     result != 0, permissionRecoveryAttempted);
+   if (result != 0)
       goto error;
 
    if (S_ISDIR(statData.st_mode))
    {
-      if (rmdir(path))
+      FILE_RETRY_ACCESS(result, rmdir(path), result != 0, permissionRecoveryAttempted);
+      if (result != 0)
           goto error;
       return NO_ERROR;
    }
 
    if (isOpen)
+   {
       fclose(fref->handle);
+#if defined(ANDROID)
+      fref->handle = INVALID_HANDLE_VALUE;
+#endif
+   }
 
-   if (unlink(path))
+   FILE_RETRY_ACCESS(result, unlink(path), result != 0, permissionRecoveryAttempted);
+   if (result != 0)
        goto error;
 
    return NO_ERROR;
 error:
-#if defined(ANDROID)
-   REQUEST_STORAGE_PERMISSION(fileDelete(fref, path, slot, isOpen));
-#endif
    return errno;
 }
 
@@ -304,15 +390,23 @@ static Err fileGetFreeSpace(CharP szPath, int32* freeSpace, int32 slot)
 
 Err fileGetSize(NATIVE_FILE fref, TCHARP szPath, int32* size)
 {
+   bool permissionRecoveryAttempted = false;
+   int result;
    if (fref.handle != INVALID_HANDLE_VALUE)
    {
       struct stat statData;
       fileFlush(fref); // flsobral: must flush before getSize, otherwise the value returned may not be accurate - this fix a bug in ZipStream introduced with the forced flush in setSize.
-      if (!fstat(fileno(fref.handle), &statData))
+      FILE_RETRY_ACCESS(result, fstat(fileno(fref.handle), &statData),
+                        result != 0, permissionRecoveryAttempted);
+      if (result == 0)
       {
          *size = (int)statData.st_size;
          return NO_ERROR;
       }
+#if defined(ANDROID)
+      if (errno == EACCES || errno == EPERM)
+         return errno;
+#endif
    }
 
    if( !tcscmp( TEXT("/"), szPath ) )
@@ -321,7 +415,9 @@ Err fileGetSize(NATIVE_FILE fref, TCHARP szPath, int32* size)
 
 #if defined(HAVE_STATFS)
       struct statfs sfs;
-      if (statfs(szPath, &sfs))
+      FILE_RETRY_ACCESS(result, statfs(szPath, &sfs),
+                        result != 0, permissionRecoveryAttempted);
+      if (result != 0)
          goto error;
       fbytes = (int64)sfs.f_blocks * sfs.f_bsize;
 #endif
@@ -331,9 +427,6 @@ Err fileGetSize(NATIVE_FILE fref, TCHARP szPath, int32* size)
    return NO_ERROR;
 
 error:
-#if defined(ANDROID)
-   REQUEST_STORAGE_PERMISSION(fileGetSize(fref, szPath, size));
-#endif
    return errno;
 }
 
