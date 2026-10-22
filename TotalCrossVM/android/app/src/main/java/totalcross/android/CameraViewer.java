@@ -202,6 +202,12 @@ public class CameraViewer extends AdjustedInsetsActivity {
     }
 
     @Override
+    public void onUserInteraction() {
+        super.onUserInteraction();
+        AndroidPermissionManager.onUserInteraction();
+    }
+
+    @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         AndroidPermissionManager.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -274,8 +280,9 @@ public class CameraViewer extends AdjustedInsetsActivity {
         captureButton.setEnabled(false);
         AndroidPermissionManager.requestRuntime(result -> {
             recordingStartPending = false;
+            if (isFinishing() || isDestroyed()) return;
             captureButton.setEnabled(true);
-            if (result.granted && !isFinishing()) {
+            if (result.granted) {
                 recordVideo(file, true);
             } else {
                 Toast.makeText(this, "Microphone permission is required for audio recording.", Toast.LENGTH_LONG).show();
@@ -297,23 +304,27 @@ public class CameraViewer extends AdjustedInsetsActivity {
             if (withAudio) pending = pending.withAudioEnabled();
             recorder = pending.start(getExecutor(), event -> {
                 if (event instanceof VideoRecordEvent.Finalize) {
-                    if (isFinishing()) return;
+                    if (isFinishing() || isDestroyed()) return;
                     VideoRecordEvent.Finalize finalize = (VideoRecordEvent.Finalize) event;
+                    Throwable recordingFailure = new IOException(
+                            "Camera recording failed: " + finalize.getError(), finalize.getCause());
                     if (!finalize.hasError() && file.isFile() && file.length() > 0) {
                         setResult(RESULT_OK);
                     } else {
-                        if (isFileAccessDenied(finalize.getCause())) requestFileAccessAfterCameraFailure();
+                        if (AndroidFileAccessErrors.isPermissionDenied(recordingFailure)) {
+                            requestFileAccessAfterCameraFailure();
+                        }
                         if (file.exists() && file.length() == 0) file.delete();
-                        AndroidUtils.handleException(finalize.getCause() == null
-                                ? new IOException("Camera recording failed: " + finalize.getError())
-                                : finalize.getCause(), false);
+                        AndroidUtils.handleException(recordingFailure, false);
                         setResult(RESULT_CANCELED);
                     }
                     finish();
                 }
             });
         } catch (SecurityException deniedOutput) {
-            if (isFileAccessDenied(deniedOutput)) requestFileAccessAfterCameraFailure();
+            if (AndroidFileAccessErrors.isPermissionDenied(deniedOutput)) {
+                requestFileAccessAfterCameraFailure();
+            }
             AndroidUtils.handleException(deniedOutput, false);
             setResult(RESULT_CANCELED);
             finish();
@@ -325,6 +336,7 @@ public class CameraViewer extends AdjustedInsetsActivity {
     }
 
     private void capturePhoto(File file, boolean permissionRetry) {
+        if (isFinishing() || isDestroyed()) return;
         if (imageCapture == null) {
             setResult(RESULT_CANCELED);
             finish();
@@ -334,6 +346,7 @@ public class CameraViewer extends AdjustedInsetsActivity {
         imageCapture.takePicture(output, getExecutor(), new ImageCapture.OnImageSavedCallback() {
             @Override
             public void onImageSaved(@NonNull ImageCapture.OutputFileResults results) {
+                if (isFinishing() || isDestroyed()) return;
                 if (file.isFile() && file.length() > 0) {
                     setResult(RESULT_OK);
                     finish();
@@ -344,9 +357,11 @@ public class CameraViewer extends AdjustedInsetsActivity {
 
             @Override
             public void onError(@NonNull ImageCaptureException exception) {
-                if (!permissionRetry && isFileAccessDenied(exception.getCause())) {
+                if (isFinishing() || isDestroyed()) return;
+                if (!permissionRetry && AndroidFileAccessErrors.isPermissionDenied(exception)) {
                     AndroidPermissionManager.requestFileAccess(result -> {
-                        if (result.authorizationChanged && !isFinishing()) capturePhoto(file, true);
+                        if (isFinishing() || isDestroyed()) return;
+                        if (result.authorizationChanged) capturePhoto(file, true);
                         else failPhoto(file, exception);
                     });
                 } else {
@@ -357,24 +372,11 @@ public class CameraViewer extends AdjustedInsetsActivity {
     }
 
     private void failPhoto(File file, Throwable failure) {
+        if (isFinishing() || isDestroyed()) return;
         if (file.exists() && file.length() == 0) file.delete();
         AndroidUtils.handleException(failure, false);
         setResult(RESULT_CANCELED);
         finish();
-    }
-
-    private boolean isFileAccessDenied(Throwable failure) {
-        while (failure != null) {
-            String message = failure.getMessage();
-            if (message != null) {
-                String normalized = message.toLowerCase(java.util.Locale.ROOT);
-                if (normalized.contains("eacces") || normalized.contains("eperm")
-                        || (normalized.contains("permission denied")
-                        && !normalized.contains("camera") && !normalized.contains("microphone"))) return true;
-            }
-            failure = failure.getCause();
-        }
-        return false;
     }
 
     private void requestFileAccessAfterCameraFailure() {
@@ -382,7 +384,7 @@ public class CameraViewer extends AdjustedInsetsActivity {
             String message = result.authorizationChanged
                     ? "File access changed. Start the recording again."
                     : "Unable to access the selected output file.";
-            Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+            Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
         });
     }
 

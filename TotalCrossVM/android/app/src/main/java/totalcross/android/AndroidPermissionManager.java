@@ -51,6 +51,8 @@ public final class AndroidPermissionManager {
     private static WeakReference<Activity> host = new WeakReference<>(null);
     private static Operation active;
     private static Map<String, Boolean> deniedFileAccessSnapshot;
+    private static long interactionGeneration;
+    private static long deniedFileAccessInteractionGeneration;
     private static int nextRequestCode = FIRST_OPERATION_REQUEST;
 
     public enum MediaAccess {
@@ -178,6 +180,15 @@ public final class AndroidPermissionManager {
         submit(new Plan(PlanType.FILE_ACCESS, true), callback);
     }
 
+    static void onUserInteraction() {
+        Runnable advanceGeneration = () -> interactionGeneration++;
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            advanceGeneration.run();
+        } else {
+            MAIN.post(advanceGeneration);
+        }
+    }
+
     private static int requestBlocking(Plan plan) {
         if (Looper.myLooper() == Looper.getMainLooper()) {
             submit(plan, result -> { });
@@ -270,7 +281,8 @@ public final class AndroidPermissionManager {
         }
         if (active.plan.type == PlanType.FILE_ACCESS && !active.plan.explicit && deniedFileAccessSnapshot != null) {
             Map<String, Boolean> current = authorizationSnapshot(activity, active.plan);
-            if (deniedFileAccessSnapshot.equals(current)) {
+            if (deniedFileAccessSnapshot.equals(current)
+                    && deniedFileAccessInteractionGeneration == interactionGeneration) {
                 finishActive(false);
                 return;
             }
@@ -535,8 +547,12 @@ public final class AndroidPermissionManager {
                         && isAuthorized(activity, Manifest.permission.REQUEST_INSTALL_PACKAGES));
             } else if (operation.plan.type == PlanType.FILE_ACCESS) {
                 granted = changed;
-                deniedFileAccessSnapshot = hasMissingFileAccessPermission(activity)
-                        ? authorizationSnapshot(activity, operation.plan) : null;
+                if (hasMissingFileAccessPermission(activity)) {
+                    deniedFileAccessSnapshot = authorizationSnapshot(activity, operation.plan);
+                    deniedFileAccessInteractionGeneration = interactionGeneration;
+                } else {
+                    deniedFileAccessSnapshot = null;
+                }
             }
         } else {
             granted = false;
