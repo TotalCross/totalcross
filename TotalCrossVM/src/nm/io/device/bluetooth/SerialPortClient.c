@@ -4,8 +4,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
-
-
 #include "tcvm.h"
 #include "guid.h"
 
@@ -64,14 +62,49 @@ TC_API void tidbSPC_readBytes_Bii(NMParams p) // totalcross/io/device/bluetooth/
    TCObject byteArrayObj = p->obj[1];
    int32 offset = p->i32[0];
    int32 count = p->i32[1];
-   TCObject nativeHandleObj = SerialPortClient_nativeHandle(serialPortClientObj);
-   NATIVE_HANDLE* nativeHandle = (NATIVE_HANDLE*) ARRAYOBJ_START(nativeHandleObj);
-   uint8* byteArrayP = (uint8*) ARRAYOBJ_START(byteArrayObj);
+   TCObject nativeHandleObj;
+   NATIVE_HANDLE* nativeHandle;
+   uint8* byteArrayP;
+#ifdef ANDROID
+   int32 bytesRead = 0;
+#else
    int32 bytesRead;
+#endif
    Err err;
 
+#ifdef ANDROID
+   if (byteArrayObj == null)
+   {
+      throwException(p->currentContext, IOException, "Invalid Bluetooth buffer");
+      return;
+   }
+   nativeHandleObj = SerialPortClient_nativeHandle(serialPortClientObj);
+   if (nativeHandleObj == null || ARRAYOBJ_LEN(nativeHandleObj) < (int32)sizeof(NATIVE_HANDLE))
+   {
+      throwException(p->currentContext, IOException, "Invalid Bluetooth object");
+      return;
+   }
+   if (offset < 0 || count < 0 || offset > ARRAYOBJ_LEN(byteArrayObj)
+         || count > ARRAYOBJ_LEN(byteArrayObj) - offset)
+   {
+      throwException(p->currentContext, IOException, "Invalid Bluetooth buffer bounds");
+      return;
+   }
+   nativeHandle = (NATIVE_HANDLE*) ARRAYOBJ_START(nativeHandleObj);
+   byteArrayP = (uint8*) ARRAYOBJ_START(byteArrayObj);
+#else
+   nativeHandleObj = SerialPortClient_nativeHandle(serialPortClientObj);
+   nativeHandle = (NATIVE_HANDLE*) ARRAYOBJ_START(nativeHandleObj);
+   byteArrayP = (uint8*) ARRAYOBJ_START(byteArrayObj);
+#endif
+
    if ((err = btsppClientRead(nativeHandle, byteArrayP, offset, count, &bytesRead)) != NO_ERROR)
+   {
       throwExceptionWithCode(p->currentContext, IOException, err);
+#ifdef ANDROID
+      return;
+#endif
+   }
    p->retI = bytesRead;
 #else
    p = 0;
@@ -85,18 +118,53 @@ TC_API void tidbSPC_writeBytes_Bii(NMParams p) // totalcross/io/device/bluetooth
    TCObject byteArrayObj = p->obj[1];
    int32 offset = p->i32[0];
    int32 count = p->i32[1];
-   TCObject nativeHandleObj = SerialPortClient_nativeHandle(serialPortClientObj);
-   NATIVE_HANDLE* nativeHandle = (NATIVE_HANDLE*) ARRAYOBJ_START(nativeHandleObj);
-   uint8* byteArrayP = (uint8*) ARRAYOBJ_START(byteArrayObj);
+   TCObject nativeHandleObj;
+   NATIVE_HANDLE* nativeHandle;
+   uint8* byteArrayP;
+#ifdef ANDROID
+   int32 bytesWritten = 0;
+#else
    int32 bytesWritten;
+#endif
    Err err;
 
+#ifdef ANDROID
+   if (byteArrayObj == null)
+   {
+      throwException(p->currentContext, IOException, "Invalid Bluetooth buffer");
+      return;
+   }
+   nativeHandleObj = SerialPortClient_nativeHandle(serialPortClientObj);
+   if (nativeHandleObj == null || ARRAYOBJ_LEN(nativeHandleObj) < (int32)sizeof(NATIVE_HANDLE))
+   {
+      throwException(p->currentContext, IOException, "Invalid Bluetooth object");
+      return;
+   }
+   if (offset < 0 || count < 0 || offset > ARRAYOBJ_LEN(byteArrayObj)
+         || count > ARRAYOBJ_LEN(byteArrayObj) - offset)
+   {
+      throwException(p->currentContext, IOException, "Invalid Bluetooth buffer bounds");
+      return;
+   }
+   nativeHandle = (NATIVE_HANDLE*) ARRAYOBJ_START(nativeHandleObj);
+   byteArrayP = (uint8*) ARRAYOBJ_START(byteArrayObj);
+#else
+   nativeHandleObj = SerialPortClient_nativeHandle(serialPortClientObj);
+   nativeHandle = (NATIVE_HANDLE*) ARRAYOBJ_START(nativeHandleObj);
+   byteArrayP = (uint8*) ARRAYOBJ_START(byteArrayObj);
+#endif
+
    if ((err = btsppClientWrite(nativeHandle, byteArrayP, offset, count, &bytesWritten)) != NO_ERROR)
+   {
 #ifdef ANDROID
       throwException(p->currentContext, IOException, "Error connecting to device");
 #else
       throwExceptionWithCode(p->currentContext, IOException, err);
-#endif         
+#endif
+#ifdef ANDROID
+      return;
+#endif
+   }
    p->retI = bytesWritten;
 #else
    p = 0;
