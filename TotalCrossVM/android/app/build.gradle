@@ -159,6 +159,7 @@ tasks.register('generateJniHeaders') {
 
 dependencies {
     implementation project(":tcvm")
+    implementation 'androidx.activity:activity:1.6.1' // Activity-level back dispatch
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
     implementation "com.google.guava:guava:31.0.1-android"
