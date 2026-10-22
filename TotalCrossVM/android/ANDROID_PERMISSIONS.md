@@ -50,9 +50,12 @@ On Android 13 and newer, file-access recovery may request only the declared
 `READ_MEDIA_IMAGES` and `READ_MEDIA_VIDEO` permissions together. On Android 14
 and newer it also includes `READ_MEDIA_VISUAL_USER_SELECTED` when that
 permission is present in the installed manifest. The coordinator reports full,
-partial, and denied media access separately; a compatibility-mode grant for an
-older target SDK is not treated as permanent full access. Android 12L and older
-use only declared legacy storage permissions that apply to that OS version.
+partial, and denied media access separately. On Android 14 and newer, when an
+app targets API 34 or newer without declaring
+`READ_MEDIA_VISUAL_USER_SELECTED`, compatibility-mode grants for
+`READ_MEDIA_IMAGES` or `READ_MEDIA_VIDEO` are reported as partial rather than
+permanent full access. Android 12L and older use only declared legacy storage
+permissions that apply to that OS version.
 
 `MANAGE_EXTERNAL_STORAGE` and `REQUEST_INSTALL_PACKAGES` use separate
 app-specific Settings screens. They are never sent through the ordinary runtime
