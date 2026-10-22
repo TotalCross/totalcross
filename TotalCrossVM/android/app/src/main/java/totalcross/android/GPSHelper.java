@@ -19,6 +19,7 @@ import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.Priority;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -179,11 +180,12 @@ public class GPSHelper extends GnssStatusCompat.Callback implements android.loca
       }      
       if (!isHigh && fusedLocationClient == null && /*Launcher4A.gpsPrecision == LOW_GPS_PRECISION && */checkPlayServices())
       {
-         locationRequest = LocationRequest.create();
-         locationRequest.setInterval(5000);
-         locationRequest.setFastestInterval(1000);
-         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-         locationRequest.setSmallestDisplacement(2); // meters
+         locationRequest = new LocationRequest.Builder(
+            Priority.PRIORITY_HIGH_ACCURACY,
+            5000L)
+            .setMinUpdateIntervalMillis(1000L)
+            .setMinUpdateDistanceMeters(2f) // meters
+            .build();
 
          locationCallback = new LocationCallback()
          {
