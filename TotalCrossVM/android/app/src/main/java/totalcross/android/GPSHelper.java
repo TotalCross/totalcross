@@ -1,3 +1,8 @@
+// Copyright (C) 2020-2021 TotalCross Global Mobile Platform Ltda
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
+//
+// SPDX-License-Identifier: LGPL-2.1-only
+
 package totalcross.android;
 
 import android.content.Context;
@@ -35,6 +40,7 @@ public class GPSHelper extends GnssStatusCompat.Callback implements android.loca
    private LocationCallback locationCallback;
    private LocationRequest locationRequest;
    private int validSatellites;
+   private static final long FUSED_LOCATION_UPDATE_INTERVAL_MS = 1000L;
    private static final String NOGPS = "*";
    private String lastGps = NOGPS;
 
@@ -182,9 +188,9 @@ public class GPSHelper extends GnssStatusCompat.Callback implements android.loca
       {
          locationRequest = new LocationRequest.Builder(
             Priority.PRIORITY_HIGH_ACCURACY,
-            5000L)
-            .setMinUpdateIntervalMillis(1000L)
-            .setMinUpdateDistanceMeters(2f) // meters
+            FUSED_LOCATION_UPDATE_INTERVAL_MS)
+            .setMinUpdateIntervalMillis(FUSED_LOCATION_UPDATE_INTERVAL_MS)
+            .setMinUpdateDistanceMeters(0f) // meters
             .build();
 
          locationCallback = new LocationCallback()
