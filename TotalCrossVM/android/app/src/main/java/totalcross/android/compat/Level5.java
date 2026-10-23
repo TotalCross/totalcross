@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 // must be called from totalcross.android.Loader thread
 
-public class Level5
+public abstract class Level5
 {
    private static volatile Level5 instance;
    private static final Map<BluetoothRequest, Boolean> outstandingRequests = new ConcurrentHashMap<>();
@@ -21,7 +21,7 @@ public class Level5
    public static synchronized Level5 getInstance()
    {
       if (instance == null)
-         instance = android.os.Build.VERSION.SDK_INT >= 5 ? new Level5Impl() : new Level5();
+         instance = new Level5Impl();
       return instance;
    }
    
@@ -57,9 +57,9 @@ public class Level5
       if (shutdownRequested) request.cancel();
    }
    
-   public void processMessage(BluetoothRequest request) {request.complete(ERROR, null);}
+   public abstract void processMessage(BluetoothRequest request);
 
-   public boolean handleActivityResult(int requestCode, int resultCode) {return false;}
+   public abstract boolean handleActivityResult(int requestCode, int resultCode);
 
    public void onActivityResult(int requestCode, int resultCode)
    {
