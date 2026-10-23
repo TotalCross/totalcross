@@ -85,8 +85,24 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
   private static final int FROM_SCANDIT = 1234324337;
   private static boolean onMainLoop;
   public static boolean isFullScreen;
+  private static volatile Loader currentLoader;
 
   Uri capturedImageURI;
+  private File capturedCameraFile;
+  private boolean capturedCameraMediaStoreEntry;
+  private boolean capturedCameraKeepOriginal;
+
+  private static final class UriCopyResult {
+      final boolean succeeded;
+      final boolean destinationDenied;
+      final IOException failure;
+
+      UriCopyResult(boolean succeeded, boolean destinationDenied, IOException failure) {
+          this.succeeded = succeeded;
+          this.destinationDenied = destinationDenied;
+          this.failure = failure;
+      }
+  }
   
   private static final String GOOGLECHROME_NAVIGATE_PREFIX = "googlechrome://navigate?url=";  
 
@@ -97,6 +113,16 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
    public void onCreate(Bundle savedInstanceState)
    {
     super.onCreate(savedInstanceState);
+      currentLoader = this;
+      if (savedInstanceState != null) {
+          capturedImageURI = savedInstanceState.getParcelable("camera.output_uri");
+          String cameraFile = savedInstanceState.getString("camera.output_file");
+          capturedCameraFile = cameraFile == null ? null : new File(cameraFile);
+          capturedCameraMediaStoreEntry = savedInstanceState.getBoolean("camera.media_store_entry");
+          capturedCameraKeepOriginal = savedInstanceState.getBoolean("camera.keep_original");
+          imageFN = savedInstanceState.getString("camera.destination");
+          cameraType = savedInstanceState.getInt("camera.type");
+      }
       AndroidPermissionManager.attach(this);
       getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
          @Override
@@ -109,7 +135,7 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
       try
       {
       AndroidUtils.initialize(this);
-      if (isSingleApk() && onCreateCalled) // bypass bug that will cause a new instance each time the app is minimized and called again (2282)
+      if (isSingleApk() && onCreateCalled && savedInstanceState == null) // bypass duplicate launches, while allowing Activity recreation
       {
         System.exit(2);
         return;
@@ -143,27 +169,7 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
     super.onRestart();
   }
 
-   public String getImagePath(Uri uri) 
-   {
-      try
-      {
-      String[] projection = { MediaStore.Images.Media.DATA };
-      Cursor cursor = managedQuery(uri, projection, null, null, null);
-         if (cursor == null) return null;
-      int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-      cursor.moveToFirst();
-      String s = cursor.getString(column_index);
-      //         cursor.close(); - cant close cursors! or the vm will stall on second try
-      return s;
-      }
-      catch (Throwable t)
-      {
-      AndroidUtils.handleException(t, false);
-      return null;
-    }
-  }
-
-   protected void onActivityResult(int requestCode, int resultCode, Intent data)
+  protected void onActivityResult(int requestCode, int resultCode, Intent data)
    {
       if (AndroidPermissionManager.onActivityResult(requestCode, resultCode)) {
           return;
@@ -175,41 +181,33 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
       Launcher4A.callingZXing = false;
       break;
     case SPEECH_TO_TEXT:
-            Launcher4A.soundResult = resultCode == RESULT_OK ? data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS).get(0) : null;
+      Launcher4A.soundResult = resultCode == RESULT_OK && data != null
+              ? data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS).get(0) : null;
       Launcher4A.callingSound = false;
       break;
-
     case SELECT_PICTURE:
-            if (resultCode == RESULT_OK)
-            {
-        Uri uri = data.getData();
-        String filePath = "";
-        try {
+      if (resultCode == RESULT_OK && data != null && data.getData() != null) {
+          Uri selectedImageUri = data.getData();
+          String filePath = null;
           try {
-            filePath= PathUtil.getPath(getApplicationContext(), uri);
-          } catch (URISyntaxException e) {
-            e.printStackTrace();
+              filePath = PathUtil.getPath(getApplicationContext(), selectedImageUri);
+          } catch (URISyntaxException ignored) {
+              // Not every content provider maps to a local filesystem path.
           }
-          
-          if (filePath == null || filePath.startsWith("/enc") || !(new File(filePath).exists())) {
-            try (InputStream inputStream = getContentResolver().openInputStream(uri)) {
-          AndroidUtils.copyStreamToFile(inputStream, imageFN);
-          autoRotatePhoto(getContentResolver(), imageFN);
-        } catch (IOException ioe) {
-          AndroidUtils.handleException(ioe, false);
-          // pois eh... mesmo assim falhou i.i
-          resultCode = RESULT_OK + 1;
-        }
+          if (filePath != null && !filePath.startsWith("/enc") && new File(filePath).isFile()) {
+              try (BufferedWriter writer = new BufferedWriter(new FileWriter(imageFN))) {
+                  writer.write(filePath);
+                  Launcher4A.pictureTaken(0);
+              } catch (IOException failure) {
+                  AndroidUtils.handleException(failure, false);
+                  Launcher4A.pictureTaken(1);
+              }
           } else {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(imageFN));
-            writer.write(filePath);
-            writer.close();
+              copyGallerySelection(selectedImageUri, false);
           }
-        } catch (IOException e) {
-          e.printStackTrace();
+      } else {
+          Launcher4A.pictureTaken(1);
       }
-      }
-      Launcher4A.pictureTaken(resultCode != RESULT_OK ? 1 : 0);
       break;
     case Level5.BT_MAKE_DISCOVERABLE:
       Level5.getInstance().setResponse(resultCode != Activity.RESULT_CANCELED, null);
@@ -221,54 +219,27 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
       Launcher4A.pictureTaken(resultCode != RESULT_OK ? 1 : 0);
       break;
     case CAMERA_PIC_REQUEST:
-      Launcher4A.pictureTaken(resultCode != RESULT_OK ? 1 : 0);
+      if (resultCode == RESULT_OK && imageFN != null) {
+          File directCameraFile = new File(imageFN);
+          if (directCameraFile.isFile() && directCameraFile.length() > 0) {
+              autoRotatePhoto(getContentResolver(), imageFN);
+              Launcher4A.pictureTaken(0);
+          } else {
+              Launcher4A.pictureTaken(1);
+          }
+      } else {
+          Launcher4A.pictureTaken(1);
+      }
       break;
     case MAP_RETURN:
       Launcher4A.showingMap = false;
       break;
         case EXTCAMERA_RETURN: {
-            if (capturedImageURI == null) {
-                AndroidUtils.debug("capturedImageURI is null!");
-                Launcher4A.pictureTaken(0);
-                break;
-            }
-            String[] projection = { MediaStore.Images.Media.DATA, BaseColumns._ID, MediaStore.Images.Media.DATE_ADDED };
-            Cursor cursor = getContentResolver().query(capturedImageURI, projection, null, null, null);
-
-            String capturedImageFilePath = null;
-            if (cursor.moveToFirst()) {
-                capturedImageFilePath = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA));
-            }
-            if (capturedImageFilePath == null) {
-                resultCode = RESULT_OK + 1; // error, no file
+            if (resultCode == RESULT_OK && capturedImageURI != null) {
+                copyCapturedImage(capturedImageURI, false);
             } else {
-                try {
-                    AndroidUtils.copyFile(capturedImageFilePath, imageFN);
-
-                    long date = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATE_ADDED));
-                    autoRotatePhoto(getContentResolver(), imageFN);
-                    // if the file was deleted, delete from database too
-                    if (cameraType == CAMERA_NATIVE_NOCOPY) {
-                        try {
-                            // on android 2.3 the getContentResolver() code does not work, so we
-                            // just ensure that we delete the file
-                            try {
-                                new File(capturedImageFilePath).delete();
-                            } catch (Exception e) {
-                            }
-                        } catch (Exception e) {
-                            AndroidUtils.handleException(e, false);
-                        }
-                    }
-                } catch (FileNotFoundException e) {
-                    resultCode = RESULT_OK + 1; // error, can't open stream
-                    AndroidUtils.debug("It seems you have cancelled out the photo...");
-                } catch (IOException e) {
-                    resultCode = RESULT_OK + 1; // error, generic IO excpetion
-                    AndroidUtils.handleException(e, false);
-                }
+                completeExternalCamera(false);
             }
-            Launcher4A.pictureTaken(resultCode != RESULT_OK ? 1 : 0);
             break;
         }
           default:
@@ -277,39 +248,15 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
       }
   }
 
-   private void removeLastImageFromGallery(long orig)
-   {
-      try
-      {
-            final String[] imageColumns = { MediaStore.Images.Media._ID,
-                MediaStore.Images.Media.DATE_ADDED,
-                MediaStore.Images.Media.DATA
-            };
-      final String imageOrderBy = MediaStore.Images.Media._ID + " DESC";
-         Cursor imageCursor = managedQuery(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, imageColumns, null, null, imageOrderBy);
-         if (imageCursor.moveToFirst())
-         {
-                long last = new File(imageCursor.getString(2)).lastModified();
-        int id = imageCursor.getInt(imageCursor.getColumnIndex(MediaStore.Images.Media._ID));
-        long dif = Math.abs(orig - last);
-                if (dif < 1000) { // 1 second - usually is less than 10ms
-                    getContentResolver().delete(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                            MediaStore.Images.Media._ID + "=?", new String[]{Long.toString(id)});
-                }
-         }
-      }
-      catch (Exception e)
-      {
-      AndroidUtils.handleException(e, false);
-    }
-  }
-
    public static void autoRotatePhoto(ContentResolver contentResolver, String imagePath) {
       try {
       File f = new File(imagePath);
-        ExifInterface exif = null;
+        ExifInterface exif;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-          exif = new ExifInterface(contentResolver.openFileDescriptor(Uri.fromFile(f), "r").getFileDescriptor());
+          try (android.os.ParcelFileDescriptor descriptor = contentResolver.openFileDescriptor(Uri.fromFile(f), "r")) {
+            if (descriptor == null) return;
+            exif = new ExifInterface(descriptor.getFileDescriptor());
+          }
         } else {
           exif = new ExifInterface(f.getPath());
         }
@@ -329,11 +276,16 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
       BitmapFactory.Options options = new BitmapFactory.Options();
       options.inSampleSize = 1;
 
-      Bitmap bmp = BitmapFactory.decodeStream(contentResolver.openInputStream(Uri.fromFile(f)), null, options);
+      Bitmap bmp = BitmapFactory.decodeFile(f.getPath(), options);
+      if (bmp == null) return;
       Bitmap bitmap = Bitmap.createBitmap(bmp, 0, 0, bmp.getWidth(), bmp.getHeight(), mat, true);
-      OutputStream out = contentResolver.openOutputStream(Uri.fromFile(f));
-      bitmap.compress(Bitmap.CompressFormat.JPEG, 85, out);
-      out.close();
+      try (OutputStream out = new FileOutputStream(f)) {
+        if (!bitmap.compress(Bitmap.CompressFormat.JPEG, 85, out)) {
+          throw new IOException("Unable to rotate the copied camera image.");
+        }
+      }
+      bmp.recycle();
+      if (bitmap != bmp) bitmap.recycle();
       AndroidUtils.debug("auto-rotated " + imagePath);
       } catch (Exception e) {
       AndroidUtils.handleException(e, false);
@@ -446,7 +398,181 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
       return image;
   }
 
-    private void captureCamera(String s, int quality, int width, int height, boolean allowRotation, int cameraType, int videoTimeLimit, int targetFps, int bitrate) {
+  private Uri prepareExternalCameraOutput(boolean keepOriginal) throws IOException {
+      capturedCameraFile = null;
+      capturedCameraMediaStoreEntry = false;
+      capturedCameraKeepOriginal = keepOriginal;
+      if (keepOriginal && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+          ContentValues values = new ContentValues();
+          values.put(MediaStore.MediaColumns.DISPLAY_NAME,
+                  "TotalCross_" + new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date()) + ".jpg");
+          values.put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg");
+          values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/TotalCross");
+          values.put(MediaStore.MediaColumns.IS_PENDING, 1);
+          Uri uri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+          if (uri == null) {
+              throw new IOException("Unable to create a MediaStore image for the camera.");
+          }
+          capturedCameraMediaStoreEntry = true;
+          return uri;
+      }
+
+      File directory;
+      if (keepOriginal) {
+          directory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES + "/TotalCross");
+      } else {
+          directory = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+      }
+      if (directory == null || (!directory.exists() && !directory.mkdirs())) {
+          throw new IOException("Unable to create the camera output directory.");
+      }
+      capturedCameraFile = File.createTempFile("TotalCross_", ".jpg", directory);
+      return getFileUri4Intent(capturedCameraFile);
+  }
+
+  private void launchExternalCamera(int cameraType, boolean permissionRetry) {
+      Uri outputUri;
+      try {
+          outputUri = prepareExternalCameraOutput(cameraType == CAMERA_NATIVE);
+      } catch (SecurityException deniedDestination) {
+          if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q && cameraType == CAMERA_NATIVE) {
+              recoverExternalCameraOutput(cameraType, permissionRetry);
+          } else {
+              completeExternalCamera(false);
+          }
+          return;
+      } catch (IOException destinationFailure) {
+          if (isFileAccessDenied(destinationFailure) && Build.VERSION.SDK_INT < Build.VERSION_CODES.Q
+                  && cameraType == CAMERA_NATIVE) {
+              recoverExternalCameraOutput(cameraType, permissionRetry);
+          } else {
+              AndroidUtils.handleException(destinationFailure, false);
+              completeExternalCamera(false);
+          }
+          return;
+      } catch (Throwable failure) {
+          AndroidUtils.handleException(failure, false);
+          completeExternalCamera(false);
+          return;
+      }
+      capturedImageURI = outputUri;
+      Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+      try {
+          if (intent.resolveActivity(getPackageManager()) == null) {
+              completeExternalCamera(false);
+              return;
+          }
+          intent.putExtra(MediaStore.EXTRA_OUTPUT, outputUri);
+          intent.setClipData(ClipData.newRawUri("camera-output", outputUri));
+          intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+          startActivityForResult(intent, EXTCAMERA_RETURN);
+      } catch (Throwable launchFailure) {
+          AndroidUtils.handleException(launchFailure, false);
+          completeExternalCamera(false);
+      }
+  }
+
+  private void recoverExternalCameraOutput(int cameraType, boolean permissionRetry) {
+      if (permissionRetry) {
+          completeExternalCamera(false);
+          return;
+      }
+      AndroidPermissionManager.requestFileAccess(result -> {
+          Loader activity = cameraHost();
+          if (result.authorizationChanged) {
+              activity.launchExternalCamera(cameraType, true);
+          } else {
+              activity.completeExternalCamera(false);
+          }
+      });
+  }
+
+  private void launchDirectExternalCameraOutput(String path, boolean permissionRetry) {
+      try {
+          File outputFile = new File(path);
+          Uri outputUri = getFileUri4Intent(outputFile);
+          Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+          if (intent.resolveActivity(getPackageManager()) == null) {
+              Launcher4A.pictureTaken(1);
+              return;
+          }
+          intent.putExtra(MediaStore.EXTRA_OUTPUT, outputUri);
+          intent.setClipData(ClipData.newRawUri("camera-output", outputUri));
+          intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+          startActivityForResult(intent, CAMERA_PIC_REQUEST);
+      } catch (SecurityException deniedDestination) {
+          if (!permissionRetry) {
+              AndroidPermissionManager.requestFileAccess(result -> {
+                  Loader activity = cameraHost();
+                  if (result.authorizationChanged) activity.launchDirectExternalCameraOutput(path, true);
+                  else Launcher4A.pictureTaken(1);
+              });
+          } else {
+              Launcher4A.pictureTaken(1);
+          }
+      } catch (RuntimeException failure) {
+          AndroidUtils.handleException(failure, false);
+          Launcher4A.pictureTaken(1);
+      }
+  }
+
+  private void copyCapturedImage(Uri sourceUri, boolean permissionRetry) {
+      UriCopyResult copy = copyContentUri(sourceUri, imageFN);
+      if (copy.destinationDenied && !permissionRetry) {
+          AndroidPermissionManager.requestFileAccess(result -> {
+              Loader activity = cameraHost();
+              if (result.authorizationChanged) {
+                  activity.copyCapturedImage(sourceUri, true);
+              } else {
+                  activity.completeExternalCamera(false);
+              }
+          });
+          return;
+      }
+      if (!copy.succeeded) {
+          if (copy.failure != null) {
+              AndroidUtils.handleException(copy.failure, false);
+          }
+          completeExternalCamera(false);
+          return;
+      }
+      autoRotatePhoto(getContentResolver(), imageFN);
+      completeExternalCamera(true);
+  }
+
+  private void completeExternalCamera(boolean succeeded) {
+      Uri uri = capturedImageURI;
+      if (capturedCameraMediaStoreEntry && uri != null) {
+          if (succeeded) {
+              ContentValues values = new ContentValues();
+              values.put(MediaStore.MediaColumns.IS_PENDING, 0);
+              try {
+                  succeeded = getContentResolver().update(uri, values, null, null) > 0;
+              } catch (RuntimeException failure) {
+                  succeeded = false;
+              }
+          }
+          if (!succeeded) {
+              try {
+                  getContentResolver().delete(uri, null, null);
+              } catch (RuntimeException ignored) {
+              }
+          }
+      }
+      if (capturedCameraFile != null && (!succeeded || !capturedCameraKeepOriginal)) {
+          try {
+              capturedCameraFile.delete();
+          } catch (SecurityException ignored) {
+          }
+      }
+      capturedImageURI = null;
+      capturedCameraFile = null;
+      capturedCameraMediaStoreEntry = false;
+      capturedCameraKeepOriginal = false;
+      Launcher4A.pictureTaken(succeeded ? 0 : 1);
+  }
+
+    private void captureCamera(String s, int quality, int width, int height, boolean allowRotation, int cameraType, int videoTimeLimit, int targetFps, int bitrate, int captureMode) {
         try {
             imageFN = s;
             this.cameraType = cameraType;
@@ -456,10 +582,7 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
                     "Taking photo " + width + "x" + height + " from "
                             + cameraTypes[0 <= cameraType && cameraType <= 5 ? cameraType : 6]);
             if (cameraType == FROM_GALLERY) {
-                Intent i = new Intent();
-                i.setType("image/*");
-                i.setAction(Intent.ACTION_GET_CONTENT);
-                startActivityForResult(i, SELECT_PICTURE);
+                launchGalleryPicker();
             } else if (cameraType == VIDEO_PLAYER) {
               Intent intent = new Intent(this, Class.forName(totalcrossPKG + ".VideoPlayerActivity"));
               intent.putExtra("video_path", s);
@@ -475,6 +598,7 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
                 intent.putExtra(VideoCaptureActivity.EXTRA_TARGET_FPS, targetFps);
                 intent.putExtra(VideoCaptureActivity.EXTRA_QUALITY, quality);
                 intent.putExtra("bitrate", bitrate);
+                intent.putExtra("capture_mode", captureMode);
                 startActivityForResult(intent, TAKE_PHOTO);
             } else if (cameraType == PICTURE_ONLY) {
                 Intent intent = new Intent(this, Class.forName(totalcrossPKG + ".VideoCaptureActivity"));
@@ -494,21 +618,12 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
                 intent.putExtra(VideoCaptureActivity.EXTRA_TARGET_FPS, targetFps);
                 intent.putExtra(VideoCaptureActivity.EXTRA_QUALITY, quality);
                 intent.putExtra("bitrate", bitrate);
+                intent.putExtra("capture_mode", captureMode);
                 startActivityForResult(intent, TAKE_PHOTO);
             } else if (cameraType == CAMERA_NATIVE || cameraType == CAMERA_NATIVE_NOCOPY) {
-                ContentValues values = new ContentValues();
-                values.put(MediaStore.Images.Media.TITLE, "tctemp.jpg");
-                values.put(MediaStore.Images.Media.IS_PRIVATE, 1);
-                capturedImageURI = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
-                Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                intent.putExtra(MediaStore.EXTRA_OUTPUT, capturedImageURI);
-                startActivityForResult(intent, EXTCAMERA_RETURN);
+                launchExternalCamera(cameraType, false);
             } else if ("SK GT-7340".equals(deviceId)) {
-                Uri outputFileUri = getFileUri4Intent(new File(s));
-                Intent intent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                intent.putExtra(android.provider.MediaStore.EXTRA_OUTPUT, outputFileUri);
-                startActivityForResult(intent, CAMERA_PIC_REQUEST);
+                launchDirectExternalCameraOutput(s, false);
             } else { // CAMERA CUSTOM
                 Intent intent = new Intent(this, Class.forName(totalcrossPKG + ".CameraViewer"));
                 intent.putExtra("file", s);
@@ -516,6 +631,7 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
                 intent.putExtra("width", width);
                 intent.putExtra("height", height);
                 intent.putExtra("allowRotation", allowRotation);
+                intent.putExtra("capture_mode", captureMode);
                 startActivityForResult(intent, TAKE_PHOTO);
                 Launcher4A.instance.nativePrepareForPause();
             }
@@ -524,6 +640,153 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
             AndroidUtils.handleException(e, false);
             Launcher4A.pictureTaken(1);
         }
+    }
+
+    private void launchGalleryPicker() {
+        Intent picker = null;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            Intent photoPicker = new Intent(MediaStore.ACTION_PICK_IMAGES);
+            photoPicker.setType("image/*");
+            if (photoPicker.resolveActivity(getPackageManager()) != null) {
+                picker = photoPicker;
+            }
+        }
+        if (picker == null) {
+            Intent getContent = new Intent(Intent.ACTION_GET_CONTENT);
+            getContent.setType("image/*");
+            getContent.addCategory(Intent.CATEGORY_OPENABLE);
+            if (getContent.resolveActivity(getPackageManager()) != null) {
+                picker = getContent;
+            }
+        }
+        if (picker == null) {
+            Launcher4A.pictureTaken(1);
+            return;
+        }
+        try {
+            startActivityForResult(picker, SELECT_PICTURE);
+        } catch (ActivityNotFoundException unavailable) {
+            Launcher4A.pictureTaken(1);
+        }
+    }
+
+    private void copyGallerySelection(Uri sourceUri, boolean permissionRetry) {
+        UriCopyResult copy = copyContentUri(sourceUri, imageFN);
+        if (copy.destinationDenied && !permissionRetry) {
+            AndroidPermissionManager.requestFileAccess(result -> {
+                Loader activity = cameraHost();
+                if (result.authorizationChanged) {
+                    activity.copyGallerySelection(sourceUri, true);
+                } else {
+                    Launcher4A.pictureTaken(1);
+                }
+            });
+            return;
+        }
+        if (!copy.succeeded) {
+            if (copy.failure != null) {
+                AndroidUtils.handleException(copy.failure, false);
+            }
+            Launcher4A.pictureTaken(1);
+            return;
+        }
+        autoRotatePhoto(getContentResolver(), imageFN);
+        Launcher4A.pictureTaken(0);
+    }
+
+    private UriCopyResult copyContentUri(Uri sourceUri, String destinationPath) {
+        if (sourceUri == null || destinationPath == null) {
+            return new UriCopyResult(false, false, new IOException("The selected image URI or destination is missing."));
+        }
+        InputStream input;
+        try {
+            input = getContentResolver().openInputStream(sourceUri);
+        } catch (IOException | SecurityException sourceFailure) {
+            return new UriCopyResult(false, false, new IOException("Unable to read the selected image URI.", sourceFailure));
+        }
+        if (input == null) {
+            return new UriCopyResult(false, false, new IOException("The selected image provider returned no stream."));
+        }
+
+        OutputStream output;
+        try {
+            output = new FileOutputStream(destinationPath);
+        } catch (SecurityException destinationFailure) {
+            closeQuietly(input);
+            return new UriCopyResult(false, true, null);
+        } catch (IOException destinationFailure) {
+            closeQuietly(input);
+            return isFileAccessDenied(destinationFailure)
+                    ? new UriCopyResult(false, true, null)
+                    : new UriCopyResult(false, false, destinationFailure);
+        }
+
+        IOException failure = null;
+        boolean destinationDenied = false;
+        byte[] buffer = new byte[8192];
+        while (true) {
+            int count;
+            try {
+                count = input.read(buffer);
+            } catch (IOException | SecurityException sourceFailure) {
+                failure = new IOException("Unable to read the selected image content.", sourceFailure);
+                break;
+            }
+            if (count < 0) {
+                break;
+            }
+            try {
+                output.write(buffer, 0, count);
+            } catch (IOException destinationFailure) {
+                if (isFileAccessDenied(destinationFailure)) {
+                    destinationDenied = true;
+                } else {
+                    failure = destinationFailure;
+                }
+                break;
+            } catch (SecurityException destinationFailure) {
+                destinationDenied = true;
+                break;
+            }
+        }
+        try {
+            output.close();
+        } catch (SecurityException destinationFailure) {
+            destinationDenied = true;
+        } catch (IOException destinationFailure) {
+            if (isFileAccessDenied(destinationFailure)) {
+                destinationDenied = true;
+            } else if (failure == null) {
+                failure = destinationFailure;
+            }
+        }
+        closeQuietly(input);
+
+        File destination = new File(destinationPath);
+        if (!destinationDenied && failure == null && (!destination.isFile() || destination.length() == 0)) {
+            failure = new IOException("The image provider returned an empty image.");
+        }
+        return new UriCopyResult(!destinationDenied && failure == null, destinationDenied, failure);
+    }
+
+    private static void closeQuietly(InputStream input) {
+        try {
+            input.close();
+        } catch (IOException | SecurityException ignored) {
+        }
+    }
+
+    private Loader cameraHost() {
+        Loader activity = currentLoader;
+        return activity == null ? this : activity;
+    }
+
+    private static boolean isFileAccessDenied(IOException failure) {
+        String message = failure.getMessage();
+        if (message == null) return false;
+        String normalized = message.toLowerCase(Locale.ROOT);
+        return normalized.contains("eacces") || normalized.contains("eperm")
+                || normalized.contains("permission denied");
     }
 
     private void dialNumber(String number)
@@ -820,7 +1083,8 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
                   b.getInt("showCamera.cameraType"),
                   b.getInt("showCamera.videoTimeLimit"),
                   b.getInt("showCamera.targetFps"),
-                  b.getInt("showCamera.bitrate")
+                  b.getInt("showCamera.bitrate"),
+                  b.getInt("showCamera.captureMode")
                 );
         break;
       case TITLE:
@@ -1291,13 +1555,21 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
       Launcher4A.hardwareKeyboardIsVisible = config.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO || config.keyboard == Configuration.KEYBOARD_QWERTY; // motorola titanium returns HARDKEYBOARDHIDDEN_YES but KEYBOARD_QWERTY. In soft inputs, it returns KEYBOARD_NOKEYS
   }
 
+   @Override
    protected void onSaveInstanceState(Bundle outState) 
    {
-    outState.clear();
+    super.onSaveInstanceState(outState);
+    if (capturedImageURI != null) outState.putParcelable("camera.output_uri", capturedImageURI);
+    if (capturedCameraFile != null) outState.putString("camera.output_file", capturedCameraFile.getAbsolutePath());
+    outState.putBoolean("camera.media_store_entry", capturedCameraMediaStoreEntry);
+    outState.putBoolean("camera.keep_original", capturedCameraKeepOriginal);
+    if (imageFN != null) outState.putString("camera.destination", imageFN);
+    outState.putInt("camera.type", cameraType);
   }
 
    protected void onDestroy()
    {
+    if (currentLoader == this) currentLoader = null;
     if (runningVM) // guich@tc126_60: call app 1, home, call app 2: onDestroy is called
       quitVM();
     super.onDestroy();
@@ -1331,6 +1603,7 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
 
    protected void onResume()
    {
+    currentLoader = this;
     AndroidPermissionManager.attach(this);
     if (onMainLoop)
       Launcher4A.appResumed();

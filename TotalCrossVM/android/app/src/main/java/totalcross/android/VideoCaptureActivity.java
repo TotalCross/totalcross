@@ -1,17 +1,16 @@
+// Copyright (C) 2025-2026 Amalgam Solucoes em TI Ltda
+//
+// SPDX-License-Identifier: LGPL-2.1-only
+
 package totalcross.android;
 
 import static android.view.View.INVISIBLE;
 import static android.view.View.VISIBLE;
 
-import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import android.Manifest;
 import android.graphics.Color;
-import android.graphics.Matrix;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -31,7 +30,6 @@ import androidx.camera.core.Camera;
 import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ImageCapture;
 import androidx.camera.core.ImageCaptureException;
-import androidx.camera.core.ImageProxy;
 import androidx.camera.core.Preview;
 import androidx.camera.core.resolutionselector.AspectRatioStrategy;
 import androidx.camera.core.resolutionselector.ResolutionSelector;
@@ -45,15 +43,12 @@ import androidx.camera.video.Recording;
 import androidx.camera.video.VideoCapture;
 import androidx.camera.video.VideoRecordEvent;
 import androidx.camera.view.PreviewView;
-import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.google.common.util.concurrent.ListenableFuture;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -99,7 +94,6 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
 
     private String lastSavedVideoPath = null;
 
-    private static final int REQ_PERMS = 101;
     private static final int PLAYBACK_REQ = 201; // new request code for the player
     private static final int IMAGE_REQ = 301;
 
@@ -143,6 +137,10 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
     public static final int MODE_FULL = 2;
 
     private int captureMode;
+    private boolean audioRequired;
+    private boolean recordingGestureActive;
+    private boolean microphoneRequestPending;
+    private boolean cameraPermissionRequestStarted;
 
     boolean flashEnabled;
 
@@ -153,6 +151,7 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        AndroidPermissionManager.attach(this);
         setContentView(R.layout.activity_video_capture);
 
         tvTimer = findViewById(R.id.tvTimer);
@@ -194,6 +193,7 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
 
         Bundle b = getIntent().getExtras();
         captureMode = b.getInt("mode");
+        audioRequired = captureMode != MODE_PICTURE && b.getInt("capture_mode", 0) != 1;
         maxSeconds = Math.max(1, b.getInt(EXTRA_MAX_SECONDS, 30));
         targetFps = Math.max(5, b.getInt(EXTRA_TARGET_FPS, 30));
         width = b.getInt("width");
@@ -210,8 +210,8 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
         progressDrawable = new RecordProgressDrawable();
 
         btnRecord.setOnTouchListener((v, ev) -> {
-            if (!permissionsGranted()) {
-                requestPermissions();
+            if (!hasCameraPermission()) {
+                requestCameraPermission();
                 return true;
             }
             switch (ev.getAction()) {
@@ -219,21 +219,23 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
                     btnSwitchCamera.setEnabled(false);
 
                     if (captureMode != MODE_PICTURE) {
+                        recordingGestureActive = true;
                         btnRecord.setImageDrawable(progressDrawable);
                         videoCapture.setTargetRotation(deviceOrientation);
 
-                        startRecording();
-                        startProgress();
+                        requestMicrophoneAndStartRecording();
                     }
                     return true;
 
                 case MotionEvent.ACTION_UP:
                 case MotionEvent.ACTION_CANCEL:
+                    recordingGestureActive = false;
                     if (captureMode == MODE_PICTURE) {
                         takePhoto();
                     } else {
                         stopRecording();
                         stopProgress();
+                        btnRecord.setImageResource(R.drawable.bg_record_button_small);
                     }
 
                     flashEnabled = false;
@@ -245,6 +247,8 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
         });
 
         btnBackCapture.setOnClickListener(v -> {
+            stopRecording();
+            stopProgress();
             setResult(RESULT_CANCELED);
             finish();
         });
@@ -278,32 +282,41 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
         };
         orientationEventListener.enable();
 
-        if (permissionsGranted()) startCamera();
-        else requestPermissions();
     }
 
     // ================================
     // PERMISSIONS
     // ================================
-    private boolean permissionsGranted() {
-        return ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
-                && ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED;
+    private boolean hasCameraPermission() {
+        return AndroidPermissionManager.isAuthorized(Manifest.permission.CAMERA);
     }
 
-    private void requestPermissions() {
-        ActivityCompat.requestPermissions(this,
-                new String[]{Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO}, REQ_PERMS);
+    private void requestCameraPermission() {
+        AndroidPermissionManager.requestRuntime(result -> {
+            if (result.granted && hasCameraPermission() && !isFinishing() && !isDestroyed()) {
+                startCamera();
+            } else if (!isFinishing() && !isDestroyed()) {
+                Toast.makeText(this, "Camera permission is required to use the camera.", Toast.LENGTH_LONG).show();
+                setResult(RESULT_CANCELED);
+                finish();
+            }
+        }, Manifest.permission.CAMERA);
     }
 
     @Override
-    public void onRequestPermissionsResult(int code, @NonNull String[] p, @NonNull int[] r) {
-        super.onRequestPermissionsResult(code, p, r);
-        if (code == REQ_PERMS && permissionsGranted()) {
-            startCamera();
-        } else {
-            Toast.makeText(this, "Permissões necessárias", Toast.LENGTH_LONG).show();
-            finish();
+    protected void onResume() {
+        AndroidPermissionManager.attach(this);
+        super.onResume();
+        if (!cameraPermissionRequestStarted) {
+            cameraPermissionRequestStarted = true;
+            requestCameraPermission();
         }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        AndroidPermissionManager.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
     private void startCamera() {
@@ -315,6 +328,12 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
                 cameraProvider = future.get();
                 bindCamera();
             } catch (ExecutionException | InterruptedException ignored) {
+                setResult(RESULT_CANCELED);
+                finish();
+            } catch (RuntimeException failure) {
+                AndroidUtils.handleException(failure, false);
+                setResult(RESULT_CANCELED);
+                finish();
             }
         }, ContextCompat.getMainExecutor(this));
     }
@@ -397,7 +416,33 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
         enablePinchToZoom(this, camera, previewView);
     }
 
-    private void startRecording() {
+    private void requestMicrophoneAndStartRecording() {
+        if (videoCapture == null || activeRecording != null || microphoneRequestPending) {
+            return;
+        }
+        if (!audioRequired) {
+            startRecordingNow(false);
+            return;
+        }
+        microphoneRequestPending = true;
+        AndroidPermissionManager.requestRuntime(result -> {
+            microphoneRequestPending = false;
+            if (result.granted && recordingGestureActive && !isFinishing()) {
+                startRecordingNow(true);
+            } else if (!result.granted) {
+                Toast.makeText(this, "Microphone permission is required for audio recording.", Toast.LENGTH_LONG).show();
+                stopProgress();
+                btnRecord.setImageResource(R.drawable.bg_record_button_small);
+                btnSwitchCamera.setEnabled(true);
+                if (captureMode == MODE_VIDEO) {
+                    setResult(RESULT_CANCELED);
+                    finish();
+                }
+            }
+        }, Manifest.permission.RECORD_AUDIO);
+    }
+
+    private void startRecordingNow(boolean withAudio) {
         if (videoCapture == null) {
             return;
         }
@@ -406,11 +451,13 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
         FileOutputOptions outputOptions =
                 new FileOutputOptions.Builder(file).build();
 
-        activeRecording =
-                videoCapture.getOutput()
-                        .prepareRecording(this, outputOptions)
-                        .withAudioEnabled()
-                        .start(ContextCompat.getMainExecutor(this),
+        try {
+            androidx.camera.video.PendingRecording pendingRecording =
+                    videoCapture.getOutput().prepareRecording(this, outputOptions);
+            if (withAudio) {
+                pendingRecording = pendingRecording.withAudioEnabled();
+            }
+            activeRecording = pendingRecording.start(ContextCompat.getMainExecutor(this),
                                 event -> {
                                     if (event instanceof VideoRecordEvent.Status) {
                                         VideoRecordEvent.Status s = (VideoRecordEvent.Status) event;
@@ -427,33 +474,89 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
                                         );
                                     }
                                     if (event instanceof VideoRecordEvent.Finalize) {
+                                        if (isFinishing()) return;
                                         tvTimer.setVisibility(View.GONE);
                                         VideoRecordEvent.Finalize finalize =
                                                 (VideoRecordEvent.Finalize) event;
 
                                         if (!finalize.hasError()) {
-                                            openVideoPlayer(lastSavedVideoPath);
+                                            if (file.isFile() && file.length() > 0 && !isFinishing()) {
+                                                openVideoPlayer(lastSavedVideoPath);
+                                            } else {
+                                                file.delete();
+                                                if (!isFinishing()) {
+                                                    setResult(RESULT_CANCELED);
+                                                    finish();
+                                                }
+                                            }
                                         } else {
+                                            if (isFileAccessDenied(finalize.getCause())) {
+                                                requestFileAccessAfterCameraFailure();
+                                            }
                                             if (TimeUnit.NANOSECONDS.toMillis(
                                                     finalize.getRecordingStats().getRecordedDurationNanos()
                                             ) < PHOTO_THRESHOLD_MS) {
                                                 // it's fine
                                                 if (captureMode == MODE_FULL) {
+                                                    file.delete();
                                                     takePhoto();
                                                 }
                                             } else {
                                                 file.delete();
                                                 Toast.makeText(
                                                         this,
-                                                        "Record failed: " + ((VideoRecordEvent.Finalize) event).getError(),
+                                                        "Record failed: " + finalize.getError(),
                                                         Toast.LENGTH_LONG
                                                 ).show();
+                                                if (captureMode == MODE_VIDEO) {
+                                                    setResult(RESULT_CANCELED);
+                                                    finish();
+                                                }
                                             }
                                         }
                                     }
                                 });
+            startProgress();
+        } catch (SecurityException deniedOutput) {
+            if (isFileAccessDenied(deniedOutput)) requestFileAccessAfterCameraFailure();
+            failRecordingStart(deniedOutput);
+        } catch (RuntimeException failure) {
+            failRecordingStart(failure);
+        }
     }
 
+
+    private void failRecordingStart(Throwable failure) {
+        AndroidUtils.handleException(failure, false);
+        stopProgress();
+        btnRecord.setImageResource(R.drawable.bg_record_button_small);
+        btnSwitchCamera.setEnabled(true);
+        setResult(RESULT_CANCELED);
+        if (captureMode == MODE_VIDEO) finish();
+    }
+
+    private void requestFileAccessAfterCameraFailure() {
+        AndroidPermissionManager.requestFileAccess(result -> {
+            String message = result.authorizationChanged
+                    ? "File access changed. Start the recording again."
+                    : "Unable to access the selected output file.";
+            Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+        });
+    }
+
+    private boolean isFileAccessDenied(Throwable failure) {
+        while (failure != null) {
+            String message = failure.getMessage();
+            if (message != null) {
+                String normalized = message.toLowerCase(Locale.ROOT);
+                if (normalized.contains("eacces") || normalized.contains("eperm")
+                        || (normalized.contains("permission denied")
+                        && !normalized.contains("camera") && !normalized.contains("microphone"))) return true;
+            }
+            failure = failure.getCause();
+        }
+        return false;
+    }
 
     private void stopRecording() {
         if (activeRecording != null) {
@@ -506,68 +609,49 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
     }
 
     private void takePhoto() {
+        takePhoto(false);
+    }
+
+    private void takePhoto(boolean permissionRetry) {
         if (imageCapture == null) return;
-
-//        File dir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-//        if (dir != null && !dir.exists()) dir.mkdirs();
-//
-//        String ts = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
-//        File photoFile = new File(dir, "IMG_" + ts + ".jpg");
         File photoFile = new File(lastSavedVideoPath);
+        ImageCapture.OutputFileOptions options = new ImageCapture.OutputFileOptions.Builder(photoFile).build();
+        imageCapture.takePicture(options, ContextCompat.getMainExecutor(this), new ImageCapture.OnImageSavedCallback() {
+            @Override
+            public void onImageSaved(@NonNull ImageCapture.OutputFileResults results) {
+                if (!photoFile.isFile() || photoFile.length() == 0) {
+                    failPhotoCapture(new IOException("Camera produced an empty image file."), photoFile);
+                    return;
+                }
+                try {
+                    openImagePreview(photoFile.getAbsolutePath());
+                } catch (RuntimeException failure) {
+                    failPhotoCapture(failure, photoFile);
+                }
+            }
 
-        ImageCapture.OutputFileOptions options =
-                new ImageCapture.OutputFileOptions.Builder(photoFile).build();
-
-        imageCapture.takePicture(
-                ContextCompat.getMainExecutor(this),
-                new ImageCapture.OnImageCapturedCallback() {
-                    @Override
-                    public void onCaptureSuccess(@NonNull ImageProxy image) {
-                        int rotation = image.getImageInfo().getRotationDegrees();
-
-                        // 1. Convert ImageProxy to Bitmap
-                        Bitmap bmp = imageProxyToBitmap(image);
-
-                        // 2. Adjust rotation
-                        bmp = rotateBitmap(bmp, rotation);
-
-                        try {
-                            OutputStream outStream = getContentResolver().openOutputStream(Uri.fromFile(photoFile));
-                            saveBitmap(bmp, outStream);
-                            openImagePreview(photoFile.getAbsolutePath());
-                        } catch (IOException e) {
-                            AndroidUtils.handleException(e, false);
+            @Override
+            public void onError(@NonNull ImageCaptureException exception) {
+                if (!permissionRetry && isFileAccessDenied(exception.getCause())) {
+                    AndroidPermissionManager.requestFileAccess(result -> {
+                        if (result.authorizationChanged && !isFinishing()) {
+                            takePhoto(true);
+                        } else {
+                            failPhotoCapture(exception, photoFile);
                         }
-
-                        image.close();
-                    }
-
-                    @Override
-                    public void onError(@NonNull ImageCaptureException exception) {
-                        AndroidUtils.handleException(exception, false);
-                        setResult(RESULT_CANCELED);
-                        finish();
-                    }
-                });
+                    });
+                } else {
+                    failPhotoCapture(exception, photoFile);
+                }
+            }
+        });
     }
 
-    private Bitmap imageProxyToBitmap(ImageProxy image) {
-        ByteBuffer buffer = image.getPlanes()[0].getBuffer();
-        byte[] bytes = new byte[buffer.remaining()];
-        buffer.get(bytes);
-        return BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-    }
-
-    private Bitmap rotateBitmap(Bitmap bitmap, int rotationDegrees) {
-        Matrix matrix = new Matrix();
-        matrix.postRotate(rotationDegrees);
-        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
-    }
-
-    private void saveBitmap(Bitmap bitmap, OutputStream outStream) throws IOException {
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 85, outStream);
-        outStream.flush();
-        outStream.close();
+    private void failPhotoCapture(Throwable failure, File photoFile) {
+        if (photoFile.exists() && photoFile.length() == 0) photoFile.delete();
+        AndroidUtils.handleException(failure, false);
+        setResult(RESULT_CANCELED);
+        finish();
     }
 
     private void openVideoPlayer(String path) {
@@ -595,6 +679,7 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (AndroidPermissionManager.onActivityResult(requestCode, resultCode)) return;
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == PLAYBACK_REQ || requestCode == IMAGE_REQ) {
             if (resultCode == RESULT_OK) {
@@ -604,6 +689,13 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
                 startCamera();
             }
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        stopRecording();
+        stopProgress();
+        super.onDestroy();
     }
 
     /* =========================
