@@ -44,6 +44,34 @@ class NativeBridgeGeneratorTest {
   }
 
   @Test
+  void emitsLegacyCompatibilityBridgeInHeaderAndRegistration(@TempDir Path tempDir) throws Exception {
+    Path classes = tempDir.resolve("classes");
+    writeNativeClass(classes, "totalcross/test/LegacyBridgeFixture", "currentNative");
+    NativeBridgeModel.Entry currentEntry = NativeBridgeModel.fromPaths(java.util.List.of(classes)).entries.get(0);
+
+    Path compatibilityFile = tempDir.resolve("native-bridge-compat.txt");
+    Files.writeString(compatibilityFile, "bridge\ttuiI_createJpgNative_si\n");
+    Path nativeSources = tempDir.resolve("native");
+    Files.createDirectories(nativeSources);
+    Files.writeString(nativeSources.resolve("bridge.c"),
+        "TC_API void " + currentEntry.symbol + "(NMParams p) { (void)p; }\n"
+            + "TC_API void tuiI_createJpgNative_si(NMParams p) { (void)p; }\n");
+
+    Path generated = tempDir.resolve("generated");
+    NativeBridgeGenerator.main(new String[] {
+        "--strict", "--output", generated.toString(),
+        "--compat", compatibilityFile.toString(),
+        "--native-source-root", nativeSources.toString(),
+        classes.toString()
+    });
+
+    assertTrue(Files.readString(generated.resolve("NativeMethods.generated.h"))
+        .contains("TC_API void tuiI_createJpgNative_si(NMParams p);"));
+    assertTrue(Files.readString(generated.resolve("nativeProcAddressesTC.generated.inc"))
+        .contains("hashCode(\"tuiI_createJpgNative_si\")"));
+  }
+
+  @Test
   void strictGenerationRejectsThirtyTwoCharacterCollision(@TempDir Path tempDir) throws Exception {
     ClassWriter writer = new ClassWriter(0);
     writer.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC, "totalcross/test/NativeBridgeFixture", null,
