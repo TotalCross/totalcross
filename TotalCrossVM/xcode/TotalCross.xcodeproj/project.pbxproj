@@ -33,6 +33,7 @@
 		D598D4851EB89096005C3DAE /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D598D4841EB89096005C3DAE /* MessageUI.framework */; };
 		D598D4871EB890AB005C3DAE /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D598D4861EB890AB005C3DAE /* CoreVideo.framework */; };
 		D598D4891EB890C8005C3DAE /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D598D4881EB890C8005C3DAE /* AVFoundation.framework */; };
+		A50700000000000000000001 /* Speech.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A50700000000000000000002 /* Speech.framework */; };
 		D598D48B1EB890E0005C3DAE /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D598D48A1EB890E0005C3DAE /* CoreMedia.framework */; };
 		D598D48D1EB890FC005C3DAE /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D598D48C1EB890FB005C3DAE /* SystemConfiguration.framework */; };
 		D598D48F1EB89126005C3DAE /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = D598D48E1EB89126005C3DAE /* libz.tbd */; };
@@ -87,6 +88,7 @@
 		D598D4841EB89096005C3DAE /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
 		D598D4861EB890AB005C3DAE /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
 		D598D4881EB890C8005C3DAE /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
+		A50700000000000000000002 /* Speech.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Speech.framework; path = System/Library/Frameworks/Speech.framework; sourceTree = SDKROOT; };
 		D598D48A1EB890E0005C3DAE /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = System/Library/Frameworks/CoreMedia.framework; sourceTree = SDKROOT; };
 		D598D48C1EB890FB005C3DAE /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		D598D48E1EB89126005C3DAE /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
@@ -106,6 +108,7 @@
 				D598D48D1EB890FC005C3DAE /* SystemConfiguration.framework in Frameworks */,
 				D598D48B1EB890E0005C3DAE /* CoreMedia.framework in Frameworks */,
 				D598D4891EB890C8005C3DAE /* AVFoundation.framework in Frameworks */,
+				A50700000000000000000001 /* Speech.framework in Frameworks */,
 				D598D4871EB890AB005C3DAE /* CoreVideo.framework in Frameworks */,
 				D598D4851EB89096005C3DAE /* MessageUI.framework in Frameworks */,
 				D598D4831EB8907B005C3DAE /* CoreText.framework in Frameworks */,
@@ -157,6 +160,7 @@
 				D598D48C1EB890FB005C3DAE /* SystemConfiguration.framework */,
 				D598D48A1EB890E0005C3DAE /* CoreMedia.framework */,
 				D598D4881EB890C8005C3DAE /* AVFoundation.framework */,
+				A50700000000000000000002 /* Speech.framework */,
 				D598D4861EB890AB005C3DAE /* CoreVideo.framework */,
 				D598D4841EB89096005C3DAE /* MessageUI.framework */,
 				D598D4821EB8907B005C3DAE /* CoreText.framework */,
