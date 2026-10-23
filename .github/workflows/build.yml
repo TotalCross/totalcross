@@ -49,6 +49,9 @@ jobs:
         python3 scripts/test-build-identity.py
         python3 scripts/test-artifact-identity.py
 
+    - name: Validate iOS Xcode build diagnostic parser
+      run: python3 scripts/test-ios-xcode-build-timing.py
+
     - name: Select build scope
       id: select_build_scope
       shell: bash
@@ -1007,7 +1010,7 @@ jobs:
 
         echo "Installed iOS provisioning profile '${profile_name}' (${profile_uuid}) for team '${profile_team_id}' and app id '${profile_app_id}'."
 
-    - name: Generate and patch Xcode project
+    - name: Generate Xcode project with CMake
       working-directory: TotalCrossVM/xcode
       run: |
         cmake ../ \
@@ -1015,6 +1018,10 @@ jobs:
           -DCMAKE_SYSTEM_NAME=iOS \
           -DCMAKE_OSX_SYSROOT=iphoneos \
           -DCMAKE_OSX_ARCHITECTURES=arm64
+
+    - name: Install CocoaPods and patch Xcode project
+      working-directory: TotalCrossVM/xcode
+      run: |
         ruby -pi -e "gsub(\"config.build_settings['ARCHS[sdk=iphonesimulator*]'] = 'x86_64'\", \"config.build_settings['ARCHS[sdk=iphonesimulator*]'] = 'arm64'\")" Podfile
         pod install
         /usr/libexec/PlistBuddy -c "Add :DisableBuildSystemDeprecationDiagnostic bool" TotalCross.xcworkspace/xcshareddata/WorkspaceSettings.xcsettings || true
@@ -1043,6 +1050,7 @@ jobs:
         fi
 
         xcodebuild \
+          -showBuildTimingSummary \
           -workspace TotalCross.xcworkspace \
           -scheme TotalCross \
           BUILD_DIR=${PWD} \
@@ -1054,6 +1062,14 @@ jobs:
           "${signing_args[@]}" \
           archive \
           2>&1 | tee build/logs/xcodebuild-raw.log | xcbeautify
+
+    - name: Summarize Xcode build timings
+      if: always()
+      working-directory: TotalCrossVM/xcode
+      run: |
+        python3 ../../scripts/summarize-ios-xcode-build.py \
+          --log build/logs/xcodebuild-raw.log \
+          --output build/logs/ios-build-summary.md
 
     - name: Export signed iOS IPA
       if: ${{ inputs.signed-ios }}
@@ -1076,6 +1092,7 @@ jobs:
         name: ios-xcodebuild-diagnostics
         path: |
           TotalCrossVM/xcode/build/logs/xcodebuild-raw.log
+          TotalCrossVM/xcode/build/logs/ios-build-summary.md
           TotalCrossVM/xcode/build/logs/xcodebuild-export-raw.log
           TotalCrossVM/xcode/build/logs/TotalCross.xcresult
         if-no-files-found: warn
