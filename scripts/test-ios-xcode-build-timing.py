@@ -36,12 +36,16 @@ class XcodeSummaryTests(unittest.TestCase):
     def test_failed_build_without_timing(self):
         summary = module.summarize("CompileC /a/x.o x.c\n** ARCHIVE FAILED **")
         self.assertIn("| Unattributed | 1 |", summary)
-        self.assertIn("Not found", summary)
+        self.assertIn("Not emitted", summary)
+
+    def test_archive_elapsed_from_xcresult(self):
+        summary = module.summarize("", {"startTime": 5.25, "endTime": 25.75})
+        self.assertIn("20.5 seconds", summary)
 
     def test_empty_log(self):
         summary = module.summarize("")
         self.assertIn("| **Total** | **0** |", summary)
-        self.assertIn("Not found", summary)
+        self.assertIn("Not emitted", summary)
 
 
 if __name__ == "__main__":

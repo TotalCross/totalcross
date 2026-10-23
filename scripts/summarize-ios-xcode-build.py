@@ -5,6 +5,7 @@
 """Summarize raw Xcode archive diagnostics without affecting build status."""
 
 import argparse
+import json
 from collections import Counter
 import os
 from pathlib import Path
@@ -14,7 +15,7 @@ COMPILE = re.compile(r"^CompileC\s")
 TARGET = re.compile(r"\(in target '([^']+)' from project '([^']+)'\)")
 
 
-def summarize(content):
+def summarize(content, build_results=None):
     lines = content.splitlines()
     groups = Counter()
     for line in lines:
@@ -47,11 +48,19 @@ def summarize(content):
     for group in ("TCVM", "CocoaPods", "Application/other", "Unattributed"):
         report.append(f"| {group} | {groups[group]} |")
     report.append(f"| **Total** | **{sum(groups.values())}** |")
+    report.extend(["", "### Xcode archive elapsed time", ""])
+    try:
+        elapsed = float(build_results["endTime"]) - float(build_results["startTime"])
+        if elapsed < 0:
+            raise ValueError("negative interval")
+        report.append(f"From xcresult metadata: **{elapsed:.1f} seconds** (wall-clock, not per-task CPU time).")
+    except (TypeError, ValueError, KeyError):
+        report.append("Unavailable in Xcode result metadata.")
     report.extend(["", "### Xcode Build Timing Summary", ""])
     if timing:
         report.extend(["```text", *timing, "```"])
     else:
-        report.append("Not found (for example, when archive fails before timing is emitted).")
+        report.append("Not emitted by this archive action; see the xcresult build log in diagnostics.")
     report.append("")
     return "\n".join(report)
 
@@ -60,9 +69,16 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--log", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--build-results", type=Path)
     args = parser.parse_args()
     raw = args.log.read_text(encoding="utf-8", errors="replace") if args.log.is_file() else ""
-    report = summarize(raw)
+    result = None
+    if args.build_results and args.build_results.is_file():
+        try:
+            result = json.loads(args.build_results.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            pass
+    report = summarize(raw, result)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(report, encoding="utf-8")
     summary = os.getenv("GITHUB_STEP_SUMMARY")

@@ -6,6 +6,12 @@
 name: Merge flow
 on:
   workflow_dispatch:
+    inputs:
+      ios-xcode-cache-experiment:
+        description: Experiment with iOS Xcode intermediate caching (unsigned manual build only)
+        required: false
+        type: boolean
+        default: false
   push:
     branches: [ master ]
   pull_request:
@@ -15,4 +21,5 @@ jobs:
     uses: ./.github/workflows/build.yml
     with:
       selective: ${{ github.event_name == 'pull_request' }}
+      ios-xcode-cache-experiment: ${{ inputs.ios-xcode-cache-experiment || false }}
     secrets: inherit
