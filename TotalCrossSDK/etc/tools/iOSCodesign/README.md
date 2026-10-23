@@ -1,3 +1,10 @@
+<!--
+Copyright (C) 2020-2021 TotalCross Global Mobile Platform Ltda
+Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
+
+SPDX-License-Identifier: LGPL-2.1-only
+-->
+
 # Preparing Environment
 
 1. In terminal, unzip `TotalCross-iOSCodesign.zip` and cd  to `TotalCross-iOSCodesign/`.
@@ -21,4 +28,4 @@ Having all of those parameters, you will be able to run the following command:
 
 ```
 
-If --output or -o is was not specified  the resigned app **Appname.ipa** will be exported to `[tccodesign.sh directory]/build`.
+By default, the signed IPA is exported to `build/` relative to the current working directory. Use `--output DIR` (or `-o DIR`) to change the base directory, and optionally `--group NAME` to append a single client/project subdirectory. For example, `--output /exports --group client-a` exports to `/exports/client-a/`. The group must be 1-64 characters (letters, digits, `-` and `_`) and start with a letter or digit. Use `--help` for all options; invoking the script without arguments also shows help.
