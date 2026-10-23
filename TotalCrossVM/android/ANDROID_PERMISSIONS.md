@@ -59,16 +59,25 @@ app-specific Settings screens. They are never sent through the ordinary runtime
 permission dialog. Each flow checks the resulting authorization again when the
 user returns. Media declarations do not make arbitrary files readable: a file
 operation can still require all-files access, and the system may reject the
-operation after media authorization.
+operation after media authorization. Settings screens are launched directly
+with controlled failure handling rather than checked through package visibility.
+Repeated automatic filesystem failures are suppressed only while the permission
+snapshot and foreground user-interaction generation are unchanged. A new user
+interaction can permit another recovery attempt, although Android may still
+suppress a runtime permission dialog after repeated denial.
 
 ## Camera, gallery, and video
 
 Camera hardware operations and barcode scanning request `CAMERA` only. Gallery
-selection and video playback do not request camera access. On Android 13 and
-newer, image selection uses the system photo picker when it is available; older
-or unsupported configurations use `ACTION_GET_CONTENT`. The selected
-`content://` stream is copied to the existing TotalCross output filename, so
-explicit user selection does not need broad media permissions.
+selection and video playback do not request camera access. On Android 11 and
+newer, image selection first attempts the system photo picker, including on
+devices with a supporting modular system update, and falls back to
+`ACTION_GET_CONTENT` if that activity is unavailable. Older Android versions
+use `ACTION_GET_CONTENT` directly. The selected `content://` stream is copied
+to a temporary file beside the existing TotalCross output filename and replaces
+that destination only after the full copy and stream close succeed. Reading a
+source URI explicitly returned by a system picker does not require broad
+media-library permissions.
 
 `CAMERA_NATIVE` keeps a public original and returns a copy at the requested
 TotalCross path. Android 10 and newer store that original as an app-owned
@@ -79,13 +88,18 @@ and removes the temporary file. Neither flow resolves a gallery filesystem
 path or deletes an arbitrary gallery item. On older Android versions, a public
 camera destination may still depend on a declared legacy storage permission.
 
-CameraX still captures write directly to the requested file. Camera preview
-and photos request `CAMERA`, never microphone access. Video recording asks for
-`RECORD_AUDIO` immediately before recording when the selected capture mode
-includes audio. `CAMERACAPTURE_MODE_VIDEOONLY` records without audio and does
-not request microphone access. The existing audio-enabled video modes retain
-their behavior. `CAMERA_FULL` preview and still capture do not request the
-microphone.
+CameraX still captures write directly to the requested file. `CAMERA_PICTURE`
+requests `CAMERA` and never requests microphone permission. The
+`CAMERA_VIDEO_RECORDER` mode requests `RECORD_AUDIO` immediately before an
+audio-enabled recording starts. `CAMERA_FULL` keeps preview and photographs
+independent of microphone access and requests `RECORD_AUDIO` only when a
+sustained press starts an audio-enabled video recording. Denial leaves preview
+and still photographs available, but prevents that recording. Recording with
+audio disabled never requests or accesses `RECORD_AUDIO`. In `CAMERA_FULL`, a
+press shorter than 200 ms selects a photograph and a sustained press selects
+video.
+`CAMERACAPTURE_MODE_VIDEOONLY` records without audio and does not request
+microphone access.
 
 Speech input checks and requests `RECORD_AUDIO` before opening the external
 speech recognizer. Denial, cancellation, a missing recognizer, or an empty
@@ -103,6 +117,16 @@ allowed, TotalCross opens the app-specific unknown-sources Settings page and
 checks authorization again when the user returns. If the declaration is
 missing, the diagnostic names both supported Deploy options. The install
 permission is never requested at startup or for other `Vm.exec()` commands.
+
+## External activities
+
+The external camera, system photo picker, speech recognizer, APK installer, and
+app-specific Settings screens are launched directly and handle launch failures
+through their existing controlled result paths. They do not rely on
+`resolveActivity()` package-visibility prechecks. If the system photo picker
+cannot be launched on Android 11 or newer, image selection falls back to
+`ACTION_GET_CONTENT`; a picker cancellation after a successful launch does not
+trigger that fallback.
 
 ## Compatibility and policy
 
@@ -128,5 +152,13 @@ select permissions. Declared, applicable media or legacy storage permissions
 are requested together, followed by the separate all-files Settings flow when
 that permission is declared and supported. A failed system call is retried at
 most once after authorization changes. The flow does not retry recursively or
-run at startup. After a denied prompt, automatic recovery waits for a relevant
-authorization change; a later explicit operation can request again.
+run at startup. After a denied prompt, automatic recovery is suppressed while
+both the permission-state snapshot and user-interaction generation remain
+unchanged. A new foreground user interaction can permit another recovery
+attempt; repeated background failures and timer operations do not advance that
+generation. A relevant authorization change is detected even without a new
+interaction. Android may suppress subsequent runtime permission dialogs after
+repeated denials. A new user interaction permits another recovery attempt, but
+does not guarantee that Android will show a dialog or grant authorization.
+Explicit `requestFileAccess()` operations continue to bypass automatic
+suppression.
