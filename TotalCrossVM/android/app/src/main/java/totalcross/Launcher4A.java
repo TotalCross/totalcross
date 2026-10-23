@@ -98,7 +98,8 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
 {
    public static final boolean GENERATE_FONT = false;
 
-   public static boolean canQuit = true;
+   private static final Object CAN_QUIT_LOCK = new Object();
+   public static volatile boolean canQuit = true;
    public static Launcher4A instance;
    public static Loader loader;
    static SurfaceHolder surfHolder;
@@ -759,12 +760,18 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       }
       else
       {
-         if (eventThread != null) eventThread.running = false;
+         synchronized (CAN_QUIT_LOCK)
+         {
+            if (eventThread != null) eventThread.running = false;
+         }
          loader.finish();
          //if (!loader.isSingleApk())
             System.exit(3);
       }
-      canQuit = true;
+      synchronized (CAN_QUIT_LOCK)
+      {
+         canQuit = true;
+      }
    }
 
    public static void stopVM()
@@ -779,8 +786,11 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          msg.setData(b);
          viewhandler.sendMessage(msg);
       }
-      if (eventThread.running) // only in situation 2 
-         canQuit = false;
+      synchronized (CAN_QUIT_LOCK)
+      {
+         if (eventThread != null && eventThread.running) // only in situation 2
+            canQuit = false;
+      }
       instance.nativeOnEvent(Launcher4A.STOPVM_EVENT, 0,0,0,0,0);
    }
    
