@@ -53,6 +53,7 @@ import java.net.URISyntaxException;
 import java.nio.channels.FileChannel;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.text.SimpleDateFormat;
 
 import com.journeyapps.barcodescanner.ScanContract;
@@ -78,6 +79,8 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
   public static boolean IS_EMULATOR = android.os.Build.MODEL.toLowerCase().indexOf("sdk") >= 0;
   public Handler achandler;
   private boolean runningVM;
+  private final AtomicBoolean shutdownStarted = new AtomicBoolean();
+  private static final long VM_SHUTDOWN_TIMEOUT_MS = 10000;
   private static final int TAKE_PHOTO = 1234324330;
   private static final int JUST_QUIT = 1234324331;
   private static final int MAP_RETURN = 1234324332;
@@ -209,6 +212,7 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
           finishSpeechInput(requestCode, resultCode, data);
           return;
       }
+      if (Level5.getInstance().handleActivityResult(requestCode, resultCode)) return;
       switch (requestCode)
       {
     case FROM_SCANDIT:
@@ -238,9 +242,6 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
       } else {
           Launcher4A.pictureTaken(1);
       }
-      break;
-    case Level5.BT_MAKE_DISCOVERABLE:
-      Level5.getInstance().setResponse(resultCode != Activity.RESULT_CANCELED, null);
       break;
     case JUST_QUIT:
       finish();
@@ -1154,10 +1155,12 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
       public void handleMessage(Message msg) 
       {
       Bundle b = msg.getData();
-         switch (b.getInt("type"))
+         int messageType = msg.what == LEVEL5 ? LEVEL5 : b.getInt("type");
+         switch (messageType)
          {
       case LEVEL5:
-        Level5.getInstance().processMessage(b);
+        if (msg.obj instanceof BluetoothRequest)
+          Level5.getInstance().processMessage((BluetoothRequest)msg.obj);
         break;
       case DIAL:
         String nr = b.getString("dial.number");
@@ -1797,16 +1800,88 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
 
    private void quitVM()
    {
+    if (!shutdownStarted.compareAndSet(false, true)) return;
     runningVM = onMainLoop = false;
-    Launcher4A.stopVM();
-    while (!Launcher4A.canQuit)
-         try {Thread.sleep(10);} catch (Exception e) {}
-    Launcher4A.closeTCZs();
-    //Level5.getInstance().destroy();
-    android.os.Process.killProcess(android.os.Process.myPid());
-    // with these two lines, the application may have problems when then stub tries to load another vm instance.
-    //try {Thread.sleep(1000);} catch (Exception e) {} // let the app take time to exit
-    // System.exit(0); // make sure all threads will stop. also ensures that one app is not called as the app launched previously
+    try {
+      Level5.getInstance().shutdown();
+    } catch (Throwable failure) {
+      reportShutdownFailure(failure);
+    }
+
+    Throwable stopVMFailure = null;
+    boolean canQuitAtStopVMFailure = true;
+    try {
+      Launcher4A.stopVM();
+    } catch (Throwable failure) {
+      stopVMFailure = failure;
+      canQuitAtStopVMFailure = Launcher4A.canQuit;
+      reportShutdownFailure(failure);
+    }
+
+    final boolean stopVMFailed = stopVMFailure != null;
+    final boolean canQuitAtFailure = canQuitAtStopVMFailure;
+    Thread shutdownThread = new Thread(
+        () -> finishVMShutdown(stopVMFailed, canQuitAtFailure), "TotalCross-VM-Shutdown");
+    shutdownThread.setDaemon(true);
+    try {
+      shutdownThread.start();
+    } catch (Throwable failure) {
+      reportShutdownFailure(failure);
+      killCurrentProcess();
+    }
+  }
+
+  private void finishVMShutdown(boolean stopVMFailed, boolean canQuitAtFailure)
+  {
+    boolean observedPendingAcknowledgment = !stopVMFailed || !canQuitAtFailure;
+    if (stopVMFailed && canQuitAtFailure) {
+      killCurrentProcess();
+      return;
+    }
+
+    long deadline = SystemClock.elapsedRealtime() + VM_SHUTDOWN_TIMEOUT_MS;
+    while (SystemClock.elapsedRealtime() < deadline) {
+      if (!Launcher4A.canQuit) {
+        observedPendingAcknowledgment = true;
+      } else if (observedPendingAcknowledgment) {
+        try {
+          Launcher4A.closeTCZs();
+        } catch (Throwable failure) {
+          reportShutdownFailure(failure);
+        }
+        killCurrentProcess();
+        return;
+      }
+
+      try {
+        Thread.sleep(100);
+      } catch (InterruptedException interrupted) {
+        Thread.currentThread().interrupt();
+        reportShutdownFailure(interrupted);
+        killCurrentProcess();
+        return;
+      }
+    }
+    reportShutdownFailure(new IllegalStateException("Timed out waiting for the VM shutdown acknowledgment"));
+    killCurrentProcess();
+  }
+
+  private static void reportShutdownFailure(Throwable failure)
+  {
+    try {
+      Log.e("TotalCross", "VM shutdown failed", failure);
+    } catch (Throwable ignored) {
+      // Process termination must continue even if logging is unavailable.
+    }
+  }
+
+  private static void killCurrentProcess()
+  {
+    try {
+      android.os.Process.killProcess(android.os.Process.myPid());
+    } catch (Throwable failure) {
+      reportShutdownFailure(failure);
+    }
   }
 
    protected void onResume()
