@@ -310,10 +310,17 @@ public class Deploy {
         case 'a':
           if ("/android_signing_config".equals(op)) {
             Deployer4Android.signingPropertiesPath = args[++i];
+          } else if ("/android_permission".equals(op)) {
+            if (++i >= args.length) {
+              throw new DeployerException("Missing permission name after /android_permission. Example: /android_permission android.permission.CAMERA");
+            }
+            Deployer4Android.addAndroidPermission(args[i]);
           } else if ("/android_manage_external_storage".equals(op)) {
             Deployer4Android.permissionManageExternalStorage = true;
+            Deployer4Android.addAndroidPermission("android.permission.MANAGE_EXTERNAL_STORAGE");
           } else if ("/android_request_install_packages".equals(op)) {
             Deployer4Android.permissionRequestInstallPackages = true;
+            Deployer4Android.addAndroidPermission("android.permission.REQUEST_INSTALL_PACKAGES");
           }
           else if (op.equals("/autostart")) {
             DeployLogger.normal("Autostart on Android's boot");
@@ -558,6 +565,7 @@ public class Deploy {
             + "   /kn     : As /k, but does not create the cab files for wince\n"
             + "   /android_manage_external_storage : Adds the MANAGE_EXTERNAL_STORAGE permission to the manifest. The usage of this permission is subject to restrictions when submitted to the Play Store.\n "
             + "   /android_request_install_packages : Adds the REQUEST_INSTALL_PACKAGES permission to the manifest. The usage of this permission is subject to restrictions when submitted to the Play Store.\n "
+            + "   /android_permission permission : Adds the named Android permission to the manifest. Repeat this option to add more permissions; declaration does not grant runtime access or guarantee Google Play approval.\n"
             + "   /m path : Specifies a path to the mobileprovision and certificate store to deploy an ipa file for iOS. You should also provide a splash.png image with 640x1136.\n"
             + "   /android_signing_config path : Specifies a path to a properties file containing keystore configuration for signing AAB and APK when deploying for Android.\n"
             + "   /n name : Override the name of the tcz file with the given name\n"
