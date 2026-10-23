@@ -881,6 +881,10 @@ jobs:
     name: Build `iOS`
     needs: [checkout-source, prepare-native-dependencies, generate-native-bridges]
     runs-on: macos-26
+    # Avoid the Metal toolchain overriding Swift compatibility library search paths.
+    # https://github.com/actions/runner-images/issues/13135
+    env:
+      TOOLCHAINS: com.apple.dt.toolchain.XcodeDefault
 
     steps:
     - name: Download source code
