@@ -1922,8 +1922,8 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       return text;
    }
 
-   public static boolean callingSound;
-   public static String soundResult;
+   public static volatile boolean callingSound;
+   public static volatile String soundResult;
    public static String soundToText(String params)
    {
       String text = null;
@@ -1938,8 +1938,20 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          b.putInt("type",Loader.TOTEXT);
          msg.setData(b);
          loader.achandler.sendMessage(msg);
-         while (callingSound)
-            try {Thread.sleep(5);} catch (Exception e) {}
+         long deadline = SystemClock.elapsedRealtime() + 180_000L;
+         while (callingSound && SystemClock.elapsedRealtime() < deadline) {
+            try {
+               Thread.sleep(10);
+            } catch (InterruptedException interrupted) {
+               Thread.currentThread().interrupt();
+               break;
+            }
+         }
+         if (callingSound) {
+            soundResult = null;
+            callingSound = false;
+            if (loader != null) loader.cancelSpeechInput();
+         }
          return soundResult;
       } 
       catch (Throwable e) 
