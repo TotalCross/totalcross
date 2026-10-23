@@ -27,6 +27,9 @@ import android.net.*;
 import android.os.*;
 import android.provider.*;
 import android.speech.*;
+import android.system.ErrnoException;
+import android.system.Os;
+import android.system.OsConstants;
 import android.util.*;
 import android.view.*;
 import android.view.ViewGroup.*;
@@ -111,6 +114,18 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
           this.failure = failure;
       }
   }
+
+  private static final class UriSourceFailure extends IOException {
+      UriSourceFailure(Throwable cause) {
+          super("Unable to read the selected image content.", cause);
+      }
+  }
+
+  private static final class UriDestinationFailure extends IOException {
+      UriDestinationFailure(Throwable cause) {
+          super("Unable to write the selected image to a temporary file.", cause);
+      }
+  }
   
   private static final String GOOGLECHROME_NAVIGATE_PREFIX = "googlechrome://navigate?url=";  
 
@@ -176,6 +191,13 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
    public void onRestart()
    {
     super.onRestart();
+  }
+
+  @Override
+  public void onUserInteraction()
+  {
+    super.onUserInteraction();
+    AndroidPermissionManager.onUserInteraction();
   }
 
   protected void onActivityResult(int requestCode, int resultCode, Intent data)
@@ -450,7 +472,8 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
           }
           return;
       } catch (IOException destinationFailure) {
-          if (isFileAccessDenied(destinationFailure) && Build.VERSION.SDK_INT < Build.VERSION_CODES.Q
+          if (AndroidFileAccessErrors.isPermissionDenied(destinationFailure)
+                  && Build.VERSION.SDK_INT < Build.VERSION_CODES.Q
                   && cameraType == CAMERA_NATIVE) {
               recoverExternalCameraOutput(cameraType, permissionRetry);
           } else {
@@ -483,6 +506,10 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
       }
       AndroidPermissionManager.requestFileAccess(result -> {
           Loader activity = cameraHost();
+          if (activity == null) {
+              completeExternalCamera(false);
+              return;
+          }
           if (result.authorizationChanged) {
               activity.launchExternalCamera(cameraType, true);
           } else {
@@ -504,7 +531,9 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
           if (!permissionRetry) {
               AndroidPermissionManager.requestFileAccess(result -> {
                   Loader activity = cameraHost();
-                  if (result.authorizationChanged) activity.launchDirectExternalCameraOutput(path, true);
+                  if (result.authorizationChanged && activity != null) {
+                      activity.launchDirectExternalCameraOutput(path, true);
+                  }
                   else Launcher4A.pictureTaken(1);
               });
           } else {
@@ -521,10 +550,12 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
       if (copy.destinationDenied && !permissionRetry) {
           AndroidPermissionManager.requestFileAccess(result -> {
               Loader activity = cameraHost();
-              if (result.authorizationChanged) {
+              if (result.authorizationChanged && activity != null) {
                   activity.copyCapturedImage(sourceUri, true);
-              } else {
+              } else if (activity != null) {
                   activity.completeExternalCamera(false);
+              } else {
+                  completeExternalCamera(false);
               }
           });
           return;
@@ -643,7 +674,7 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
     }
 
     private void launchGalleryPicker() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             Intent photoPicker = new Intent(MediaStore.ACTION_PICK_IMAGES);
             photoPicker.setType("image/*");
             try {
@@ -676,7 +707,7 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
         if (copy.destinationDenied && !permissionRetry) {
             AndroidPermissionManager.requestFileAccess(result -> {
                 Loader activity = cameraHost();
-                if (result.authorizationChanged) {
+                if (result.authorizationChanged && activity != null) {
                     activity.copyGallerySelection(sourceUri, true);
                 } else {
                     Launcher4A.pictureTaken(1);
@@ -696,98 +727,156 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
     }
 
     private UriCopyResult copyContentUri(Uri sourceUri, String destinationPath) {
-        if (sourceUri == null || destinationPath == null) {
+        if (sourceUri == null || !"content".equalsIgnoreCase(sourceUri.getScheme())
+                || destinationPath == null || destinationPath.trim().isEmpty()) {
             return new UriCopyResult(false, false, new IOException("The selected image URI or destination is missing."));
         }
         InputStream input;
         try {
             input = getContentResolver().openInputStream(sourceUri);
-        } catch (IOException | SecurityException sourceFailure) {
+        } catch (IOException | RuntimeException sourceFailure) {
             return new UriCopyResult(false, false, new IOException("Unable to read the selected image URI.", sourceFailure));
         }
         if (input == null) {
             return new UriCopyResult(false, false, new IOException("The selected image provider returned no stream."));
         }
 
-        OutputStream output;
+        File destination;
+        File parent;
         try {
-            output = new FileOutputStream(destinationPath);
+            destination = new File(destinationPath).getAbsoluteFile();
+            parent = destination.getParentFile();
+            if (parent == null || !parent.isDirectory()) {
+                IOException closeFailure = closeSource(input);
+                return new UriCopyResult(false, false, closeFailure == null
+                        ? new IOException("The selected image destination directory is unavailable.") : closeFailure);
+            }
         } catch (SecurityException destinationFailure) {
-            closeQuietly(input);
-            return new UriCopyResult(false, true, null);
+            IOException closeFailure = closeSource(input);
+            return closeFailure == null
+                    ? new UriCopyResult(false, true, null)
+                    : new UriCopyResult(false, false, closeFailure);
+        }
+
+        File temporaryFile;
+        try {
+            temporaryFile = File.createTempFile(".totalcross-image-", ".tmp", parent);
+        } catch (SecurityException destinationFailure) {
+            IOException closeFailure = closeSource(input);
+            return closeFailure == null
+                    ? new UriCopyResult(false, true, null)
+                    : new UriCopyResult(false, false, closeFailure);
         } catch (IOException destinationFailure) {
-            closeQuietly(input);
-            return isFileAccessDenied(destinationFailure)
+            IOException closeFailure = closeSource(input);
+            if (closeFailure != null) return new UriCopyResult(false, false, closeFailure);
+            return AndroidFileAccessErrors.isPermissionDenied(destinationFailure)
                     ? new UriCopyResult(false, true, null)
                     : new UriCopyResult(false, false, destinationFailure);
         }
 
         IOException failure = null;
         boolean destinationDenied = false;
-        byte[] buffer = new byte[8192];
-        while (true) {
-            int count;
-            try {
-                count = input.read(buffer);
-            } catch (IOException | SecurityException sourceFailure) {
-                failure = new IOException("Unable to read the selected image content.", sourceFailure);
-                break;
-            }
-            if (count < 0) {
-                break;
-            }
-            try {
-                output.write(buffer, 0, count);
-            } catch (IOException destinationFailure) {
-                if (isFileAccessDenied(destinationFailure)) {
-                    destinationDenied = true;
-                } else {
-                    failure = destinationFailure;
-                }
-                break;
-            } catch (SecurityException destinationFailure) {
-                destinationDenied = true;
-                break;
-            }
-        }
         try {
-            output.close();
+            try (InputStream source = input) {
+                try {
+                    try (OutputStream output = new FileOutputStream(temporaryFile)) {
+                        byte[] buffer = new byte[8192];
+                        while (true) {
+                            int count;
+                            try {
+                                count = source.read(buffer);
+                            } catch (RuntimeException | IOException sourceFailure) {
+                                throw new UriSourceFailure(sourceFailure);
+                            }
+                            if (count < 0) break;
+                            try {
+                                output.write(buffer, 0, count);
+                            } catch (RuntimeException | IOException destinationFailure) {
+                                throw new UriDestinationFailure(destinationFailure);
+                            }
+                        }
+                        try {
+                            output.flush();
+                        } catch (RuntimeException | IOException destinationFailure) {
+                            throw new UriDestinationFailure(destinationFailure);
+                        }
+                    }
+                } catch (UriSourceFailure sourceFailure) {
+                    failure = new IOException(sourceFailure.getMessage(), sourceFailure.getCause());
+                } catch (UriDestinationFailure destinationFailure) {
+                    Throwable cause = destinationFailure.getCause();
+                    destinationDenied = cause instanceof SecurityException
+                            || AndroidFileAccessErrors.isPermissionDenied(cause);
+                    if (!destinationDenied) failure = destinationFailure;
+                } catch (SecurityException destinationFailure) {
+                    destinationDenied = true;
+                } catch (IOException destinationFailure) {
+                    destinationDenied = AndroidFileAccessErrors.isPermissionDenied(destinationFailure);
+                    if (!destinationDenied) failure = destinationFailure;
+                } catch (RuntimeException destinationFailure) {
+                    failure = new IOException("Unable to write the selected image temporary file.", destinationFailure);
+                }
+            }
+        } catch (IOException | RuntimeException sourceCloseFailure) {
+            failure = new IOException("Unable to close the selected image content stream.", sourceCloseFailure);
+            destinationDenied = false;
+        }
+
+        try {
+            if (failure == null && !destinationDenied) {
+                if (temporaryFile.length() == 0) {
+                    failure = new IOException("The image provider returned an empty image.");
+                }
+            }
+
+            if (failure == null && !destinationDenied) {
+                Os.rename(temporaryFile.getAbsolutePath(), destination.getAbsolutePath());
+                temporaryFile = null;
+            }
+        } catch (ErrnoException destinationFailure) {
+            destinationDenied = destinationFailure.errno == OsConstants.EACCES
+                    || destinationFailure.errno == OsConstants.EPERM;
+            if (!destinationDenied) {
+                failure = new IOException("Unable to replace the selected image destination.", destinationFailure);
+            }
         } catch (SecurityException destinationFailure) {
             destinationDenied = true;
-        } catch (IOException destinationFailure) {
-            if (isFileAccessDenied(destinationFailure)) {
-                destinationDenied = true;
-            } else if (failure == null) {
-                failure = destinationFailure;
+        } catch (RuntimeException destinationFailure) {
+            failure = new IOException("Unable to replace the selected image destination.", destinationFailure);
+        } finally {
+            if (temporaryFile != null) {
+                try {
+                    if (temporaryFile.exists() && !temporaryFile.delete() && temporaryFile.exists()) {
+                        if (!destinationDenied && failure == null) {
+                            failure = new IOException("Unable to remove the temporary image file.");
+                        }
+                    }
+                } catch (SecurityException cleanupFailure) {
+                    if (!destinationDenied && failure == null) {
+                        destinationDenied = true;
+                    }
+                } catch (RuntimeException cleanupFailure) {
+                    if (!destinationDenied && failure == null) {
+                        failure = new IOException("Unable to remove the temporary image file.", cleanupFailure);
+                    }
+                }
             }
-        }
-        closeQuietly(input);
-
-        File destination = new File(destinationPath);
-        if (!destinationDenied && failure == null && (!destination.isFile() || destination.length() == 0)) {
-            failure = new IOException("The image provider returned an empty image.");
         }
         return new UriCopyResult(!destinationDenied && failure == null, destinationDenied, failure);
     }
 
-    private static void closeQuietly(InputStream input) {
+    private static IOException closeSource(InputStream input) {
         try {
             input.close();
-        } catch (IOException | SecurityException ignored) {
+            return null;
+        } catch (IOException | RuntimeException failure) {
+            return new IOException("Unable to close the selected image content stream.", failure);
         }
     }
 
     private Loader cameraHost() {
         Loader activity = currentLoader;
-        return activity == null ? this : activity;
-    }
-
-    private static boolean isFileAccessDenied(IOException failure) {
-        String message = failure.getMessage();
-        if (message == null) return false;
-        String normalized = message.toLowerCase(Locale.ROOT);
-        return normalized.contains("eacces") || normalized.contains("eperm")
-                || normalized.contains("permission denied");
+        return activity == null || activity.isFinishing() || activity.isDestroyed() ? null : activity;
     }
 
     private void dialNumber(String number)
@@ -1551,6 +1640,10 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
          finishPendingApkInstall(path);
          return;
       }
+      if (activity.isFinishing() || activity.isDestroyed()) {
+         finishPendingApkInstall(path);
+         return;
+      }
       if (!result.granted) {
          finishPendingApkInstall(path);
          activity.reportApkInstallFailure("Allow this application to install APK files, then try again.", wait);
@@ -1581,17 +1674,27 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
          finishPendingApkInstall(path);
          if (!wait) finish();
       } catch (SecurityException deniedFileAccess) {
+         if (!AndroidFileAccessErrors.isPermissionDenied(deniedFileAccess)) {
+            finishPendingApkInstall(path);
+            AndroidUtils.handleException(deniedFileAccess, false);
+            reportApkInstallFailure("Unable to launch the package installer for this APK.", wait);
+            return;
+         }
          if (!permissionRetry) {
             AndroidPermissionManager.requestFileAccess(result -> {
                if (result.authorizationChanged) {
                   Loader activity = currentLoader;
-                  if (activity != null) activity.launchApkInstaller(path, wait, true);
+                  if (activity != null && !activity.isFinishing() && !activity.isDestroyed()) {
+                     activity.launchApkInstaller(path, wait, true);
+                  }
                   else finishPendingApkInstall(path);
                } else {
                   finishPendingApkInstall(path);
                   Loader activity = currentLoader;
-                  if (activity != null) activity.reportApkInstallFailure(
-                          "The APK file cannot be read. Check its location and file permissions.", wait);
+                  if (activity != null && !activity.isFinishing() && !activity.isDestroyed()) {
+                     activity.reportApkInstallFailure(
+                             "The APK file cannot be read. Check its location and file permissions.", wait);
+                  }
                }
             });
          } else {
