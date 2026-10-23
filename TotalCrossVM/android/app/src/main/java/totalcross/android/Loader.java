@@ -6,8 +6,6 @@
 
 package totalcross.android;
 
-import static android.provider.Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION;
-
 import static androidx.core.view.WindowInsetsAnimationCompat.Callback.DISPATCH_MODE_CONTINUE_ON_SUBTREE;
 
 import android.speech.tts.TextToSpeech;
@@ -85,7 +83,6 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
   private static final int CAMERA_PIC_REQUEST = 1337;
   private static final int SPEECH_TO_TEXT = 1234324336;
   private static final int FROM_SCANDIT = 1234324337;
-  private static final int APP_STORAGE_ACCESS_REQUEST_CODE = 1234324338;
   private static boolean onMainLoop;
   public static boolean isFullScreen;
 
@@ -100,6 +97,7 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
    public void onCreate(Bundle savedInstanceState)
    {
     super.onCreate(savedInstanceState);
+      AndroidPermissionManager.attach(this);
       getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
          @Override
          public void handleOnBackPressed() {
@@ -167,11 +165,11 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
 
    protected void onActivityResult(int requestCode, int resultCode, Intent data)
    {
+      if (AndroidPermissionManager.onActivityResult(requestCode, resultCode)) {
+          return;
+      }
       switch (requestCode)
       {
-          case APP_STORAGE_ACCESS_REQUEST_CODE:
-              permissionInitialized = resultCode == RESULT_OK ? 1 : -1;
-              break;
     case FROM_SCANDIT:
             Launcher4A.zxingResult = data.getBooleanExtra("barcodeRecognized", false) ? data.getStringExtra("barcodeData") : null; //data.getStringExtra("barcodeSymbologyName").toUpperCase());
       Launcher4A.callingZXing = false;
@@ -1333,6 +1331,7 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
 
    protected void onResume()
    {
+    AndroidPermissionManager.attach(this);
     if (onMainLoop)
       Launcher4A.appResumed();
     Launcher4A.appPaused = false;
@@ -1540,10 +1539,9 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
     }
 
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        Launcher4A.PermissionHandler permissionHandler = Launcher4A.PermissionHandler.permissionHandlerMap
-                .get(requestCode);
-        if (permissionHandler != null) {
-            permissionHandler.onRequestPermissionsResult(permissions, grantResults);
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (AndroidPermissionManager.onRequestPermissionsResult(requestCode, permissions, grantResults)) {
+            return;
         }
 
         switch (requestCode) {
@@ -1575,20 +1573,5 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
       startActivity(intent);
     }
     
-    private int permissionInitialized = 0;
 
-    public boolean requestManageStorageAccess() {
-      if (Environment.isExternalStorageManager()) {
-        return true;
-      }
-      Intent intent = new Intent(ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, Uri.parse("package:totalcross." + Launcher4A.instance.tczname));
-      startActivityForResult(intent, Loader.APP_STORAGE_ACCESS_REQUEST_CODE);
-      while (permissionInitialized == 0) {
-        try {
-          Thread.sleep(10);
-        } catch (Exception e) {
-        }
-      }
-      return Environment.isExternalStorageManager();
-    }
 }
