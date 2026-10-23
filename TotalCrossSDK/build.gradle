@@ -321,14 +321,36 @@ def testDependencyCoordinates = configurations.testImplementation.dependencies.c
         version: dependency.version
     ]
 }
-def sdkGroupId = project.group.toString()
-def sdkVersion = project.version.toString()
-
 publishing {
     publications {
         mavenCustom(MavenPublication) {
             artifactId = 'totalcross-sdk'
-            pom.packaging = 'jar'
+            pom {
+                packaging = 'jar'
+                name = 'TotalCross SDK'
+                description = 'TotalCross Software Development Kit for cross-platform application development.'
+                url = 'https://github.com/TotalCross/totalcross'
+
+                licenses {
+                    license {
+                        name = 'GNU Lesser General Public License v2.1'
+                        url = 'https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html'
+                        distribution = 'repo'
+                    }
+                }
+                developers {
+                    developer {
+                        name = 'TotalCross Team'
+                        organization = 'TotalCross'
+                        organizationUrl = 'https://github.com/TotalCross'
+                    }
+                }
+                scm {
+                    connection = 'scm:git:https://github.com/TotalCross/totalcross.git'
+                    developerConnection = 'scm:git:ssh://git@github.com/TotalCross/totalcross.git'
+                    url = 'https://github.com/TotalCross/totalcross'
+                }
+            }
 
             // workaround - maven-publish lists all dependencies as runtime regardless of the original scope
             pom.withXml {
@@ -349,11 +371,9 @@ publishing {
                     dependencyNode.appendNode('scope', 'test')
                 }
 
-                def internalRuntimeDependency = dependenciesNode.appendNode('dependency')
-                internalRuntimeDependency.appendNode('groupId', sdkGroupId)
-                internalRuntimeDependency.appendNode('artifactId', 'totalcross-runtime-java')
-                internalRuntimeDependency.appendNode('version', sdkVersion)
-                internalRuntimeDependency.appendNode('scope', 'runtime')
+                // The aggregate SDK JAR already contains its Java runtime classes.
+                // Do not expose the separately built runtime boundary artifact as a
+                // Maven dependency until it becomes an independently published component.
             }
 
             // kept as reference
