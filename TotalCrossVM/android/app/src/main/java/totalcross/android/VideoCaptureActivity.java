@@ -190,6 +190,7 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
     private boolean photoCapturePending;
     private boolean photoFileAccessRecoveryPending;
     private boolean photoCaptureRetryAttempted;
+
     private long captureGestureGeneration;
     private long capturePressStartTime;
     private Runnable pendingVideoGestureDecision;
@@ -223,7 +224,7 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
         ImageButton btnGallery = findViewById(R.id.btnGallery);
         btnGallery.setOnClickListener(v -> {
             if (isFinishing() || isDestroyed() || currentRecordingSession != null
-                    || photoCapturePending || photoFileAccessRecoveryPending || capturePressActive) return;
+                    || isPhotoCaptureBusy() || capturePressActive) return;
             Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
             intent.setType("*/*");
             intent.putExtra(Intent.EXTRA_MIME_TYPES, new String[]{"image/*", "video/*"});
@@ -254,7 +255,7 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
 
         btnSwitchCamera = findViewById(R.id.btnSwitchCamera);
         btnSwitchCamera.setOnClickListener(v -> {
-            if (photoCapturePending || photoFileAccessRecoveryPending || currentRecordingSession != null
+            if (isPhotoCaptureBusy() || currentRecordingSession != null
                     || capturePressActive || isFinishing() || isDestroyed()) return;
             isFrontCamera = !isFrontCamera;
             cameraSelector =
@@ -499,7 +500,7 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
     }
 
     private void beginCapturePress(long eventTime) {
-        if (photoCapturePending || photoFileAccessRecoveryPending || currentRecordingSession != null
+        if (isPhotoCaptureBusy() || currentRecordingSession != null
                 || capturePressActive || isFinishing() || isDestroyed()) return;
         if (!hasCameraPermission()) {
             requestCameraPermission();
@@ -549,7 +550,7 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
         }
         flashEnabled = false;
         btnFlash.setImageResource(R.drawable.ic_flash_off);
-        if (photoCapturePending || photoFileAccessRecoveryPending) {
+        if (isPhotoCaptureBusy()) {
             disableCaptureControlsForFinalization();
         } else if (currentRecordingSession == null) {
             restoreCaptureControls();
@@ -560,7 +561,7 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
 
     private void startVideoForGesture(long gesture) {
         if (!capturePressActive || captureGestureGeneration != gesture
-                || photoCapturePending || photoFileAccessRecoveryPending
+                || isPhotoCaptureBusy()
                 || videoCapture == null || currentRecordingSession != null
                 || isFinishing() || isDestroyed()) return;
         if (!audioRequired) {
@@ -622,7 +623,7 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
 
     private void startRecordingNow(boolean withAudio, long gesture) {
         if (videoCapture == null || !capturePressActive || captureGestureGeneration != gesture
-                || photoCapturePending || photoFileAccessRecoveryPending
+                || isPhotoCaptureBusy()
                 || isFinishing() || isDestroyed() || currentRecordingSession != null
                 || (withAudio && (microphonePermissionState != PermissionState.AUTHORIZED
                 || microphonePermissionState == PermissionState.REQUEST_PENDING
@@ -808,7 +809,7 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
     }
 
     private void restoreCaptureControls() {
-        if (photoCapturePending || photoFileAccessRecoveryPending || currentRecordingSession != null
+        if (isPhotoCaptureBusy() || currentRecordingSession != null
                 || capturePressActive || isFinishing() || isDestroyed()) return;
         btnRecord.setEnabled(true);
         btnRecord.setImageResource(R.drawable.bg_record_button_small);
@@ -950,6 +951,11 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
         tvTimer.setText(text);
     }
 
+    /** A photo remains busy until the permission-recovery callback has completed. */
+    private boolean isPhotoCaptureBusy() {
+        return photoCapturePending || photoFileAccessRecoveryPending;
+    }
+
     private void takePhoto() {
         takePhoto(false);
     }
@@ -1010,7 +1016,7 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
     }
 
     private void requestPhotoFileAccessRecovery(Throwable failure, File photoFile) {
-        if (!photoCapturePending || photoFileAccessRecoveryPending || photoCaptureRetryAttempted
+        if (!isPhotoCaptureBusy() || photoCaptureRetryAttempted
                 || isFinishing() || isDestroyed()) return;
         photoFileAccessRecoveryPending = true;
         try {
@@ -1044,7 +1050,7 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
     }
 
     private void cancelPendingPhotoCapture() {
-        if (photoCapturePending || photoFileAccessRecoveryPending) clearPhotoCapturePending();
+        if (isPhotoCaptureBusy()) clearPhotoCapturePending();
     }
 
     private void failPhotoCapture(Throwable failure, File photoFile) {
