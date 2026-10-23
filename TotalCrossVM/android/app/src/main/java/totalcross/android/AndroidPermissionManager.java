@@ -112,7 +112,12 @@ public final class AndroidPermissionManager {
                 }
             }
             this.permissions = new ArrayList<>(ordered);
-            this.key = type.name() + ":" + String.join(",", this.permissions);
+            StringBuilder keyBuilder = new StringBuilder(type.name()).append(':');
+            for (int i = 0; i < this.permissions.size(); i++) {
+                if (i > 0) keyBuilder.append(',');
+                keyBuilder.append(this.permissions.get(i));
+            }
+            this.key = keyBuilder.toString();
         }
     }
 
@@ -663,7 +668,11 @@ public final class AndroidPermissionManager {
                 && isAuthorized(activity, "android.permission.READ_MEDIA_VISUAL_USER_SELECTED");
         boolean mediaTypeDeclared = imagesDeclared || videoDeclared;
         boolean allDeclaredGranted = mediaTypeDeclared && (!imagesDeclared || images) && (!videoDeclared || video);
-        if (allDeclaredGranted && !(Build.VERSION.SDK_INT >= 34 && targetSdk(activity) < 34 && (images || video))) {
+        boolean temporaryCompatibilityGrant = Build.VERSION.SDK_INT >= 34
+                && targetSdk(activity) >= 34
+                && !declared.contains("android.permission.READ_MEDIA_VISUAL_USER_SELECTED")
+                && (images || video);
+        if (allDeclaredGranted && !temporaryCompatibilityGrant) {
             return MediaAccess.FULL;
         }
         if (images || video || selected) {
