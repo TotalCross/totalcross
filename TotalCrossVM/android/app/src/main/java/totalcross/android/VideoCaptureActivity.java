@@ -1016,7 +1016,7 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
     }
 
     private void requestPhotoFileAccessRecovery(Throwable failure, File photoFile) {
-        if (!isPhotoCaptureBusy() || photoCaptureRetryAttempted
+        if (!photoCapturePending || photoFileAccessRecoveryPending || photoCaptureRetryAttempted
                 || isFinishing() || isDestroyed()) return;
         photoFileAccessRecoveryPending = true;
         try {
