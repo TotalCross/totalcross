@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -24,8 +25,15 @@ TC_API void tidbSPC_createSerialPortClient_s(NMParams p) // totalcross/io/device
    int32 channel = p->i32[0];
    TCObject nativeHandleObj;
    NATIVE_HANDLE* nativeHandle; 
-   char address[13];
+   int32 addressLen = addressObj == null ? 0 : String_charsLen(addressObj);
+   char address[MAX_GUID_STRING_LEN];
    Err err;
+
+   if (addressObj == null || addressLen <= 0 || addressLen >= MAX_GUID_STRING_LEN)
+   {
+      throwException(p->currentContext, IOException, "Invalid Bluetooth address");
+      return;
+   }
 
    String2CharPBuf(addressObj, address);
 
