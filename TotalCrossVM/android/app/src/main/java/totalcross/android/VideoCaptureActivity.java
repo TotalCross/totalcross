@@ -7,6 +7,7 @@ package totalcross.android;
 import static android.view.View.INVISIBLE;
 import static android.view.View.VISIBLE;
 
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.Manifest;
@@ -15,6 +16,9 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.SystemClock;
+import android.system.ErrnoException;
+import android.system.Os;
 import android.util.Size;
 import android.view.MotionEvent;
 import android.view.OrientationEventListener;
@@ -104,13 +108,53 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
     // CameraX
     private ProcessCameraProvider cameraProvider;
     private VideoCapture<Recorder> videoCapture;
-    private Recording activeRecording;
+
+    private enum RecordingPhase {
+        STARTING,
+        RECORDING,
+        FINALIZING
+    }
+
+    private enum RecordingStopReason {
+        NONE,
+        COMPLETED,
+        CANCELLED
+    }
+
+    private static final class RecordingSession {
+        final long id;
+        final long gestureGeneration;
+        final File destinationFile;
+        final File stagingFile;
+        Recording recording;
+        RecordingPhase phase = RecordingPhase.STARTING;
+        RecordingStopReason stopReason = RecordingStopReason.NONE;
+        boolean stopCalled;
+        boolean closeCalled;
+        boolean stopFailed;
+        boolean stopFailureWatchdogScheduled;
+        boolean stopFailureTimeoutReported;
+        boolean finalizeProcessed;
+        Runnable stopFailureWatchdog;
+
+        RecordingSession(long id, long gestureGeneration, File destinationFile, File stagingFile) {
+            this.id = id;
+            this.gestureGeneration = gestureGeneration;
+            this.destinationFile = destinationFile;
+            this.stagingFile = stagingFile;
+        }
+    }
+
+    private RecordingSession currentRecordingSession;
+    private long nextRecordingSessionId;
 
     // Progress UI
     private final Handler progressHandler = new Handler(Looper.getMainLooper());
     private long recordingStartTime = 0;
+    private long progressSessionId;
     private final int PROGRESS_UPDATE_INTERVAL = 50; // ms
     private boolean progressActive = false;
+    private static final long STOP_FAILURE_WATCHDOG_MS = 10_000L;
 
     // Params
     private int maxSeconds = 30;
@@ -138,9 +182,26 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
 
     private int captureMode;
     private boolean audioRequired;
-    private boolean recordingGestureActive;
-    private boolean microphoneRequestPending;
     private boolean cameraPermissionRequestStarted;
+    private boolean capturePressActive;
+    private boolean videoGestureDecisionPending;
+    private boolean fullVideoGestureClassified;
+    private boolean photoCapturePending;
+    private boolean photoFileAccessRecoveryPending;
+    private boolean photoCaptureRetryAttempted;
+    private long captureGestureGeneration;
+    private long capturePressStartTime;
+    private Runnable pendingVideoGestureDecision;
+
+    private enum PermissionState {
+        UNKNOWN,
+        REQUEST_PENDING,
+        AUTHORIZED,
+        DENIED
+    }
+
+    private PermissionState cameraPermissionState = PermissionState.UNKNOWN;
+    private PermissionState microphonePermissionState = PermissionState.UNKNOWN;
 
     boolean flashEnabled;
 
@@ -160,9 +221,21 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
         btnBackCapture = findViewById(R.id.btnBackCapture);
         ImageButton btnGallery = findViewById(R.id.btnGallery);
         btnGallery.setOnClickListener(v -> {
-            Intent intent = new Intent(Intent.ACTION_PICK);
-            intent.setType("image/* video/*");
-            startActivity(intent);
+            if (isFinishing() || isDestroyed() || currentRecordingSession != null
+                    || photoCapturePending || photoFileAccessRecoveryPending || capturePressActive) return;
+            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+            intent.setType("*/*");
+            intent.putExtra(Intent.EXTRA_MIME_TYPES, new String[]{"image/*", "video/*"});
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+            try {
+                startActivity(intent);
+            } catch (ActivityNotFoundException | SecurityException failure) {
+                AndroidUtils.handleException(failure, false);
+                Toast.makeText(this, "No compatible media picker is available.", Toast.LENGTH_SHORT).show();
+            } catch (RuntimeException failure) {
+                AndroidUtils.handleException(failure, false);
+                return;
+            }
         });
 
         btnFlash = findViewById(R.id.btnFlash);
@@ -180,6 +253,8 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
 
         btnSwitchCamera = findViewById(R.id.btnSwitchCamera);
         btnSwitchCamera.setOnClickListener(v -> {
+            if (photoCapturePending || photoFileAccessRecoveryPending || currentRecordingSession != null
+                    || capturePressActive || isFinishing() || isDestroyed()) return;
             isFrontCamera = !isFrontCamera;
             cameraSelector =
                     isFrontCamera
@@ -210,44 +285,22 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
         progressDrawable = new RecordProgressDrawable();
 
         btnRecord.setOnTouchListener((v, ev) -> {
-            if (!hasCameraPermission()) {
-                requestCameraPermission();
-                return true;
-            }
             switch (ev.getAction()) {
                 case MotionEvent.ACTION_DOWN:
-                    btnSwitchCamera.setEnabled(false);
-
-                    if (captureMode != MODE_PICTURE) {
-                        recordingGestureActive = true;
-                        btnRecord.setImageDrawable(progressDrawable);
-                        videoCapture.setTargetRotation(deviceOrientation);
-
-                        requestMicrophoneAndStartRecording();
-                    }
+                    beginCapturePress(ev.getEventTime());
                     return true;
-
                 case MotionEvent.ACTION_UP:
+                    finishCapturePress(false, ev.getEventTime());
+                    return true;
                 case MotionEvent.ACTION_CANCEL:
-                    recordingGestureActive = false;
-                    if (captureMode == MODE_PICTURE) {
-                        takePhoto();
-                    } else {
-                        stopRecording();
-                        stopProgress();
-                        btnRecord.setImageResource(R.drawable.bg_record_button_small);
-                    }
-
-                    flashEnabled = false;
-                    btnFlash.setImageResource(R.drawable.ic_flash_off);
-                    btnSwitchCamera.setEnabled(true);
+                    finishCapturePress(true, ev.getEventTime());
                     return true;
             }
             return false;
         });
 
         btnBackCapture.setOnClickListener(v -> {
-            stopRecording();
+            stopRecording(RecordingStopReason.CANCELLED);
             stopProgress();
             setResult(RESULT_CANCELED);
             finish();
@@ -292,10 +345,15 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
     }
 
     private void requestCameraPermission() {
+        if (cameraPermissionState == PermissionState.REQUEST_PENDING || isFinishing() || isDestroyed()) return;
+        cameraPermissionState = PermissionState.REQUEST_PENDING;
         AndroidPermissionManager.requestRuntime(result -> {
-            if (result.granted && hasCameraPermission() && !isFinishing() && !isDestroyed()) {
+            if (isFinishing() || isDestroyed()) return;
+            if (result.granted && hasCameraPermission()) {
+                cameraPermissionState = PermissionState.AUTHORIZED;
                 startCamera();
-            } else if (!isFinishing() && !isDestroyed()) {
+            } else {
+                cameraPermissionState = PermissionState.DENIED;
                 Toast.makeText(this, "Camera permission is required to use the camera.", Toast.LENGTH_LONG).show();
                 setResult(RESULT_CANCELED);
                 finish();
@@ -310,7 +368,16 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
         if (!cameraPermissionRequestStarted) {
             cameraPermissionRequestStarted = true;
             requestCameraPermission();
+        } else if (cameraPermissionState == PermissionState.AUTHORIZED
+                && captureMode != MODE_PICTURE && audioRequired) {
+            refreshMicrophoneAuthorization();
         }
+    }
+
+    @Override
+    public void onUserInteraction() {
+        super.onUserInteraction();
+        AndroidPermissionManager.onUserInteraction();
     }
 
     @Override
@@ -326,7 +393,9 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
         future.addListener(() -> {
             try {
                 cameraProvider = future.get();
+                if (isFinishing() || isDestroyed()) return;
                 bindCamera();
+                restoreCaptureControls();
             } catch (ExecutionException | InterruptedException ignored) {
                 setResult(RESULT_CANCELED);
                 finish();
@@ -416,24 +485,118 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
         enablePinchToZoom(this, camera, previewView);
     }
 
-    private void requestMicrophoneAndStartRecording() {
-        if (videoCapture == null || activeRecording != null || microphoneRequestPending) {
+    private boolean hasMicrophonePermission() {
+        return audioRequired && AndroidPermissionManager.isAuthorized(Manifest.permission.RECORD_AUDIO);
+    }
+
+    private void refreshMicrophoneAuthorization() {
+        if (captureMode == MODE_PICTURE || !audioRequired
+                || cameraPermissionState != PermissionState.AUTHORIZED
+                || microphonePermissionState == PermissionState.REQUEST_PENDING) return;
+        microphonePermissionState = hasMicrophonePermission()
+                ? PermissionState.AUTHORIZED : PermissionState.DENIED;
+    }
+
+    private void beginCapturePress(long eventTime) {
+        if (photoCapturePending || photoFileAccessRecoveryPending || currentRecordingSession != null
+                || capturePressActive || isFinishing() || isDestroyed()) return;
+        if (!hasCameraPermission()) {
+            requestCameraPermission();
             return;
         }
+        capturePressActive = true;
+        capturePressStartTime = eventTime > 0 ? eventTime : SystemClock.uptimeMillis();
+        fullVideoGestureClassified = false;
+        long gesture = ++captureGestureGeneration;
+        btnSwitchCamera.setEnabled(false);
+        if (captureMode == MODE_PICTURE) return;
+        if (captureMode == MODE_FULL) {
+            videoGestureDecisionPending = true;
+            pendingVideoGestureDecision = () -> {
+                pendingVideoGestureDecision = null;
+                if (!capturePressActive || captureGestureGeneration != gesture || isFinishing() || isDestroyed()) return;
+                videoGestureDecisionPending = false;
+                fullVideoGestureClassified = true;
+                startVideoForGesture(gesture);
+            };
+            progressHandler.postDelayed(pendingVideoGestureDecision, PHOTO_THRESHOLD_MS);
+            return;
+        }
+        startVideoForGesture(gesture);
+    }
+
+    private void finishCapturePress(boolean cancelled, long eventTime) {
+        if (!capturePressActive) return;
+        long completedAt = eventTime > 0 ? eventTime : SystemClock.uptimeMillis();
+        boolean shortFullGesture = captureMode == MODE_FULL && videoGestureDecisionPending
+                && completedAt - capturePressStartTime < PHOTO_THRESHOLD_MS;
+        boolean takePhoto = !cancelled && (captureMode == MODE_PICTURE || shortFullGesture);
+        boolean completedVideoGesture = !cancelled && (captureMode == MODE_VIDEO
+                || (captureMode == MODE_FULL && fullVideoGestureClassified));
+        cancelPendingVideoGestureDecision();
+        capturePressActive = false;
+        ++captureGestureGeneration;
+        if (takePhoto) {
+            takePhoto();
+        } else {
+            RecordingSession session = currentRecordingSession;
+            RecordingStopReason stopReason = !cancelled && completedVideoGesture
+                    && session != null && session.phase == RecordingPhase.RECORDING
+                    ? RecordingStopReason.COMPLETED : RecordingStopReason.CANCELLED;
+            stopRecording(stopReason);
+            stopProgress();
+        }
+        flashEnabled = false;
+        btnFlash.setImageResource(R.drawable.ic_flash_off);
+        if (photoCapturePending || photoFileAccessRecoveryPending) {
+            disableCaptureControlsForFinalization();
+        } else if (currentRecordingSession == null) {
+            restoreCaptureControls();
+        } else {
+            disableCaptureControlsForFinalization();
+        }
+    }
+
+    private void startVideoForGesture(long gesture) {
+        if (!capturePressActive || captureGestureGeneration != gesture
+                || photoCapturePending || photoFileAccessRecoveryPending
+                || videoCapture == null || currentRecordingSession != null
+                || isFinishing() || isDestroyed()) return;
         if (!audioRequired) {
-            startRecordingNow(false);
+            startRecordingNow(false, gesture);
             return;
         }
-        microphoneRequestPending = true;
+        if (hasMicrophonePermission()) {
+            microphonePermissionState = PermissionState.AUTHORIZED;
+            startRecordingNow(true, gesture);
+            return;
+        }
+        if (microphonePermissionState == PermissionState.REQUEST_PENDING) {
+            return;
+        }
+        requestMicrophonePermission(true, gesture);
+    }
+
+    private void requestMicrophonePermission(boolean startRecordingWhenGranted, long gesture) {
+        if (!audioRequired || cameraPermissionState != PermissionState.AUTHORIZED
+                || microphonePermissionState == PermissionState.REQUEST_PENDING
+                || isFinishing() || isDestroyed()) return;
+        microphonePermissionState = PermissionState.REQUEST_PENDING;
         AndroidPermissionManager.requestRuntime(result -> {
-            microphoneRequestPending = false;
-            if (result.granted && recordingGestureActive && !isFinishing()) {
-                startRecordingNow(true);
-            } else if (!result.granted) {
-                Toast.makeText(this, "Microphone permission is required for audio recording.", Toast.LENGTH_LONG).show();
-                stopProgress();
-                btnRecord.setImageResource(R.drawable.bg_record_button_small);
-                btnSwitchCamera.setEnabled(true);
+            if (isFinishing() || isDestroyed()) return;
+            boolean mayStartRecording = startRecordingWhenGranted && capturePressActive
+                    && captureGestureGeneration == gesture;
+            boolean fullGestureCanStart = captureMode == MODE_FULL && fullVideoGestureClassified
+                    && capturePressActive;
+            if (hasMicrophonePermission()) {
+                microphonePermissionState = PermissionState.AUTHORIZED;
+                if ((mayStartRecording || fullGestureCanStart) && currentRecordingSession == null) {
+                    long activeGesture = captureGestureGeneration;
+                    startRecordingNow(true, activeGesture);
+                }
+            } else {
+                microphonePermissionState = PermissionState.DENIED;
+                showMicrophoneDenied();
                 if (captureMode == MODE_VIDEO) {
                     setResult(RESULT_CANCELED);
                     finish();
@@ -442,97 +605,192 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
         }, Manifest.permission.RECORD_AUDIO);
     }
 
-    private void startRecordingNow(boolean withAudio) {
-        if (videoCapture == null) {
-            return;
+    private void cancelPendingVideoGestureDecision() {
+        videoGestureDecisionPending = false;
+        if (pendingVideoGestureDecision != null) {
+            progressHandler.removeCallbacks(pendingVideoGestureDecision);
+            pendingVideoGestureDecision = null;
         }
+    }
 
-        File file = new File(lastSavedVideoPath);
-        FileOutputOptions outputOptions =
-                new FileOutputOptions.Builder(file).build();
+    private void showMicrophoneDenied() {
+        Toast.makeText(this,
+                "Microphone access is needed for video; photos are still available.",
+                Toast.LENGTH_LONG).show();
+    }
 
+    private void startRecordingNow(boolean withAudio, long gesture) {
+        if (videoCapture == null || !capturePressActive || captureGestureGeneration != gesture
+                || photoCapturePending || photoFileAccessRecoveryPending
+                || isFinishing() || isDestroyed() || currentRecordingSession != null
+                || (withAudio && (microphonePermissionState != PermissionState.AUTHORIZED
+                || microphonePermissionState == PermissionState.REQUEST_PENDING
+                || !hasMicrophonePermission()))) return;
+        RecordingSession session = null;
         try {
-            androidx.camera.video.PendingRecording pendingRecording =
-                    videoCapture.getOutput().prepareRecording(this, outputOptions);
-            if (withAudio) {
-                pendingRecording = pendingRecording.withAudioEnabled();
+            File destinationFile = new File(lastSavedVideoPath).getAbsoluteFile();
+            File parent = destinationFile.getParentFile();
+            if (parent == null || (!parent.exists() && !parent.mkdirs()) || !parent.isDirectory()) {
+                throw new IOException("Unable to create the video output directory.");
             }
-            activeRecording = pendingRecording.start(ContextCompat.getMainExecutor(this),
-                                event -> {
-                                    if (event instanceof VideoRecordEvent.Status) {
-                                        VideoRecordEvent.Status s = (VideoRecordEvent.Status) event;
+            File stagingFile = File.createTempFile(".totalcross-video-", ".mp4", parent);
+            session = new RecordingSession(++nextRecordingSessionId, gesture,
+                    destinationFile, stagingFile);
+            currentRecordingSession = session;
 
-                                        long seconds =
-                                                TimeUnit.NANOSECONDS.toSeconds(
-                                                        s.getRecordingStats().getRecordedDurationNanos()
-                                                );
+            videoCapture.setTargetRotation(deviceOrientation);
+            androidx.camera.video.PendingRecording pendingRecording = videoCapture.getOutput()
+                    .prepareRecording(this, new FileOutputOptions.Builder(stagingFile).build());
+            if (withAudio) pendingRecording = pendingRecording.withAudioEnabled();
 
-                                        updateTimer(seconds);
-                                        tvTimer.setVisibility(VISIBLE);
-                                        tvTimer.setCompoundDrawablesWithIntrinsicBounds(
-                                                R.drawable.ic_rec_dot, 0, 0, 0
-                                        );
-                                    }
-                                    if (event instanceof VideoRecordEvent.Finalize) {
-                                        if (isFinishing()) return;
-                                        tvTimer.setVisibility(View.GONE);
-                                        VideoRecordEvent.Finalize finalize =
-                                                (VideoRecordEvent.Finalize) event;
-
-                                        if (!finalize.hasError()) {
-                                            if (file.isFile() && file.length() > 0 && !isFinishing()) {
-                                                openVideoPlayer(lastSavedVideoPath);
-                                            } else {
-                                                file.delete();
-                                                if (!isFinishing()) {
-                                                    setResult(RESULT_CANCELED);
-                                                    finish();
-                                                }
-                                            }
-                                        } else {
-                                            if (isFileAccessDenied(finalize.getCause())) {
-                                                requestFileAccessAfterCameraFailure();
-                                            }
-                                            if (TimeUnit.NANOSECONDS.toMillis(
-                                                    finalize.getRecordingStats().getRecordedDurationNanos()
-                                            ) < PHOTO_THRESHOLD_MS) {
-                                                // it's fine
-                                                if (captureMode == MODE_FULL) {
-                                                    file.delete();
-                                                    takePhoto();
-                                                }
-                                            } else {
-                                                file.delete();
-                                                Toast.makeText(
-                                                        this,
-                                                        "Record failed: " + finalize.getError(),
-                                                        Toast.LENGTH_LONG
-                                                ).show();
-                                                if (captureMode == MODE_VIDEO) {
-                                                    setResult(RESULT_CANCELED);
-                                                    finish();
-                                                }
-                                            }
-                                        }
-                                    }
-                                });
-            startProgress();
-        } catch (SecurityException deniedOutput) {
-            if (isFileAccessDenied(deniedOutput)) requestFileAccessAfterCameraFailure();
-            failRecordingStart(deniedOutput);
-        } catch (RuntimeException failure) {
+            RecordingSession callbackSession = session;
+            session.recording = pendingRecording.start(ContextCompat.getMainExecutor(this),
+                    event -> handleRecordingEvent(callbackSession, event));
+            if (session.phase == RecordingPhase.FINALIZING) {
+                stopSessionRecording(session);
+            }
+        } catch (IOException | RuntimeException failure) {
+            if (session != null) discardFailedRecordingStart(session);
             failRecordingStart(failure);
         }
     }
 
-
     private void failRecordingStart(Throwable failure) {
+        if (AndroidFileAccessErrors.isPermissionDenied(failure)) {
+            requestFileAccessAfterCameraFailure();
+        }
         AndroidUtils.handleException(failure, false);
         stopProgress();
-        btnRecord.setImageResource(R.drawable.bg_record_button_small);
-        btnSwitchCamera.setEnabled(true);
+        restoreCaptureControls();
         setResult(RESULT_CANCELED);
         if (captureMode == MODE_VIDEO) finish();
+    }
+
+    private void discardFailedRecordingStart(RecordingSession session) {
+        session.finalizeProcessed = true;
+        deleteStagingFile(session);
+        if (currentRecordingSession == session) currentRecordingSession = null;
+    }
+
+    private void handleRecordingEvent(RecordingSession session, VideoRecordEvent event) {
+        if (event instanceof VideoRecordEvent.Start) {
+            if (currentRecordingSession != session || session.finalizeProcessed) return;
+            if (session.phase == RecordingPhase.FINALIZING) {
+                stopSessionRecording(session);
+                return;
+            }
+            if (session.phase != RecordingPhase.STARTING) return;
+            if (!capturePressActive || captureGestureGeneration != session.gestureGeneration
+                    || isFinishing() || isDestroyed()) {
+                stopRecording(RecordingStopReason.CANCELLED);
+                return;
+            }
+            session.phase = RecordingPhase.RECORDING;
+            btnRecord.setImageDrawable(progressDrawable);
+            startProgress(session);
+            return;
+        }
+
+        if (event instanceof VideoRecordEvent.Status) {
+            if (currentRecordingSession != session || session.phase != RecordingPhase.RECORDING
+                    || session.finalizeProcessed || isFinishing() || isDestroyed()) return;
+            VideoRecordEvent.Status status = (VideoRecordEvent.Status) event;
+            long seconds = TimeUnit.NANOSECONDS.toSeconds(
+                    status.getRecordingStats().getRecordedDurationNanos());
+            updateTimer(seconds);
+            tvTimer.setVisibility(VISIBLE);
+            tvTimer.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_rec_dot, 0, 0, 0);
+            return;
+        }
+
+        if (event instanceof VideoRecordEvent.Finalize) {
+            processRecordingFinalize(session, (VideoRecordEvent.Finalize) event);
+        }
+    }
+
+    private void processRecordingFinalize(RecordingSession session, VideoRecordEvent.Finalize finalize) {
+        if (session.finalizeProcessed) return;
+        session.finalizeProcessed = true;
+        cancelStopFailureWatchdog(session);
+        if (currentRecordingSession != session) {
+            deleteStagingFile(session);
+            return;
+        }
+
+        session.phase = RecordingPhase.FINALIZING;
+        boolean activityUsable = !isFinishing() && !isDestroyed()
+                && !session.stopFailureTimeoutReported;
+        if (activityUsable) {
+            stopProgress();
+            tvTimer.setVisibility(View.GONE);
+        }
+
+        Throwable failure = null;
+        boolean published = false;
+        if (session.stopReason == RecordingStopReason.CANCELLED) {
+            // User and exceptional-stop cancellations are expected terminal outcomes.
+        } else if (finalize.hasError()) {
+            failure = new IOException("Camera recording failed: " + finalize.getError(), finalize.getCause());
+        } else if (session.stopReason == RecordingStopReason.COMPLETED) {
+            try {
+                if (!session.stagingFile.isFile() || session.stagingFile.length() == 0) {
+                    failure = new IOException("Camera produced an empty video file.");
+                } else {
+                    Os.rename(session.stagingFile.getAbsolutePath(), session.destinationFile.getAbsolutePath());
+                    published = true;
+                }
+            } catch (ErrnoException | RuntimeException publicationFailure) {
+                failure = publicationFailure;
+            }
+        } else if (session.stopReason == RecordingStopReason.NONE) {
+            failure = new IOException("Camera recording finalized without a completion request.");
+        }
+
+        if (!published) deleteStagingFile(session);
+        currentRecordingSession = null;
+
+        if (!activityUsable) return;
+        restoreCaptureControls();
+
+        if (failure != null) {
+            if (AndroidFileAccessErrors.isPermissionDenied(failure)) {
+                requestFileAccessAfterCameraFailure();
+            }
+            AndroidUtils.handleException(failure, false);
+            Toast.makeText(this, "Record failed: " + failure.getMessage(), Toast.LENGTH_LONG).show();
+            setResult(RESULT_CANCELED);
+            if (captureMode == MODE_VIDEO) finish();
+            return;
+        }
+
+        if (published && session.stopReason == RecordingStopReason.COMPLETED) {
+            openVideoPlayer(lastSavedVideoPath);
+        }
+    }
+
+    private void deleteStagingFile(RecordingSession session) {
+        try {
+            if (session.stagingFile.exists() && !session.stagingFile.delete()
+                    && session.stagingFile.exists()) {
+                AndroidUtils.handleException(new IOException("Unable to remove the temporary video file."), false);
+            }
+        } catch (RuntimeException cleanupFailure) {
+            AndroidUtils.handleException(cleanupFailure, false);
+        }
+    }
+
+    private void disableCaptureControlsForFinalization() {
+        if (isFinishing() || isDestroyed()) return;
+        btnRecord.setEnabled(false);
+        btnSwitchCamera.setEnabled(false);
+    }
+
+    private void restoreCaptureControls() {
+        if (photoCapturePending || photoFileAccessRecoveryPending || currentRecordingSession != null
+                || capturePressActive || isFinishing() || isDestroyed()) return;
+        btnRecord.setEnabled(true);
+        btnRecord.setImageResource(R.drawable.bg_record_button_small);
+        btnSwitchCamera.setEnabled(true);
     }
 
     private void requestFileAccessAfterCameraFailure() {
@@ -540,33 +798,82 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
             String message = result.authorizationChanged
                     ? "File access changed. Start the recording again."
                     : "Unable to access the selected output file.";
-            Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+            Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
         });
     }
 
-    private boolean isFileAccessDenied(Throwable failure) {
-        while (failure != null) {
-            String message = failure.getMessage();
-            if (message != null) {
-                String normalized = message.toLowerCase(Locale.ROOT);
-                if (normalized.contains("eacces") || normalized.contains("eperm")
-                        || (normalized.contains("permission denied")
-                        && !normalized.contains("camera") && !normalized.contains("microphone"))) return true;
+    private void stopRecording(RecordingStopReason reason) {
+        RecordingSession session = currentRecordingSession;
+        if (session == null || session.finalizeProcessed) return;
+        if (reason == RecordingStopReason.CANCELLED) {
+            session.stopReason = RecordingStopReason.CANCELLED;
+        } else if (session.stopReason == RecordingStopReason.NONE) {
+            session.stopReason = session.phase == RecordingPhase.STARTING
+                    ? RecordingStopReason.CANCELLED : RecordingStopReason.COMPLETED;
+        }
+        session.phase = RecordingPhase.FINALIZING;
+        stopProgress();
+        disableCaptureControlsForFinalization();
+        stopSessionRecording(session);
+    }
+
+    private void stopSessionRecording(RecordingSession session) {
+        if (session.finalizeProcessed || session.stopCalled || session.recording == null) return;
+        session.stopCalled = true;
+        try {
+            session.recording.stop();
+        } catch (RuntimeException stopFailure) {
+            session.stopReason = RecordingStopReason.CANCELLED;
+            session.phase = RecordingPhase.FINALIZING;
+            session.stopFailed = true;
+            AndroidUtils.handleException(stopFailure, false);
+            scheduleStopFailureWatchdog(session);
+            if (!session.closeCalled) {
+                session.closeCalled = true;
+                try {
+                    session.recording.close();
+                } catch (Exception closeFailure) {
+                    AndroidUtils.handleException(closeFailure, false);
+                }
             }
-            failure = failure.getCause();
-        }
-        return false;
-    }
-
-    private void stopRecording() {
-        if (activeRecording != null) {
-            activeRecording.stop();
-            activeRecording = null;
         }
     }
 
-    private void startProgress() {
+    private void scheduleStopFailureWatchdog(RecordingSession session) {
+        if (session.stopFailureWatchdogScheduled) return;
+        session.stopFailureWatchdogScheduled = true;
+        long sessionId = session.id;
+        Runnable watchdog = new Runnable() {
+            @Override
+            public void run() {
+                if (session.stopFailureWatchdog == this) session.stopFailureWatchdog = null;
+                if (currentRecordingSession != session || session.id != sessionId
+                        || session.phase != RecordingPhase.FINALIZING || !session.stopFailed
+                        || session.finalizeProcessed || session.stopFailureTimeoutReported) return;
+                session.stopFailureTimeoutReported = true;
+                AndroidUtils.handleException(new IllegalStateException(
+                        "Camera recording shutdown failed: no Finalize event arrived after stop() and close()."), false);
+                // Keep the session and staging file owned; CameraX may still be writing to it.
+                if (isFinishing() || isDestroyed()) return;
+                setResult(RESULT_CANCELED);
+                finish();
+            }
+        };
+        session.stopFailureWatchdog = watchdog;
+        progressHandler.postDelayed(watchdog, STOP_FAILURE_WATCHDOG_MS);
+    }
+
+    private void cancelStopFailureWatchdog(RecordingSession session) {
+        if (session.stopFailureWatchdog == null) return;
+        progressHandler.removeCallbacks(session.stopFailureWatchdog);
+        session.stopFailureWatchdog = null;
+    }
+
+    private void startProgress(RecordingSession session) {
+        if (currentRecordingSession != session || session.phase != RecordingPhase.RECORDING
+                || isFinishing() || isDestroyed()) return;
         progressActive = true;
+        progressSessionId = session.id;
         recordingStartTime = System.currentTimeMillis();
         progressDrawable.setProgress(0f);
         progressDrawable.setProgressColor(Color.RED);
@@ -576,7 +883,7 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
     private void stopProgress() {
         progressActive = false;
         progressDrawable.setProgress(0f);
-        btnRecord.setImageResource(R.drawable.bg_record_button_small);
+        if (!isFinishing() && !isDestroyed()) btnRecord.setImageResource(R.drawable.bg_record_button_small);
         progressHandler.removeCallbacks(progressRunnable);
     }
 
@@ -586,13 +893,26 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
             if (!progressActive) {
                 return;
             }
+            RecordingSession session = currentRecordingSession;
+            if (session == null || session.id != progressSessionId
+                    || session.phase != RecordingPhase.RECORDING || isFinishing() || isDestroyed()) {
+                progressActive = false;
+                progressHandler.removeCallbacks(this);
+                return;
+            }
             long elapsed = System.currentTimeMillis() - recordingStartTime;
             float p = Math.min(1f, (float) elapsed / (maxSeconds * 1000));
             progressDrawable.setProgress(p);
             btnRecord.invalidate();
 
             if (p >= 1f) {
-                stopRecording();
+                if (currentRecordingSession != session || session.id != progressSessionId
+                        || session.phase != RecordingPhase.RECORDING) return;
+                cancelPendingVideoGestureDecision();
+                capturePressActive = false;
+                ++captureGestureGeneration;
+                session.stopReason = RecordingStopReason.COMPLETED;
+                stopRecording(RecordingStopReason.COMPLETED);
                 stopProgress();
             } else {
                 progressHandler.postDelayed(this, PROGRESS_UPDATE_INTERVAL);
@@ -613,43 +933,104 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
     }
 
     private void takePhoto(boolean permissionRetry) {
-        if (imageCapture == null) return;
+        if (isFinishing() || isDestroyed()) return;
+        if (permissionRetry) {
+            if (!photoCapturePending || !photoCaptureRetryAttempted || photoFileAccessRecoveryPending) return;
+        } else {
+            if (imageCapture == null || currentRecordingSession != null || photoCapturePending
+                    || photoFileAccessRecoveryPending) return;
+            photoCapturePending = true;
+            photoCaptureRetryAttempted = false;
+            disableCaptureControlsForPhoto();
+        }
+        if (imageCapture == null || currentRecordingSession != null) {
+            failPhotoCapture(new IllegalStateException("Camera is not available for photo capture."),
+                    new File(lastSavedVideoPath));
+            return;
+        }
+
         File photoFile = new File(lastSavedVideoPath);
-        ImageCapture.OutputFileOptions options = new ImageCapture.OutputFileOptions.Builder(photoFile).build();
-        imageCapture.takePicture(options, ContextCompat.getMainExecutor(this), new ImageCapture.OnImageSavedCallback() {
-            @Override
-            public void onImageSaved(@NonNull ImageCapture.OutputFileResults results) {
-                if (!photoFile.isFile() || photoFile.length() == 0) {
-                    failPhotoCapture(new IOException("Camera produced an empty image file."), photoFile);
-                    return;
+        try {
+            ImageCapture.OutputFileOptions options = new ImageCapture.OutputFileOptions.Builder(photoFile).build();
+            imageCapture.takePicture(options, ContextCompat.getMainExecutor(this), new ImageCapture.OnImageSavedCallback() {
+                @Override
+                public void onImageSaved(@NonNull ImageCapture.OutputFileResults results) {
+                    if (isFinishing() || isDestroyed()) return;
+                    clearPhotoCapturePending();
+                    if (!photoFile.isFile() || photoFile.length() == 0) {
+                        failPhotoCapture(new IOException("Camera produced an empty image file."), photoFile);
+                        return;
+                    }
+                    try {
+                        openImagePreview(photoFile.getAbsolutePath());
+                    } catch (RuntimeException failure) {
+                        failPhotoCapture(failure, photoFile);
+                    }
                 }
-                try {
-                    openImagePreview(photoFile.getAbsolutePath());
-                } catch (RuntimeException failure) {
+
+                @Override
+                public void onError(@NonNull ImageCaptureException exception) {
+                    if (isFinishing() || isDestroyed()) return;
+                    if (!permissionRetry && AndroidFileAccessErrors.isPermissionDenied(exception)) {
+                        requestPhotoFileAccessRecovery(exception, photoFile);
+                    } else {
+                        failPhotoCapture(exception, photoFile);
+                    }
+                }
+            });
+        } catch (RuntimeException failure) {
+            if (!permissionRetry && AndroidFileAccessErrors.isPermissionDenied(failure)) {
+                requestPhotoFileAccessRecovery(failure, photoFile);
+            } else {
+                failPhotoCapture(failure, photoFile);
+            }
+        }
+    }
+
+    private void requestPhotoFileAccessRecovery(Throwable failure, File photoFile) {
+        if (!photoCapturePending || photoFileAccessRecoveryPending || photoCaptureRetryAttempted
+                || isFinishing() || isDestroyed()) return;
+        photoFileAccessRecoveryPending = true;
+        try {
+            AndroidPermissionManager.requestFileAccess(result -> {
+                if (isFinishing() || isDestroyed()) return;
+                if (!photoCapturePending || !photoFileAccessRecoveryPending) return;
+                photoFileAccessRecoveryPending = false;
+                if (result.authorizationChanged && !photoCaptureRetryAttempted) {
+                    photoCaptureRetryAttempted = true;
+                    takePhoto(true);
+                } else {
                     failPhotoCapture(failure, photoFile);
                 }
-            }
+            });
+        } catch (RuntimeException recoveryFailure) {
+            photoFileAccessRecoveryPending = false;
+            failPhotoCapture(recoveryFailure, photoFile);
+        }
+    }
 
-            @Override
-            public void onError(@NonNull ImageCaptureException exception) {
-                if (!permissionRetry && isFileAccessDenied(exception.getCause())) {
-                    AndroidPermissionManager.requestFileAccess(result -> {
-                        if (result.authorizationChanged && !isFinishing()) {
-                            takePhoto(true);
-                        } else {
-                            failPhotoCapture(exception, photoFile);
-                        }
-                    });
-                } else {
-                    failPhotoCapture(exception, photoFile);
-                }
-            }
-        });
+    private void disableCaptureControlsForPhoto() {
+        if (isFinishing() || isDestroyed()) return;
+        btnRecord.setEnabled(false);
+        btnSwitchCamera.setEnabled(false);
+    }
+
+    private void clearPhotoCapturePending() {
+        photoCapturePending = false;
+        photoFileAccessRecoveryPending = false;
+        photoCaptureRetryAttempted = false;
+    }
+
+    private void cancelPendingPhotoCapture() {
+        if (photoCapturePending || photoFileAccessRecoveryPending) clearPhotoCapturePending();
     }
 
     private void failPhotoCapture(Throwable failure, File photoFile) {
+        clearPhotoCapturePending();
+        if (isFinishing() || isDestroyed()) return;
         if (photoFile.exists() && photoFile.length() == 0) photoFile.delete();
         AndroidUtils.handleException(failure, false);
+        restoreCaptureControls();
         setResult(RESULT_CANCELED);
         finish();
     }
@@ -692,8 +1073,22 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
     }
 
     @Override
+    public void finish() {
+        cancelPendingVideoGestureDecision();
+        cancelPendingPhotoCapture();
+        capturePressActive = false;
+        ++captureGestureGeneration;
+        stopRecording(RecordingStopReason.CANCELLED);
+        super.finish();
+    }
+
+    @Override
     protected void onDestroy() {
-        stopRecording();
+        cancelPendingVideoGestureDecision();
+        cancelPendingPhotoCapture();
+        capturePressActive = false;
+        ++captureGestureGeneration;
+        stopRecording(RecordingStopReason.CANCELLED);
         stopProgress();
         super.onDestroy();
     }
