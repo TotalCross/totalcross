@@ -26,7 +26,7 @@ public class ManifestPermissionEditorTest {
         permission("uses-permission", "android.permission.INTERNET", ""),
         element("uses-feature", "android.hardware.camera", "other_field { value: \"nested { braces }\" }"));
 
-    String result = Deployer4Android.ManifestPermissionEditor.edit(source, Collections.emptySet());
+    String result = ManifestPermissionEditor.edit(source, Collections.emptySet());
 
     assertFalse(result.contains("android.permission.READ_MEDIA_IMAGES"));
     assertFalse(result.contains("android.permission.READ_MEDIA_VIDEO"));
@@ -48,7 +48,7 @@ public class ManifestPermissionEditorTest {
     String duplicate = permission("uses-permission-sdk-23", "android.permission.CAMERA", "");
     Set<String> requested = Collections.singleton("android.permission.CAMERA");
 
-    String result = Deployer4Android.ManifestPermissionEditor.edit(
+    String result = ManifestPermissionEditor.edit(
         manifest(first, duplicate), requested);
 
     assertEquals(1, count(result, "name: \"uses-permission\""));
@@ -64,8 +64,8 @@ public class ManifestPermissionEditorTest {
     Set<String> requested = new LinkedHashSet<>(Collections.singleton(permission));
     String source = manifest();
 
-    String once = Deployer4Android.ManifestPermissionEditor.edit(source, requested);
-    String twice = Deployer4Android.ManifestPermissionEditor.edit(once, requested);
+    String once = ManifestPermissionEditor.edit(source, requested);
+    String twice = ManifestPermissionEditor.edit(once, requested);
 
     assertEquals(1, count(twice, "name: \"uses-permission\""));
     assertTrue(twice.contains("value: \"" + permission + "\""));
