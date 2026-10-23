@@ -316,7 +316,7 @@ def jniHeaderDir =
 
 android {
     namespace 'com.totalcross.tcvm'
-    compileSdk 35
+    compileSdk 36
     ndkVersion "28.2.13676358"
 
     compileOptions {
@@ -327,7 +327,7 @@ android {
 
     defaultConfig {
         minSdkVersion 23
-        targetSdkVersion 35
+        targetSdkVersion 36
         multiDexEnabled true
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
         ndk {
