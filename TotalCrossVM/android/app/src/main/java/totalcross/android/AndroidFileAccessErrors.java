@@ -34,6 +34,10 @@ public final class AndroidFileAccessErrors {
                 if (errno == OsConstants.EACCES || errno == OsConstants.EPERM) return true;
             }
             String message = current.getMessage();
+            if (current instanceof SecurityException
+                    && (message == null || !CAMERA_OR_MIC_PERMISSION.matcher(message).find())) {
+                return true;
+            }
             if (message == null) continue;
             if (ACCESS_ERRNO.matcher(message).find()) return true;
             if (PERMISSION_DENIED.matcher(message).find()

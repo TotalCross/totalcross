@@ -146,9 +146,10 @@ alone does not establish policy eligibility.
 ## Filesystem recovery
 
 Automatic recovery starts only after native file open/create, directory
-creation, deletion, or size operations fail with `EACCES` or `EPERM`. It uses
-the permissions declared by the installed app; paths and file extensions do not
-select permissions. Declared, applicable media or legacy storage permissions
+creation, deletion, rename, existence/type/empty and metadata operations, or
+size/free-space queries fail with `EACCES` or `EPERM`. It uses the permissions
+declared by the installed app; paths and file extensions do not select
+permissions. Declared, applicable media or legacy storage permissions
 are requested together, followed by the separate all-files Settings flow when
 that permission is declared and supported. A failed system call is retried at
 most once after authorization changes. The flow does not retry recursively or
