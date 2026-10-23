@@ -1,3 +1,8 @@
+// Copyright (C) 2020-2021 TotalCross Global Mobile Platform Ltda
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
+//
+// SPDX-License-Identifier: LGPL-2.1-only
+
 package totalcross.android;
 
 import android.content.Context;
@@ -19,6 +24,7 @@ import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.Priority;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -34,6 +40,7 @@ public class GPSHelper extends GnssStatusCompat.Callback implements android.loca
    private LocationCallback locationCallback;
    private LocationRequest locationRequest;
    private int validSatellites;
+   private static final long FUSED_LOCATION_UPDATE_INTERVAL_MS = 1000L;
    private static final String NOGPS = "*";
    private String lastGps = NOGPS;
 
@@ -179,11 +186,12 @@ public class GPSHelper extends GnssStatusCompat.Callback implements android.loca
       }      
       if (!isHigh && fusedLocationClient == null && /*Launcher4A.gpsPrecision == LOW_GPS_PRECISION && */checkPlayServices())
       {
-         locationRequest = LocationRequest.create();
-         locationRequest.setInterval(5000);
-         locationRequest.setFastestInterval(1000);
-         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-         locationRequest.setSmallestDisplacement(2); // meters
+         locationRequest = new LocationRequest.Builder(
+            Priority.PRIORITY_HIGH_ACCURACY,
+            FUSED_LOCATION_UPDATE_INTERVAL_MS)
+            .setMinUpdateIntervalMillis(FUSED_LOCATION_UPDATE_INTERVAL_MS)
+            .setMinUpdateDistanceMeters(0f) // meters
+            .build();
 
          locationCallback = new LocationCallback()
          {

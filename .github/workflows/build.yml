@@ -18,6 +18,11 @@ on:
         required: false
         type: boolean
         default: false
+      ios-xcode-cache-experiment:
+        description: Opt-in unsigned iOS DerivedData cache experiment for manual builds
+        required: false
+        type: boolean
+        default: false
 
 env:
   SQLITE3_GITHUB_TOKEN: ${{ secrets.SQLITE3_GITHUB_TOKEN }}
@@ -48,6 +53,9 @@ jobs:
         python3 scripts/test-build-provenance.py
         python3 scripts/test-build-identity.py
         python3 scripts/test-artifact-identity.py
+
+    - name: Validate iOS Xcode build diagnostic parser
+      run: python3 scripts/test-ios-xcode-build-timing.py
 
     - name: Select build scope
       id: select_build_scope
@@ -1007,7 +1015,7 @@ jobs:
 
         echo "Installed iOS provisioning profile '${profile_name}' (${profile_uuid}) for team '${profile_team_id}' and app id '${profile_app_id}'."
 
-    - name: Generate and patch Xcode project
+    - name: Generate Xcode project with CMake
       working-directory: TotalCrossVM/xcode
       run: |
         cmake ../ \
@@ -1015,11 +1023,36 @@ jobs:
           -DCMAKE_SYSTEM_NAME=iOS \
           -DCMAKE_OSX_SYSROOT=iphoneos \
           -DCMAKE_OSX_ARCHITECTURES=arm64
+
+    - name: Install CocoaPods and patch Xcode project
+      working-directory: TotalCrossVM/xcode
+      run: |
         ruby -pi -e "gsub(\"config.build_settings['ARCHS[sdk=iphonesimulator*]'] = 'x86_64'\", \"config.build_settings['ARCHS[sdk=iphonesimulator*]'] = 'arm64'\")" Podfile
         pod install
         /usr/libexec/PlistBuddy -c "Add :DisableBuildSystemDeprecationDiagnostic bool" TotalCross.xcworkspace/xcshareddata/WorkspaceSettings.xcsettings || true
         /usr/libexec/PlistBuddy -c "Set :DisableBuildSystemDeprecationDiagnostic true" TotalCross.xcworkspace/xcshareddata/WorkspaceSettings.xcsettings
         ruby ../../scripts/fix-ios-xcode-dependencies.rb TCVM.xcodeproj/project.pbxproj
+
+    # Experimental cache deliberately runs only for manual unsigned builds.
+    # A source-specific key allows comparing successive runs of the same
+    # commit without changing regular PRs, master builds or signed artifacts.
+    - name: Identify iOS toolchain for cache experiment
+      if: ${{ github.event_name == 'workflow_dispatch' && inputs.ios-xcode-cache-experiment && !inputs.signed-ios }}
+      id: ios_xcode_toolchain
+      shell: bash
+      run: |
+        toolchain_key="$({ xcodebuild -version; xcrun --sdk iphoneos --show-sdk-version; } | shasum -a 256 | cut -c 1-16)"
+        printf 'key=%s\n' "$toolchain_key" >> "$GITHUB_OUTPUT"
+
+    - name: Cache Xcode intermediates (experiment)
+      if: ${{ github.event_name == 'workflow_dispatch' && inputs.ios-xcode-cache-experiment && !inputs.signed-ios }}
+      id: ios_xcode_cache
+      uses: actions/cache@v5
+      with:
+        path: |
+          ~/Library/Developer/Xcode/DerivedData/TotalCross-*/Build/Intermediates.noindex
+          ~/Library/Developer/Xcode/DerivedData/ModuleCache.noindex
+        key: ios-xcode-intermediates-v1-${{ runner.os }}-${{ runner.arch }}-${{ steps.ios_xcode_toolchain.outputs.key }}-${{ hashFiles('TotalCrossVM/xcode/Podfile', 'TotalCrossVM/CMakeLists.txt', 'TotalCrossVM/third_party/CMakeLists.txt') }}-${{ github.sha }}
 
     - name: Build iOS archive for device
       working-directory: TotalCrossVM/xcode
@@ -1043,6 +1076,7 @@ jobs:
         fi
 
         xcodebuild \
+          -showBuildTimingSummary \
           -workspace TotalCross.xcworkspace \
           -scheme TotalCross \
           BUILD_DIR=${PWD} \
@@ -1054,6 +1088,41 @@ jobs:
           "${signing_args[@]}" \
           archive \
           2>&1 | tee build/logs/xcodebuild-raw.log | xcbeautify
+
+    - name: Export Xcode archive activity metadata
+      if: always()
+      working-directory: TotalCrossVM/xcode
+      shell: bash
+      run: |
+        result=build/logs/TotalCross.xcresult
+        if [ -d "$result" ]; then
+          xcrun xcresulttool get build-results --path "$result" \
+            > build/logs/xcode-build-results.json || true
+          xcrun xcresulttool get log --type build --path "$result" \
+            > build/logs/xcode-build-activities.json || true
+        fi
+
+    - name: Summarize Xcode build timings
+      if: always()
+      working-directory: TotalCrossVM/xcode
+      run: |
+        python3 ../../scripts/summarize-ios-xcode-build.py \
+          --log build/logs/xcodebuild-raw.log \
+          --build-results build/logs/xcode-build-results.json \
+          --output build/logs/ios-build-summary.md
+
+    - name: Report experimental Xcode cache status
+      if: ${{ always() && github.event_name == 'workflow_dispatch' && inputs.ios-xcode-cache-experiment && !inputs.signed-ios }}
+      env:
+        CACHE_HIT: ${{ steps.ios_xcode_cache.outputs.cache-hit }}
+      shell: bash
+      run: |
+        {
+          echo '### Experimental iOS Xcode intermediates cache'
+          echo "Cache hit: ${CACHE_HIT:-false}"
+          echo 'Compare the iOS archive step duration and CompileC counts across'
+          echo 'two workflow_dispatch runs on the same commit with the experiment enabled.'
+        } >> "$GITHUB_STEP_SUMMARY"
 
     - name: Export signed iOS IPA
       if: ${{ inputs.signed-ios }}
@@ -1076,6 +1145,9 @@ jobs:
         name: ios-xcodebuild-diagnostics
         path: |
           TotalCrossVM/xcode/build/logs/xcodebuild-raw.log
+          TotalCrossVM/xcode/build/logs/ios-build-summary.md
+          TotalCrossVM/xcode/build/logs/xcode-build-results.json
+          TotalCrossVM/xcode/build/logs/xcode-build-activities.json
           TotalCrossVM/xcode/build/logs/xcodebuild-export-raw.log
           TotalCrossVM/xcode/build/logs/TotalCross.xcresult
         if-no-files-found: warn

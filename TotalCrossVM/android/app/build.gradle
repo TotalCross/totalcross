@@ -31,7 +31,7 @@ def buildType // stores build type, debug or release
 
 android {
     namespace 'totalcross.android'
-    compileSdk 35
+    compileSdk 36
 
     androidResources {
         noCompress 'zip'
@@ -52,8 +52,8 @@ android {
 
     defaultConfig {
         applicationId "totalcross.android"
-        minSdkVersion 23
-        targetSdkVersion 35
+        minSdkVersion 24
+        targetSdkVersion 36
         versionCode 305419896
         versionName "!1.0!"
         multiDexEnabled true
@@ -161,6 +161,7 @@ tasks.register('generateJniHeaders') {
 
 dependencies {
     implementation project(":tcvm")
+    implementation 'androidx.activity:activity:1.6.1' // Activity-level back dispatch
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
     implementation "com.google.guava:guava:31.0.1-android"
@@ -174,7 +175,7 @@ dependencies {
 
     implementation 'androidx.localbroadcastmanager:localbroadcastmanager:1.1.0' // dependency for FirebaseUtils, but only required when maps is 17+, go figure...
     implementation 'com.google.android.gms:play-services-maps:18.2.0'
-    implementation 'com.google.android.gms:play-services-location:21.1.0'
+    implementation 'com.google.android.gms:play-services-location:21.4.0'
     implementation 'com.google.firebase:firebase-core:15.0.2'
     implementation 'com.google.firebase:firebase-messaging:15.0.2'
 

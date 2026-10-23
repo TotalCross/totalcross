@@ -1,107 +1,127 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
 package totalcross.android;
 
-import android.os.*;
+import android.os.Looper;
+import android.os.Message;
 
-import totalcross.*;
-import totalcross.android.compat.*;
+import totalcross.Launcher4A;
+import totalcross.android.compat.BluetoothRequest;
+import totalcross.android.compat.Level5;
 
 // may be running in tcvm android's thread (static methods in Launcher4A)
 
 public class Bluetooth4A
 {
-   private static void callLoaderAndWait(int callType, String param, byte[] array, int ofs, int len)
+   private static final long REQUEST_WAIT_SLICE_MS = 20L;
+   private static BluetoothRequest callLoaderAndWait(int callType, String param, byte[] array, int ofs, int len)
    {
-      Message msg = Launcher4A.loader.achandler.obtainMessage();
-      Bundle b = new Bundle();
-      b.putInt("type", Loader.LEVEL5);
-      b.putInt("subtype", callType);
-      if (param != null)
-         b.putString("param",param);
-      if (array != null)
+      BluetoothRequest request = new BluetoothRequest(callType, param, array, ofs, len);
+      if (Looper.myLooper() == Looper.getMainLooper())
       {
-         b.putByteArray("bytes",array);
-         b.putInt("ofs",ofs);
-         b.putInt("len",len);
+         request.complete(Level5.ERROR, null);
+         return request;
       }
-      msg.setData(b);
-      Launcher4A.loader.achandler.sendMessage(msg);
-      while (!Level5.isResponseReady)
+      Loader loader = Launcher4A.loader;
+      if (loader == null || loader.achandler == null)
       {
-         try {Thread.sleep(10);} catch (Exception e) {}
-         if (Launcher4A.eventIsAvailable())
+         request.complete(Level5.ERROR, null);
+         return request;
+      }
+      Level5.trackRequest(request);
+      Message message = loader.achandler.obtainMessage(Loader.LEVEL5, request);
+      if (!loader.achandler.sendMessage(message))
+      {
+         request.complete(Level5.ERROR, null);
+         return request;
+      }
+      while (!request.isComplete())
+      {
+         if (request.isDeadlineExpired())
+         {
+            request.cancel();
+            break;
+         }
+         try
+         {
+            request.await(REQUEST_WAIT_SLICE_MS);
+         }
+         catch (InterruptedException interrupted)
+         {
+            request.cancel();
+            Thread.currentThread().interrupt();
+            break;
+         }
+         if (request.isDeadlineExpired())
+         {
+            request.cancel();
+            break;
+         }
+         if (!request.isComplete() && Launcher4A.eventIsAvailable())
             Launcher4A.pumpEvents();
       }
+      return request;
    }
    
-   private static void callLoaderAndWait(int callType, String param)
+   private static BluetoothRequest callLoaderAndWait(int callType, String param)
    {
-      callLoaderAndWait(callType,param, null,0,0);
+      return callLoaderAndWait(callType,param, null,0,0);
    }
 
-   private static void callLoaderAndWait(int callType)
+   private static BluetoothRequest callLoaderAndWait(int callType)
    {
-      callLoaderAndWait(callType,null,null,0,0);
+      return callLoaderAndWait(callType,null,null,0,0);
    }
 
    // used to control bluetooth hardware
    
    public static int isSupported()
    {
-      callLoaderAndWait(Level5.BT_IS_SUPPORTED);
-      return Level5.getResponseInt();
+      return callLoaderAndWait(Level5.BT_IS_SUPPORTED).getResultCode();
    }
    
    public static int isRadioOn()
    {
-      callLoaderAndWait(Level5.BT_IS_RADIO_ON);
-      return Level5.getResponseInt();
+      return callLoaderAndWait(Level5.BT_IS_RADIO_ON).getResultCode();
    }
    
    public static int isDiscoverable()
    {
-      callLoaderAndWait(Level5.BT_IS_DISCOVERABLE);
-      return Level5.getResponseInt();
+      return callLoaderAndWait(Level5.BT_IS_DISCOVERABLE).getResultCode();
    }
    
    public static int activate()
    {
-      callLoaderAndWait(Level5.BT_ACTIVATE);
-      return Level5.getResponseInt();
+      return callLoaderAndWait(Level5.BT_ACTIVATE).getResultCode();
    }
    
    public static int deactivate()
    {
-      callLoaderAndWait(Level5.BT_DEACTIVATE);
-      return Level5.getResponseInt();
+      return callLoaderAndWait(Level5.BT_DEACTIVATE).getResultCode();
    }
    
    public static String[] getPairedDevices()
    {
-      callLoaderAndWait(Level5.BT_GET_PAIRED_DEVICES);
-      return (String[])Level5.getResponseObject();
+      return (String[])callLoaderAndWait(Level5.BT_GET_PAIRED_DEVICES).getPayload();
    }
    
    public static String[] getUnpairedDevices()
    {
-      callLoaderAndWait(Level5.BT_GET_UNPAIRED_DEVICES);
-      return (String[])Level5.getResponseObject();
+      return (String[])callLoaderAndWait(Level5.BT_GET_UNPAIRED_DEVICES).getPayload();
    }
    
    public static int makeDiscoverable()
    {
-      callLoaderAndWait(Level5.BT_MAKE_DISCOVERABLE);
-      return Level5.getResponseInt();
+      return callLoaderAndWait(Level5.BT_MAKE_DISCOVERABLE).getResultCode();
    }
 
    public static int connectTo(String addr)
    {
-      callLoaderAndWait(Level5.BT_CONNECT,addr);
-      return Level5.getResponseInt();
+      return callLoaderAndWait(Level5.BT_CONNECT,addr).getResultCode();
    }
    
    // used for a specific connection
@@ -113,22 +133,19 @@ public class Bluetooth4A
    
    public static int read(String addr, byte[] array, int ofs, int len)
    {
-      callLoaderAndWait(Level5.BT_READ, addr, array, ofs, len);
-      return Level5.getResponseInt();
+      return callLoaderAndWait(Level5.BT_READ, addr, array, ofs, len).getResultCode();
    }
    
    public static int write(String addr, byte[] array, int ofs, int len)
    {
-      callLoaderAndWait(Level5.BT_WRITE, addr, array, ofs, len);
-      return Level5.getResponseInt();
+      return callLoaderAndWait(Level5.BT_WRITE, addr, array, ofs, len).getResultCode();
    }
    
    // server methods
    
    public static int serverAccept(String uuid)
    {
-      callLoaderAndWait(Level5.BT_SERVER_ACCEPT, uuid);
-      return Level5.getResponseInt();
+      return callLoaderAndWait(Level5.BT_SERVER_ACCEPT, uuid).getResultCode();
    }
 
    public static void serverClose()

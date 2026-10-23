@@ -17,9 +17,11 @@ import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
+import java.util.Set;
 import java.util.zip.Adler32;
 
 import org.apache.commons.io.FileUtils;
@@ -96,10 +98,20 @@ public class Deployer4Android {
   public static String signingPropertiesPath = null;
   public static boolean permissionManageExternalStorage = false;
   public static boolean permissionRequestInstallPackages = false;
+  private static final Set<String> additionalAndroidPermissions = new LinkedHashSet<>();
   private final Properties signingConfig = new Properties();
   private final String targetDir;
   private final String targetTCZ;
   private String tcFolder;
+
+  public static void addAndroidPermission(String permission) throws DeployerException {
+    if (permission == null || permission.isEmpty() || !permission.matches("[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)+")) {
+      throw new DeployerException("Invalid Android permission name: " + String.valueOf(permission)
+          + ". Use a fully qualified name such as android.permission.CAMERA or com.vendor.permission.ACCESS_DEVICE.");
+    }
+    additionalAndroidPermissions.add(permission);
+  }
+
 
   public Deployer4Android() throws Exception {
     try (FileInputStream fis = new FileInputStream(Utils.findPath(DeploySettings.etcDir + "security/android_keystore.properties", false))) {
@@ -169,6 +181,8 @@ public class Deployer4Android {
     IOUtils.copy(new FileInputStream(manifestFile), process.getOutputStream());
     process.getOutputStream().close();
     String originalManifest = IOUtils.toString(process.getInputStream(), "UTF-8");
+    ManifestPermissionEditor.PermissionMask permissionMask = ManifestPermissionEditor.maskPermissionBlocks(originalManifest);
+    originalManifest = permissionMask.text;
     originalManifest = originalManifest.replaceFirst("(.*\"[pP]ackage\"\\R.*value: )\"[a-z\\.]+\"", "$1\"" + newPackage + "\"");
     originalManifest = originalManifest.replaceFirst("(.*\"[vV]ersionName\"\\R.*value: )\"![0-9\\.]+!\"", "$1\"" + newVersion + "\"");
     originalManifest = originalManifest.replaceFirst("(.*\"[lL]abel\"\\R.*value: )\"Stub\"", "$1\"" + newTitle + "\"");
@@ -179,13 +193,15 @@ public class Deployer4Android {
     int versionCode = Utils.version2int(newVersion);
     originalManifest = originalManifest.replaceFirst("(.*\"[vV]ersionCode\"\\R.*\")[0-9]+(\"\\R)((?:.*\\R)*?)(.*int_decimal_value: )[0-9]+", "$1" + versionCode + "$2$3$4" + versionCode);
     originalManifest = originalManifest.replaceAll("totalcross\\.android", "totalcross." + targetTCZ);
-    if (!Deployer4Android.permissionManageExternalStorage){
-      originalManifest = originalManifest.replaceFirst("(child\\s*\\{\\s*)(element\\s*\\{\\s*name:\\s*\\\"uses-permission\\\"\\s*.*\\{(?:\\s*.*){3}\\\"android\\.permission\\.MANAGE_EXTERNAL_STORAGE\\\"(?:\\s*.*\\s*\\}){2})", "$1text: \"\\\\n.   \"");
+    originalManifest = ManifestPermissionEditor.restorePermissionBlocks(originalManifest, permissionMask);
+    Set<String> requestedPermissions = new LinkedHashSet<>(additionalAndroidPermissions);
+    if (permissionManageExternalStorage) {
+      requestedPermissions.add("android.permission.MANAGE_EXTERNAL_STORAGE");
     }
-    if (!Deployer4Android.permissionRequestInstallPackages){
-      originalManifest = originalManifest.replaceFirst("(child\\s*\\{\\s*)(element\\s*\\{\\s*name:\\s*\\\"uses-permission\\\"\\s*.*\\{(?:\\s*.*){3}\\\"android\\.permission\\.REQUEST_INSTALL_PACKAGES\\\"(?:\\s*.*\\s*\\}){2})", "$1text: \"\\\\n.   \"");
+    if (permissionRequestInstallPackages) {
+      requestedPermissions.add("android.permission.REQUEST_INSTALL_PACKAGES");
     }
-    
+    originalManifest = ManifestPermissionEditor.edit(originalManifest, requestedPermissions);
     
     if (DeployLogger.isVerbose()) {
       IOUtils.write(originalManifest, new FileOutputStream(new File(targetDir, "AndroidManifest.xml")));

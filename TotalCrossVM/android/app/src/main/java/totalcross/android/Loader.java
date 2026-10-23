@@ -6,8 +6,6 @@
 
 package totalcross.android;
 
-import static android.provider.Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION;
-
 import static androidx.core.view.WindowInsetsAnimationCompat.Callback.DISPATCH_MODE_CONTINUE_ON_SUBTREE;
 
 import android.speech.tts.TextToSpeech;
@@ -29,6 +27,9 @@ import android.net.*;
 import android.os.*;
 import android.provider.*;
 import android.speech.*;
+import android.system.ErrnoException;
+import android.system.Os;
+import android.system.OsConstants;
 import android.util.*;
 import android.view.*;
 import android.view.ViewGroup.*;
@@ -36,6 +37,7 @@ import android.view.inputmethod.*;
 import android.webkit.MimeTypeMap;
 import android.widget.*;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
@@ -51,6 +53,7 @@ import java.net.URISyntaxException;
 import java.nio.channels.FileChannel;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.text.SimpleDateFormat;
 
 import com.journeyapps.barcodescanner.ScanContract;
@@ -76,20 +79,33 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
   public static boolean IS_EMULATOR = android.os.Build.MODEL.toLowerCase().indexOf("sdk") >= 0;
   public Handler achandler;
   private boolean runningVM;
+  private final AtomicBoolean shutdownStarted = new AtomicBoolean();
+  private static final long VM_SHUTDOWN_TIMEOUT_MS = 10000;
   private static final int TAKE_PHOTO = 1234324330;
   private static final int JUST_QUIT = 1234324331;
   private static final int MAP_RETURN = 1234324332;
   private static final int EXTCAMERA_RETURN = 1234324334;
   private static final int SELECT_PICTURE = 1234324335;
   private static final int CAMERA_PIC_REQUEST = 1337;
-  private static final int SPEECH_TO_TEXT = 1234324336;
+  private static final int SPEECH_TO_TEXT = 0x5300;
+  private static final int SPEECH_TO_TEXT_LAST = SPEECH_TO_TEXT + 31;
   private static final int FROM_SCANDIT = 1234324337;
-  private static final int APP_STORAGE_ACCESS_REQUEST_CODE = 1234324338;
   private static boolean onMainLoop;
   public static boolean isFullScreen;
+  private static volatile Loader speechHost;
+  private static volatile Loader currentLoader;
+  private static volatile boolean speechPending;
+  private static volatile boolean speechAwaitingPermission;
+  private static volatile long speechGeneration;
+  private static volatile int speechRequestCode = SPEECH_TO_TEXT;
+  private static int nextSpeechRequestSlot;
+  private static final Set<String> pendingApkInstallPaths = new HashSet<>();
 
   Uri capturedImageURI;
-  
+  private File capturedCameraFile;
+  private boolean capturedCameraMediaStoreEntry;
+  private boolean capturedCameraKeepOriginal;
+
   private static final String GOOGLECHROME_NAVIGATE_PREFIX = "googlechrome://navigate?url=";  
 
   private ActivityResultLauncher<Intent> scanQrResultLauncher;
@@ -99,10 +115,30 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
    public void onCreate(Bundle savedInstanceState)
    {
     super.onCreate(savedInstanceState);
+      speechHost = this;
+      currentLoader = this;
+      if (savedInstanceState != null) {
+          capturedImageURI = savedInstanceState.getParcelable("camera.output_uri");
+          String cameraFile = savedInstanceState.getString("camera.output_file");
+          capturedCameraFile = cameraFile == null ? null : new File(cameraFile);
+          capturedCameraMediaStoreEntry = savedInstanceState.getBoolean("camera.media_store_entry");
+          capturedCameraKeepOriginal = savedInstanceState.getBoolean("camera.keep_original");
+          imageFN = savedInstanceState.getString("camera.destination");
+          cameraType = savedInstanceState.getInt("camera.type");
+      }
+      AndroidPermissionManager.attach(this);
+      getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+         @Override
+         public void handleOnBackPressed() {
+            Launcher4A launcher = Launcher4A.instance;
+            if (launcher == null || !launcher.dispatchBackFromActivity())
+               finish();
+         }
+      });
       try
       {
       AndroidUtils.initialize(this);
-      if (isSingleApk() && onCreateCalled) // bypass bug that will cause a new instance each time the app is minimized and called again (2282)
+      if (isSingleApk() && onCreateCalled && savedInstanceState == null) // bypass duplicate launches, while allowing Activity recreation
       {
         System.exit(2);
         return;
@@ -136,76 +172,52 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
     super.onRestart();
   }
 
-   public String getImagePath(Uri uri) 
-   {
-      try
-      {
-      String[] projection = { MediaStore.Images.Media.DATA };
-      Cursor cursor = managedQuery(uri, projection, null, null, null);
-         if (cursor == null) return null;
-      int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-      cursor.moveToFirst();
-      String s = cursor.getString(column_index);
-      //         cursor.close(); - cant close cursors! or the vm will stall on second try
-      return s;
-      }
-      catch (Throwable t)
-      {
-      AndroidUtils.handleException(t, false);
-      return null;
-    }
+  @Override
+  public void onUserInteraction()
+  {
+    super.onUserInteraction();
+    AndroidPermissionManager.onUserInteraction();
   }
 
-   protected void onActivityResult(int requestCode, int resultCode, Intent data)
+  protected void onActivityResult(int requestCode, int resultCode, Intent data)
    {
+      if (AndroidPermissionManager.onActivityResult(requestCode, resultCode)) {
+          return;
+      }
+      if (requestCode >= SPEECH_TO_TEXT && requestCode <= SPEECH_TO_TEXT_LAST) {
+          finishSpeechInput(requestCode, resultCode, data);
+          return;
+      }
+      if (Level5.getInstance().handleActivityResult(requestCode, resultCode)) return;
       switch (requestCode)
       {
-          case APP_STORAGE_ACCESS_REQUEST_CODE:
-              permissionInitialized = resultCode == RESULT_OK ? 1 : -1;
-              break;
     case FROM_SCANDIT:
             Launcher4A.zxingResult = data.getBooleanExtra("barcodeRecognized", false) ? data.getStringExtra("barcodeData") : null; //data.getStringExtra("barcodeSymbologyName").toUpperCase());
       Launcher4A.callingZXing = false;
       break;
-    case SPEECH_TO_TEXT:
-            Launcher4A.soundResult = resultCode == RESULT_OK ? data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS).get(0) : null;
-      Launcher4A.callingSound = false;
-      break;
-
     case SELECT_PICTURE:
-            if (resultCode == RESULT_OK)
-            {
-        Uri uri = data.getData();
-        String filePath = "";
-        try {
+      if (resultCode == RESULT_OK && data != null && data.getData() != null) {
+          Uri selectedImageUri = data.getData();
+          String filePath = null;
           try {
-            filePath= PathUtil.getPath(getApplicationContext(), uri);
-          } catch (URISyntaxException e) {
-            e.printStackTrace();
+              filePath = PathUtil.getPath(getApplicationContext(), selectedImageUri);
+          } catch (URISyntaxException ignored) {
+              // Not every content provider maps to a local filesystem path.
           }
-          
-          if (filePath == null || filePath.startsWith("/enc") || !(new File(filePath).exists())) {
-            try (InputStream inputStream = getContentResolver().openInputStream(uri)) {
-          AndroidUtils.copyStreamToFile(inputStream, imageFN);
-          autoRotatePhoto(getContentResolver(), imageFN);
-        } catch (IOException ioe) {
-          AndroidUtils.handleException(ioe, false);
-          // pois eh... mesmo assim falhou i.i
-          resultCode = RESULT_OK + 1;
-        }
+          if (filePath != null && !filePath.startsWith("/enc") && new File(filePath).isFile()) {
+              try (BufferedWriter writer = new BufferedWriter(new FileWriter(imageFN))) {
+                  writer.write(filePath);
+                  Launcher4A.pictureTaken(0);
+              } catch (IOException failure) {
+                  AndroidUtils.handleException(failure, false);
+                  Launcher4A.pictureTaken(1);
+              }
           } else {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(imageFN));
-            writer.write(filePath);
-            writer.close();
+              copyGallerySelection(selectedImageUri, false);
           }
-        } catch (IOException e) {
-          e.printStackTrace();
+      } else {
+          Launcher4A.pictureTaken(1);
       }
-      }
-      Launcher4A.pictureTaken(resultCode != RESULT_OK ? 1 : 0);
-      break;
-    case Level5.BT_MAKE_DISCOVERABLE:
-      Level5.getInstance().setResponse(resultCode != Activity.RESULT_CANCELED, null);
       break;
     case JUST_QUIT:
       finish();
@@ -214,54 +226,27 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
       Launcher4A.pictureTaken(resultCode != RESULT_OK ? 1 : 0);
       break;
     case CAMERA_PIC_REQUEST:
-      Launcher4A.pictureTaken(resultCode != RESULT_OK ? 1 : 0);
+      if (resultCode == RESULT_OK && imageFN != null) {
+          File directCameraFile = new File(imageFN);
+          if (directCameraFile.isFile() && directCameraFile.length() > 0) {
+              autoRotatePhoto(getContentResolver(), imageFN);
+              Launcher4A.pictureTaken(0);
+          } else {
+              Launcher4A.pictureTaken(1);
+          }
+      } else {
+          Launcher4A.pictureTaken(1);
+      }
       break;
     case MAP_RETURN:
       Launcher4A.showingMap = false;
       break;
         case EXTCAMERA_RETURN: {
-            if (capturedImageURI == null) {
-                AndroidUtils.debug("capturedImageURI is null!");
-                Launcher4A.pictureTaken(0);
-                break;
-            }
-            String[] projection = { MediaStore.Images.Media.DATA, BaseColumns._ID, MediaStore.Images.Media.DATE_ADDED };
-            Cursor cursor = getContentResolver().query(capturedImageURI, projection, null, null, null);
-
-            String capturedImageFilePath = null;
-            if (cursor.moveToFirst()) {
-                capturedImageFilePath = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA));
-            }
-            if (capturedImageFilePath == null) {
-                resultCode = RESULT_OK + 1; // error, no file
+            if (resultCode == RESULT_OK && capturedImageURI != null) {
+                copyCapturedImage(capturedImageURI, false);
             } else {
-                try {
-                    AndroidUtils.copyFile(capturedImageFilePath, imageFN);
-
-                    long date = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATE_ADDED));
-                    autoRotatePhoto(getContentResolver(), imageFN);
-                    // if the file was deleted, delete from database too
-                    if (cameraType == CAMERA_NATIVE_NOCOPY) {
-                        try {
-                            // on android 2.3 the getContentResolver() code does not work, so we
-                            // just ensure that we delete the file
-                            try {
-                                new File(capturedImageFilePath).delete();
-                            } catch (Exception e) {
-                            }
-                        } catch (Exception e) {
-                            AndroidUtils.handleException(e, false);
-                        }
-                    }
-                } catch (FileNotFoundException e) {
-                    resultCode = RESULT_OK + 1; // error, can't open stream
-                    AndroidUtils.debug("It seems you have cancelled out the photo...");
-                } catch (IOException e) {
-                    resultCode = RESULT_OK + 1; // error, generic IO excpetion
-                    AndroidUtils.handleException(e, false);
-                }
+                completeExternalCamera(false);
             }
-            Launcher4A.pictureTaken(resultCode != RESULT_OK ? 1 : 0);
             break;
         }
           default:
@@ -270,41 +255,13 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
       }
   }
 
-   private void removeLastImageFromGallery(long orig)
-   {
-      try
-      {
-            final String[] imageColumns = { MediaStore.Images.Media._ID,
-                MediaStore.Images.Media.DATE_ADDED,
-                MediaStore.Images.Media.DATA
-            };
-      final String imageOrderBy = MediaStore.Images.Media._ID + " DESC";
-         Cursor imageCursor = managedQuery(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, imageColumns, null, null, imageOrderBy);
-         if (imageCursor.moveToFirst())
-         {
-                long last = new File(imageCursor.getString(2)).lastModified();
-        int id = imageCursor.getInt(imageCursor.getColumnIndex(MediaStore.Images.Media._ID));
-        long dif = Math.abs(orig - last);
-                if (dif < 1000) { // 1 second - usually is less than 10ms
-                    getContentResolver().delete(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                            MediaStore.Images.Media._ID + "=?", new String[]{Long.toString(id)});
-                }
-         }
-      }
-      catch (Exception e)
-      {
-      AndroidUtils.handleException(e, false);
-    }
-  }
-
    public static void autoRotatePhoto(ContentResolver contentResolver, String imagePath) {
       try {
       File f = new File(imagePath);
-        ExifInterface exif = null;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-          exif = new ExifInterface(contentResolver.openFileDescriptor(Uri.fromFile(f), "r").getFileDescriptor());
-        } else {
-          exif = new ExifInterface(f.getPath());
+        ExifInterface exif;
+        try (android.os.ParcelFileDescriptor descriptor = contentResolver.openFileDescriptor(Uri.fromFile(f), "r")) {
+          if (descriptor == null) return;
+          exif = new ExifInterface(descriptor.getFileDescriptor());
         }
       int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
       AndroidUtils.debug(imagePath + " -> " + orientation);
@@ -322,11 +279,16 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
       BitmapFactory.Options options = new BitmapFactory.Options();
       options.inSampleSize = 1;
 
-      Bitmap bmp = BitmapFactory.decodeStream(contentResolver.openInputStream(Uri.fromFile(f)), null, options);
+      Bitmap bmp = BitmapFactory.decodeFile(f.getPath(), options);
+      if (bmp == null) return;
       Bitmap bitmap = Bitmap.createBitmap(bmp, 0, 0, bmp.getWidth(), bmp.getHeight(), mat, true);
-      OutputStream out = contentResolver.openOutputStream(Uri.fromFile(f));
-      bitmap.compress(Bitmap.CompressFormat.JPEG, 85, out);
-      out.close();
+      try (OutputStream out = new FileOutputStream(f)) {
+        if (!bitmap.compress(Bitmap.CompressFormat.JPEG, 85, out)) {
+          throw new IOException("Unable to rotate the copied camera image.");
+        }
+      }
+      bmp.recycle();
+      if (bitmap != bmp) bitmap.recycle();
       AndroidUtils.debug("auto-rotated " + imagePath);
       } catch (Exception e) {
       AndroidUtils.handleException(e, false);
@@ -405,13 +367,9 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
   }
    
    private Uri getFileUri4Intent(File file) {
-	   if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
-      	 return FileProvider.getUriForFile(this,
- 		         "com.totalcross." + Launcher4A.instance.tczname + ".fileprovider",
- 		        file);
-	   } else { 
-		   return Uri.fromFile(file);
-	   } 
+      return FileProvider.getUriForFile(this,
+              "com.totalcross." + Launcher4A.instance.tczname + ".fileprovider",
+              file);
    }
 
   private String imageFN;
@@ -439,7 +397,203 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
       return image;
   }
 
-    private void captureCamera(String s, int quality, int width, int height, boolean allowRotation, int cameraType, int videoTimeLimit, int targetFps, int bitrate) {
+  private Uri prepareExternalCameraOutput(boolean keepOriginal) throws IOException {
+      capturedCameraFile = null;
+      capturedCameraMediaStoreEntry = false;
+      capturedCameraKeepOriginal = keepOriginal;
+      if (keepOriginal && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+          ContentValues values = new ContentValues();
+          values.put(MediaStore.MediaColumns.DISPLAY_NAME,
+                  "TotalCross_" + new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date()) + ".jpg");
+          values.put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg");
+          values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/TotalCross");
+          values.put(MediaStore.MediaColumns.IS_PENDING, 1);
+          Uri uri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+          if (uri == null) {
+              throw new IOException("Unable to create a MediaStore image for the camera.");
+          }
+          capturedCameraMediaStoreEntry = true;
+          return uri;
+      }
+
+      File directory;
+      if (keepOriginal) {
+          directory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES + "/TotalCross");
+      } else {
+          directory = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+      }
+      ensureCameraOutputDirectory(directory);
+      capturedCameraFile = File.createTempFile("TotalCross_", ".jpg", directory);
+      return getFileUri4Intent(capturedCameraFile);
+  }
+
+  private static void ensureCameraOutputDirectory(File directory) throws IOException {
+      if (directory == null) {
+          throw new IOException("Unable to create the camera output directory.");
+      }
+      android.system.StructStat stat;
+      try {
+          stat = Os.stat(directory.getAbsolutePath());
+      } catch (ErrnoException failure) {
+          if (failure.errno != OsConstants.ENOENT) {
+              throw new IOException("Unable to access the camera output directory.", failure);
+          }
+          if (directory.mkdirs()) return;
+          try {
+              stat = Os.stat(directory.getAbsolutePath());
+          } catch (ErrnoException retryFailure) {
+              throw new IOException("Unable to create the camera output directory.", retryFailure);
+          }
+      }
+      if ((stat.st_mode & OsConstants.S_IFMT) != OsConstants.S_IFDIR) {
+          throw new IOException("The camera output path is not a directory.");
+      }
+  }
+
+  private void launchExternalCamera(int cameraType, boolean permissionRetry) {
+      Uri outputUri;
+      try {
+          outputUri = prepareExternalCameraOutput(cameraType == CAMERA_NATIVE);
+      } catch (SecurityException deniedDestination) {
+          if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q && cameraType == CAMERA_NATIVE) {
+              recoverExternalCameraOutput(cameraType, permissionRetry);
+          } else {
+              completeExternalCamera(false);
+          }
+          return;
+      } catch (IOException destinationFailure) {
+          if (AndroidFileAccessErrors.isPermissionDenied(destinationFailure)
+                  && Build.VERSION.SDK_INT < Build.VERSION_CODES.Q
+                  && cameraType == CAMERA_NATIVE) {
+              recoverExternalCameraOutput(cameraType, permissionRetry);
+          } else {
+              AndroidUtils.handleException(destinationFailure, false);
+              completeExternalCamera(false);
+          }
+          return;
+      } catch (Throwable failure) {
+          AndroidUtils.handleException(failure, false);
+          completeExternalCamera(false);
+          return;
+      }
+      capturedImageURI = outputUri;
+      Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+      try {
+          intent.putExtra(MediaStore.EXTRA_OUTPUT, outputUri);
+          intent.setClipData(ClipData.newRawUri("camera-output", outputUri));
+          intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+          startActivityForResult(intent, EXTCAMERA_RETURN);
+      } catch (Throwable launchFailure) {
+          AndroidUtils.handleException(launchFailure, false);
+          completeExternalCamera(false);
+      }
+  }
+
+  private void recoverExternalCameraOutput(int cameraType, boolean permissionRetry) {
+      if (permissionRetry) {
+          completeExternalCamera(false);
+          return;
+      }
+      AndroidPermissionManager.requestFileAccess(result -> {
+          Loader activity = cameraHost();
+          if (activity == null) {
+              completeExternalCamera(false);
+              return;
+          }
+          if (result.authorizationChanged) {
+              activity.launchExternalCamera(cameraType, true);
+          } else {
+              activity.completeExternalCamera(false);
+          }
+      });
+  }
+
+  private void launchDirectExternalCameraOutput(String path, boolean permissionRetry) {
+      try {
+          File outputFile = new File(path);
+          Uri outputUri = getFileUri4Intent(outputFile);
+          Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+          intent.putExtra(MediaStore.EXTRA_OUTPUT, outputUri);
+          intent.setClipData(ClipData.newRawUri("camera-output", outputUri));
+          intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+          startActivityForResult(intent, CAMERA_PIC_REQUEST);
+      } catch (SecurityException deniedDestination) {
+          if (!permissionRetry) {
+              AndroidPermissionManager.requestFileAccess(result -> {
+                  Loader activity = cameraHost();
+                  if (result.authorizationChanged && activity != null) {
+                      activity.launchDirectExternalCameraOutput(path, true);
+                  }
+                  else Launcher4A.pictureTaken(1);
+              });
+          } else {
+              Launcher4A.pictureTaken(1);
+          }
+      } catch (RuntimeException failure) {
+          AndroidUtils.handleException(failure, false);
+          Launcher4A.pictureTaken(1);
+      }
+  }
+
+  private void copyCapturedImage(Uri sourceUri, boolean permissionRetry) {
+      ContentUriCopier.Result copy = ContentUriCopier.copy(getContentResolver(), sourceUri, imageFN);
+      if (copy.destinationDenied && !permissionRetry) {
+          AndroidPermissionManager.requestFileAccess(result -> {
+              Loader activity = cameraHost();
+              if (result.authorizationChanged && activity != null) {
+                  activity.copyCapturedImage(sourceUri, true);
+              } else if (activity != null) {
+                  activity.completeExternalCamera(false);
+              } else {
+                  completeExternalCamera(false);
+              }
+          });
+          return;
+      }
+      if (!copy.succeeded) {
+          if (copy.failure != null) {
+              AndroidUtils.handleException(copy.failure, false);
+          }
+          completeExternalCamera(false);
+          return;
+      }
+      autoRotatePhoto(getContentResolver(), imageFN);
+      completeExternalCamera(true);
+  }
+
+  private void completeExternalCamera(boolean succeeded) {
+      Uri uri = capturedImageURI;
+      if (capturedCameraMediaStoreEntry && uri != null) {
+          if (succeeded) {
+              ContentValues values = new ContentValues();
+              values.put(MediaStore.MediaColumns.IS_PENDING, 0);
+              try {
+                  succeeded = getContentResolver().update(uri, values, null, null) > 0;
+              } catch (RuntimeException failure) {
+                  succeeded = false;
+              }
+          }
+          if (!succeeded) {
+              try {
+                  getContentResolver().delete(uri, null, null);
+              } catch (RuntimeException ignored) {
+              }
+          }
+      }
+      if (capturedCameraFile != null && (!succeeded || !capturedCameraKeepOriginal)) {
+          try {
+              capturedCameraFile.delete();
+          } catch (SecurityException ignored) {
+          }
+      }
+      capturedImageURI = null;
+      capturedCameraFile = null;
+      capturedCameraMediaStoreEntry = false;
+      capturedCameraKeepOriginal = false;
+      Launcher4A.pictureTaken(succeeded ? 0 : 1);
+  }
+
+    private void captureCamera(String s, int quality, int width, int height, boolean allowRotation, int cameraType, int videoTimeLimit, int targetFps, int bitrate, int captureMode) {
         try {
             imageFN = s;
             this.cameraType = cameraType;
@@ -449,10 +603,7 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
                     "Taking photo " + width + "x" + height + " from "
                             + cameraTypes[0 <= cameraType && cameraType <= 5 ? cameraType : 6]);
             if (cameraType == FROM_GALLERY) {
-                Intent i = new Intent();
-                i.setType("image/*");
-                i.setAction(Intent.ACTION_GET_CONTENT);
-                startActivityForResult(i, SELECT_PICTURE);
+                launchGalleryPicker();
             } else if (cameraType == VIDEO_PLAYER) {
               Intent intent = new Intent(this, Class.forName(totalcrossPKG + ".VideoPlayerActivity"));
               intent.putExtra("video_path", s);
@@ -468,6 +619,7 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
                 intent.putExtra(VideoCaptureActivity.EXTRA_TARGET_FPS, targetFps);
                 intent.putExtra(VideoCaptureActivity.EXTRA_QUALITY, quality);
                 intent.putExtra("bitrate", bitrate);
+                intent.putExtra("capture_mode", captureMode);
                 startActivityForResult(intent, TAKE_PHOTO);
             } else if (cameraType == PICTURE_ONLY) {
                 Intent intent = new Intent(this, Class.forName(totalcrossPKG + ".VideoCaptureActivity"));
@@ -487,21 +639,12 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
                 intent.putExtra(VideoCaptureActivity.EXTRA_TARGET_FPS, targetFps);
                 intent.putExtra(VideoCaptureActivity.EXTRA_QUALITY, quality);
                 intent.putExtra("bitrate", bitrate);
+                intent.putExtra("capture_mode", captureMode);
                 startActivityForResult(intent, TAKE_PHOTO);
             } else if (cameraType == CAMERA_NATIVE || cameraType == CAMERA_NATIVE_NOCOPY) {
-                ContentValues values = new ContentValues();
-                values.put(MediaStore.Images.Media.TITLE, "tctemp.jpg");
-                values.put(MediaStore.Images.Media.IS_PRIVATE, 1);
-                capturedImageURI = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
-                Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                intent.putExtra(MediaStore.EXTRA_OUTPUT, capturedImageURI);
-                startActivityForResult(intent, EXTCAMERA_RETURN);
+                launchExternalCamera(cameraType, false);
             } else if ("SK GT-7340".equals(deviceId)) {
-                Uri outputFileUri = getFileUri4Intent(new File(s));
-                Intent intent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                intent.putExtra(android.provider.MediaStore.EXTRA_OUTPUT, outputFileUri);
-                startActivityForResult(intent, CAMERA_PIC_REQUEST);
+                launchDirectExternalCameraOutput(s, false);
             } else { // CAMERA CUSTOM
                 Intent intent = new Intent(this, Class.forName(totalcrossPKG + ".CameraViewer"));
                 intent.putExtra("file", s);
@@ -509,6 +652,7 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
                 intent.putExtra("width", width);
                 intent.putExtra("height", height);
                 intent.putExtra("allowRotation", allowRotation);
+                intent.putExtra("capture_mode", captureMode);
                 startActivityForResult(intent, TAKE_PHOTO);
                 Launcher4A.instance.nativePrepareForPause();
             }
@@ -517,6 +661,64 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
             AndroidUtils.handleException(e, false);
             Launcher4A.pictureTaken(1);
         }
+    }
+
+    private void launchGalleryPicker() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            Intent photoPicker = new Intent(MediaStore.ACTION_PICK_IMAGES);
+            photoPicker.setType("image/*");
+            try {
+                startActivityForResult(photoPicker, SELECT_PICTURE);
+                return;
+            } catch (ActivityNotFoundException unavailable) {
+                // The system photo picker is optional; try the openable content picker below.
+            } catch (RuntimeException launchFailure) {
+                AndroidUtils.handleException(launchFailure, false);
+                Launcher4A.pictureTaken(1);
+                return;
+            }
+        }
+        Intent getContent = new Intent(Intent.ACTION_GET_CONTENT);
+        getContent.setType("image/*");
+        getContent.addCategory(Intent.CATEGORY_OPENABLE);
+        try {
+            startActivityForResult(getContent, SELECT_PICTURE);
+        } catch (ActivityNotFoundException unavailable) {
+            AndroidUtils.handleException(unavailable, false);
+            Launcher4A.pictureTaken(1);
+        } catch (RuntimeException launchFailure) {
+            AndroidUtils.handleException(launchFailure, false);
+            Launcher4A.pictureTaken(1);
+        }
+    }
+
+    private void copyGallerySelection(Uri sourceUri, boolean permissionRetry) {
+        ContentUriCopier.Result copy = ContentUriCopier.copy(getContentResolver(), sourceUri, imageFN);
+        if (copy.destinationDenied && !permissionRetry) {
+            AndroidPermissionManager.requestFileAccess(result -> {
+                Loader activity = cameraHost();
+                if (result.authorizationChanged && activity != null) {
+                    activity.copyGallerySelection(sourceUri, true);
+                } else {
+                    Launcher4A.pictureTaken(1);
+                }
+            });
+            return;
+        }
+        if (!copy.succeeded) {
+            if (copy.failure != null) {
+                AndroidUtils.handleException(copy.failure, false);
+            }
+            Launcher4A.pictureTaken(1);
+            return;
+        }
+        autoRotatePhoto(getContentResolver(), imageFN);
+        Launcher4A.pictureTaken(0);
+    }
+
+    private Loader cameraHost() {
+        Loader activity = currentLoader;
+        return activity == null || activity.isFinishing() || activity.isDestroyed() ? null : activity;
     }
 
     private void dialNumber(String number)
@@ -794,10 +996,12 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
       public void handleMessage(Message msg) 
       {
       Bundle b = msg.getData();
-         switch (b.getInt("type"))
+         int messageType = msg.what == LEVEL5 ? LEVEL5 : b.getInt("type");
+         switch (messageType)
          {
       case LEVEL5:
-        Level5.getInstance().processMessage(b);
+        if (msg.obj instanceof BluetoothRequest)
+          Level5.getInstance().processMessage((BluetoothRequest)msg.obj);
         break;
       case DIAL:
         String nr = b.getString("dial.number");
@@ -813,7 +1017,8 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
                   b.getInt("showCamera.cameraType"),
                   b.getInt("showCamera.videoTimeLimit"),
                   b.getInt("showCamera.targetFps"),
-                  b.getInt("showCamera.bitrate")
+                  b.getInt("showCamera.bitrate"),
+                  b.getInt("showCamera.captureMode")
                 );
         break;
       case TITLE:
@@ -1061,6 +1266,28 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
     startActivity(Intent.createChooser(intent, null));
   }
 
+  private void openExternalFile(File file) {
+    Uri uri = getFileUri4Intent(file);
+
+    String mimeType = getMimeType(uri, file.getName());
+    if (mimeType == null || mimeType.isEmpty()) {
+      mimeType = "application/octet-stream";
+    }
+
+    Intent intent = new Intent(Intent.ACTION_VIEW);
+    intent.setDataAndType(uri, mimeType);
+    intent.setClipData(ClipData.newRawUri("", uri));
+    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
+    try {
+      startActivity(intent);
+    } catch (ActivityNotFoundException e) {
+      AndroidUtils.debug("No application found to open " + file.getPath()
+          + " (MIME: " + mimeType + ")");
+    }
+  }
+
   // Vm.exec("url","http://www.google.com/search?hl=en&source=hp&q=abraham+lincoln",0,false): launches a url
   // Vm.exec("totalcross.app.UIGadgets",null,0,false): launches another TotalCross' application
   // Vm.exec("viewer","file:///sdcard/G3Assets/541.jpg", 0, true);
@@ -1108,47 +1335,35 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
          else
          if (command.equalsIgnoreCase("viewer"))
          {
-            String argl = args.toLowerCase();
-            if (android.os.Build.VERSION.SDK_INT >= 8 && AndroidUtils.isImage(argl))
+            File file = ViewerFilePath.fromArgument(args);
+            String argl = args.toLowerCase(Locale.ROOT);
+
+            // Preserve the existing image viewer, including its zoom controls.
+            if (file != null && AndroidUtils.isImage(file.getName().toLowerCase(Locale.ROOT)))
             {
-               Intent intent = new Intent(this, Class.forName(totalcrossPKG+".TouchImageViewer"));
-               intent.putExtra("file",args);
+               Intent intent = new Intent(this, Class.forName(totalcrossPKG + ".TouchImageViewer"));
+               intent.putExtra("file", file.getPath());
                if (!wait)
                   startActivityForResult(intent, JUST_QUIT);
                else
                   startActivity(intent);
                return;
             }
-            if (argl.endsWith(".pdf"))
+
+            // PDFs and other local documents use the app registered for their MIME type.
+            if (file != null && !ViewerFilePath.isWebViewerFile(file.getName()))
             {
-               File pdfFile = new File(args);
-               if(pdfFile.exists()) 
-               {
-                   Uri path = getFileUri4Intent(pdfFile);
-                   Intent pdfIntent = new Intent(Intent.ACTION_VIEW);
-                   pdfIntent.setDataAndType(path, "application/pdf");
-                   pdfIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                   pdfIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                   try
-                   {
-                       startActivity(pdfIntent);
-                   }
-                   catch (ActivityNotFoundException e)
-                   {
-                      AndroidUtils.debug("THERE'S NO PDF READER TO OPEN "+args);
-                      e.printStackTrace(); 
-                   }
-               }
+               openExternalFile(file);
             }
             else
             {
                Intent intent;
-               if (argl.indexOf("youtu.be") >= 0 || argl.indexOf("youtube") >= 0)
+               if (argl.contains("youtu.be") || argl.contains("youtube"))
                   intent = new Intent(Intent.ACTION_VIEW, Uri.parse(args));
                else
                {
-                  intent = new Intent(this, Class.forName(totalcrossPKG+".WebViewer"));
-                  intent.putExtra("url",args);
+                  intent = new Intent(this, Class.forName(totalcrossPKG + ".WebViewer"));
+                  intent.putExtra("url", file == null ? args : Uri.fromFile(file).toString());
                }
                if (!wait)
                   startActivityForResult(intent, JUST_QUIT);
@@ -1157,7 +1372,7 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
                return;
             }
          }
-         else if (command.equalsIgnoreCase("share")) {
+                  else if (command.equalsIgnoreCase("share")) {
            shareFile(args);
          }
          else if (command.equalsIgnoreCase("webview") && args != null) {
@@ -1209,11 +1424,8 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
          else
          if (command.toLowerCase().endsWith(".apk"))
          {
-            Intent i = new Intent(Intent.ACTION_VIEW);
-            i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            i.setDataAndType(getFileUri4Intent(new File(command)), "application/vnd.android.package-archive");
-            startActivity(i);
+            installApk(command, wait);
+            return;
          }
          else
          {
@@ -1235,6 +1447,126 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
          finish();
    }
 
+   private void installApk(String path, boolean wait) {
+      if (path == null || path.trim().isEmpty()) {
+         reportApkInstallFailure("No APK file was specified.", wait);
+         return;
+      }
+      File apk = new File(path);
+      if (!apk.isFile()) {
+         reportApkInstallFailure("APK file not found: " + path, wait);
+         return;
+      }
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+              && !AndroidPermissionManager.isDeclared(android.Manifest.permission.REQUEST_INSTALL_PACKAGES)) {
+         reportApkInstallFailure("APK installation is not declared for this application. Add "
+                 + "/android_permission android.permission.REQUEST_INSTALL_PACKAGES "
+                 + "or /android_request_install_packages to the deployment and reinstall the APK.", wait);
+         return;
+      }
+
+      String key = apk.getAbsolutePath();
+      synchronized (pendingApkInstallPaths) {
+         if (!pendingApkInstallPaths.add(key)) return;
+      }
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+         AndroidPermissionManager.requestInstallAuthorization(result ->
+                 completeApkInstallAuthorization(key, wait, result));
+      } else {
+         launchApkInstaller(key, wait, false);
+      }
+   }
+
+   private static void completeApkInstallAuthorization(String path, boolean wait,
+                                                       AndroidPermissionManager.Result result) {
+      Loader activity = currentLoader;
+      if (activity == null) {
+         finishPendingApkInstall(path);
+         return;
+      }
+      if (activity.isFinishing() || activity.isDestroyed()) {
+         finishPendingApkInstall(path);
+         return;
+      }
+      if (!result.granted) {
+         finishPendingApkInstall(path);
+         activity.reportApkInstallFailure("Allow this application to install APK files, then try again.", wait);
+         return;
+      }
+      activity.launchApkInstaller(path, wait, false);
+   }
+
+   private void launchApkInstaller(String path, boolean wait, boolean permissionRetry) {
+      File apk = new File(path);
+      if (!apk.isFile()) {
+         finishPendingApkInstall(path);
+         reportApkInstallFailure("APK file not found: " + path, wait);
+         return;
+      }
+      try {
+         Uri uri = getFileUri4Intent(apk);
+         if (uri == null) {
+            finishPendingApkInstall(path);
+            reportApkInstallFailure("Unable to create a shareable URI for APK: " + path, wait);
+            return;
+         }
+         Intent install = new Intent(Intent.ACTION_VIEW);
+         install.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+         install.setDataAndType(uri, "application/vnd.android.package-archive");
+         install.setClipData(ClipData.newRawUri("apk", uri));
+         startActivity(install);
+         finishPendingApkInstall(path);
+         if (!wait) finish();
+      } catch (SecurityException deniedFileAccess) {
+         if (!AndroidFileAccessErrors.isPermissionDenied(deniedFileAccess)) {
+            finishPendingApkInstall(path);
+            AndroidUtils.handleException(deniedFileAccess, false);
+            reportApkInstallFailure("Unable to launch the package installer for this APK.", wait);
+            return;
+         }
+         if (!permissionRetry) {
+            AndroidPermissionManager.requestFileAccess(result -> {
+               if (result.authorizationChanged) {
+                  Loader activity = currentLoader;
+                  if (activity != null && !activity.isFinishing() && !activity.isDestroyed()) {
+                     activity.launchApkInstaller(path, wait, true);
+                  }
+                  else finishPendingApkInstall(path);
+               } else {
+                  finishPendingApkInstall(path);
+                  Loader activity = currentLoader;
+                  if (activity != null && !activity.isFinishing() && !activity.isDestroyed()) {
+                     activity.reportApkInstallFailure(
+                             "The APK file cannot be read. Check its location and file permissions.", wait);
+                  }
+               }
+            });
+         } else {
+            finishPendingApkInstall(path);
+            reportApkInstallFailure("The APK file cannot be read. Check its location and file permissions.", wait);
+         }
+      } catch (ActivityNotFoundException unavailable) {
+         finishPendingApkInstall(path);
+         reportApkInstallFailure("No package installer is available to open this APK.", wait);
+      } catch (RuntimeException invalidUri) {
+         finishPendingApkInstall(path);
+         AndroidUtils.handleException(invalidUri, false);
+         reportApkInstallFailure("Unable to share this APK. Check that its path is supported by FileProvider.", wait);
+      }
+   }
+
+   private void reportApkInstallFailure(String message, boolean wait) {
+      AndroidUtils.debug(message);
+      Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+      if (!wait) finish();
+   }
+
+   private static void finishPendingApkInstall(String path) {
+      synchronized (pendingApkInstallPaths) {
+         pendingApkInstallPaths.remove(path);
+      }
+   }
+
    private String getMimeType(Uri uri) {
      return getMimeType(uri, null);
    }
@@ -1247,7 +1579,7 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
      if (ContentResolver.SCHEME_CONTENT.equals(uri.getScheme())) {
        String mimeType = getContentResolver().getType(uri);
 
-       if (mimeType != null) {
+       if (mimeType != null && !"application/octet-stream".equals(mimeType)) {
          return mimeType;
        }
      }
@@ -1256,15 +1588,16 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
          ? fallbackFileName
          : uri.toString();
 
-     String extension = MimeTypeMap.getFileExtensionFromUrl(source);
+     String extension = fallbackFileName != null
+         ? ViewerFilePath.extension(fallbackFileName)
+         : MimeTypeMap.getFileExtensionFromUrl(source);
 
      if (extension == null || extension.isEmpty()) {
        return null;
      }
 
      return MimeTypeMap.getSingleton()
-         .getMimeTypeFromExtension(
-             extension.toLowerCase(Locale.ROOT));
+         .getMimeTypeFromExtension(extension.toLowerCase(Locale.ROOT));
    }
 
    public void onConfigurationChanged(Configuration config)
@@ -1273,13 +1606,22 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
       Launcher4A.hardwareKeyboardIsVisible = config.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO || config.keyboard == Configuration.KEYBOARD_QWERTY; // motorola titanium returns HARDKEYBOARDHIDDEN_YES but KEYBOARD_QWERTY. In soft inputs, it returns KEYBOARD_NOKEYS
   }
 
+   @Override
    protected void onSaveInstanceState(Bundle outState) 
    {
-    outState.clear();
+    super.onSaveInstanceState(outState);
+    if (capturedImageURI != null) outState.putParcelable("camera.output_uri", capturedImageURI);
+    if (capturedCameraFile != null) outState.putString("camera.output_file", capturedCameraFile.getAbsolutePath());
+    outState.putBoolean("camera.media_store_entry", capturedCameraMediaStoreEntry);
+    outState.putBoolean("camera.keep_original", capturedCameraKeepOriginal);
+    if (imageFN != null) outState.putString("camera.destination", imageFN);
+    outState.putInt("camera.type", cameraType);
   }
 
    protected void onDestroy()
    {
+    if (currentLoader == this) currentLoader = null;
+    if (speechHost == this) speechHost = null;
     if (runningVM) // guich@tc126_60: call app 1, home, call app 2: onDestroy is called
       quitVM();
     super.onDestroy();
@@ -1299,20 +1641,95 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
 
    private void quitVM()
    {
+    if (!shutdownStarted.compareAndSet(false, true)) return;
     runningVM = onMainLoop = false;
-    Launcher4A.stopVM();
-    while (!Launcher4A.canQuit)
-         try {Thread.sleep(10);} catch (Exception e) {}
-    Launcher4A.closeTCZs();
-    //Level5.getInstance().destroy();
-    android.os.Process.killProcess(android.os.Process.myPid());
-    // with these two lines, the application may have problems when then stub tries to load another vm instance.
-    //try {Thread.sleep(1000);} catch (Exception e) {} // let the app take time to exit
-    // System.exit(0); // make sure all threads will stop. also ensures that one app is not called as the app launched previously
+    try {
+      Level5.getInstance().shutdown();
+    } catch (Throwable failure) {
+      reportShutdownFailure(failure);
+    }
+
+    Throwable stopVMFailure = null;
+    boolean canQuitAtStopVMFailure = true;
+    try {
+      Launcher4A.stopVM();
+    } catch (Throwable failure) {
+      stopVMFailure = failure;
+      canQuitAtStopVMFailure = Launcher4A.canQuit;
+      reportShutdownFailure(failure);
+    }
+
+    final boolean stopVMFailed = stopVMFailure != null;
+    final boolean canQuitAtFailure = canQuitAtStopVMFailure;
+    Thread shutdownThread = new Thread(
+        () -> finishVMShutdown(stopVMFailed, canQuitAtFailure), "TotalCross-VM-Shutdown");
+    shutdownThread.setDaemon(true);
+    try {
+      shutdownThread.start();
+    } catch (Throwable failure) {
+      reportShutdownFailure(failure);
+      killCurrentProcess();
+    }
+  }
+
+  private void finishVMShutdown(boolean stopVMFailed, boolean canQuitAtFailure)
+  {
+    boolean observedPendingAcknowledgment = !stopVMFailed || !canQuitAtFailure;
+    if (stopVMFailed && canQuitAtFailure) {
+      killCurrentProcess();
+      return;
+    }
+
+    long deadline = SystemClock.elapsedRealtime() + VM_SHUTDOWN_TIMEOUT_MS;
+    while (SystemClock.elapsedRealtime() < deadline) {
+      if (!Launcher4A.canQuit) {
+        observedPendingAcknowledgment = true;
+      } else if (observedPendingAcknowledgment) {
+        try {
+          Launcher4A.closeTCZs();
+        } catch (Throwable failure) {
+          reportShutdownFailure(failure);
+        }
+        killCurrentProcess();
+        return;
+      }
+
+      try {
+        Thread.sleep(100);
+      } catch (InterruptedException interrupted) {
+        Thread.currentThread().interrupt();
+        reportShutdownFailure(interrupted);
+        killCurrentProcess();
+        return;
+      }
+    }
+    reportShutdownFailure(new IllegalStateException("Timed out waiting for the VM shutdown acknowledgment"));
+    killCurrentProcess();
+  }
+
+  private static void reportShutdownFailure(Throwable failure)
+  {
+    try {
+      Log.e("TotalCross", "VM shutdown failed", failure);
+    } catch (Throwable ignored) {
+      // Process termination must continue even if logging is unavailable.
+    }
+  }
+
+  private static void killCurrentProcess()
+  {
+    try {
+      android.os.Process.killProcess(android.os.Process.myPid());
+    } catch (Throwable failure) {
+      reportShutdownFailure(failure);
+    }
   }
 
    protected void onResume()
    {
+    currentLoader = this;
+    speechHost = this;
+    AndroidPermissionManager.attach(this);
     if (onMainLoop)
       Launcher4A.appResumed();
     Launcher4A.appPaused = false;
@@ -1406,29 +1823,84 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
     String title = "";
     int timeout = 2000;
     if (caption != null && !caption.isEmpty())
-         for (String t : caption.split("|"))
+         for (String t : caption.split("\\|"))
          {
         if (t.startsWith("title:"))
           title = t.substring(6);
             else
             if (t.startsWith("timeout:"))
-          timeout = Integer.parseInt(t.substring(8));
+          try {
+            timeout = Integer.parseInt(t.substring(8));
+          } catch (NumberFormatException ignored) {
+            timeout = 2000;
+          }
       }
 
+    final String promptTitle = title;
+    final int silenceTimeout = timeout;
+    final long generation = ++speechGeneration;
+    speechPending = true;
+    speechAwaitingPermission = true;
+    Launcher4A.soundResult = null;
+    Launcher4A.callingSound = true;
+    AndroidPermissionManager.requestRuntime(result -> {
+      Loader host = speechHost;
+      if (generation != speechGeneration || !speechPending) return;
+      if (!result.granted || host == null || host.isFinishing() || host.isDestroyed()) {
+        completeSpeechInput(generation, null);
+        return;
+      }
+      host.launchSpeechRecognizer(generation, promptTitle, silenceTimeout);
+    }, android.Manifest.permission.RECORD_AUDIO);
+  }
+
+  private void launchSpeechRecognizer(long generation, String title, int timeout) {
     Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
     intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
     intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
     intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, timeout);
-    //intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1);
     intent.putExtra(RecognizerIntent.EXTRA_PROMPT, title);
-      try
-      {
-      startActivityForResult(intent, SPEECH_TO_TEXT);
-      }
-      catch (ActivityNotFoundException a)
-      {
-      Toast.makeText(getApplicationContext(), "Text to Speech is not supported", Toast.LENGTH_SHORT).show();
+    int requestCode = SPEECH_TO_TEXT + (nextSpeechRequestSlot++ % (SPEECH_TO_TEXT_LAST - SPEECH_TO_TEXT + 1));
+    speechRequestCode = requestCode;
+    speechAwaitingPermission = false;
+    try {
+      startActivityForResult(intent, requestCode);
+    } catch (ActivityNotFoundException | SecurityException launchFailure) {
+      AndroidUtils.handleException(launchFailure, false);
+      completeSpeechInput(generation, null);
+    } catch (RuntimeException launchFailure) {
+      AndroidUtils.handleException(launchFailure, false);
+      completeSpeechInput(generation, null);
     }
+  }
+
+  private void finishSpeechInput(int requestCode, int resultCode, Intent data) {
+    if (!speechPending || requestCode != speechRequestCode || speechAwaitingPermission) return;
+    String recognized = null;
+    if (resultCode == RESULT_OK && data != null) {
+      ArrayList<String> results = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+      if (results != null && !results.isEmpty()) {
+        String first = results.get(0);
+        if (first != null && !first.trim().isEmpty()) recognized = first;
+      }
+    }
+    completeSpeechInput(speechGeneration, recognized);
+  }
+
+  private static void completeSpeechInput(long generation, String result) {
+    if (generation != speechGeneration) return;
+    speechAwaitingPermission = false;
+    speechPending = false;
+    Launcher4A.soundResult = result;
+    Launcher4A.callingSound = false;
+  }
+
+  public void cancelSpeechInput() {
+    speechGeneration++;
+    speechAwaitingPermission = false;
+    speechPending = false;
+    Launcher4A.soundResult = null;
+    Launcher4A.callingSound = false;
   }
 
   private static boolean smsReceiverEnabled = false;
@@ -1438,33 +1910,11 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
   IntentFilter intentFilterData = new IntentFilter(Telephony.Sms.Intents.DATA_SMS_RECEIVED_ACTION);
 
   BroadcastReceiver mReceiver = new BroadcastReceiver() {
-
     @Override
     public void onReceive(Context context, Intent intent) {
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-        for (android.telephony.SmsMessage smsMessage : Telephony.Sms.Intents.getMessagesFromIntent(intent)) {
-          Launcher4A.nativeSmsReceived(smsMessage.getDisplayOriginatingAddress(), smsMessage.getDisplayMessageBody(),
-              smsMessage.getUserData());
-        }
-      } else {
-        // Get the data (SMS data) bound to intent
-        Bundle bundle = intent.getExtras();
-
-        android.telephony.SmsMessage[] msgs = null;
-
-        if (bundle != null) {
-          // Retrieve the SMS Messages received
-          Object[] pdus = (Object[]) bundle.get("pdus");
-          msgs = new android.telephony.SmsMessage[pdus.length];
-
-          // For every SMS message received
-          for (int i = 0; i < msgs.length; i++) {
-            // Convert Object array
-            msgs[i] = android.telephony.SmsMessage.createFromPdu((byte[]) pdus[i]);
-            Launcher4A.nativeSmsReceived(msgs[i].getDisplayOriginatingAddress(), msgs[i].getDisplayMessageBody(),
-                msgs[i].getUserData());
-          }
-        }
+      for (android.telephony.SmsMessage message : Telephony.Sms.Intents.getMessagesFromIntent(intent)) {
+        Launcher4A.nativeSmsReceived(message.getDisplayOriginatingAddress(),
+            message.getDisplayMessageBody(), message.getUserData());
       }
     }
   };
@@ -1495,20 +1945,12 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
   
   private PowerManager powerManager;
   
-  /**
-   * On Android 4.4W+, it will correctly return if the device is awake and ready
-   * for user interaction
-   * 
-   * @return True if the device is in an interactive state.
-   */
+  /** Returns whether the device is awake and available for user interaction. */
   public boolean isInteractive() {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
-      if (powerManager == null) {
-        powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
-      }
-      return powerManager.isInteractive();
+    if (powerManager == null) {
+      powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
     }
-    return !Launcher4A.appPaused;
+    return powerManager.isInteractive();
   }
   
     public static interface PermissionRequestCodes {
@@ -1520,10 +1962,9 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
     }
 
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        Launcher4A.PermissionHandler permissionHandler = Launcher4A.PermissionHandler.permissionHandlerMap
-                .get(requestCode);
-        if (permissionHandler != null) {
-            permissionHandler.onRequestPermissionsResult(permissions, grantResults);
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (AndroidPermissionManager.onRequestPermissionsResult(requestCode, permissions, grantResults)) {
+            return;
         }
 
         switch (requestCode) {
@@ -1555,20 +1996,5 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
       startActivity(intent);
     }
     
-    private int permissionInitialized = 0;
 
-    public boolean requestManageStorageAccess() {
-      if (Environment.isExternalStorageManager()) {
-        return true;
-      }
-      Intent intent = new Intent(ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, Uri.parse("package:totalcross." + Launcher4A.instance.tczname));
-      startActivityForResult(intent, Loader.APP_STORAGE_ACCESS_REQUEST_CODE);
-      while (permissionInitialized == 0) {
-        try {
-          Thread.sleep(10);
-        } catch (Exception e) {
-        }
-      }
-      return Environment.isExternalStorageManager();
-    }
 }

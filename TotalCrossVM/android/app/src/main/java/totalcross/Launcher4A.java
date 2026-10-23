@@ -15,7 +15,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.ImageFormat;
@@ -40,7 +39,9 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.ResultReceiver;
 import android.os.StatFs;
+import android.os.SystemClock;
 import android.os.Vibrator;
+import android.system.OsConstants;
 import android.provider.Settings;
 import android.telephony.CellLocation;
 import android.telephony.PhoneStateListener;
@@ -64,8 +65,6 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 
 import org.jetbrains.annotations.Contract;
@@ -91,6 +90,7 @@ import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 import totalcross.android.GPSHelper;
+import totalcross.android.AndroidPermissionManager;
 import totalcross.android.Loader;
 import totalcross.android.Scanner4A;
 
@@ -98,7 +98,8 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
 {
    public static final boolean GENERATE_FONT = false;
 
-   public static boolean canQuit = true;
+   private static final Object CAN_QUIT_LOCK = new Object();
+   public static volatile boolean canQuit = true;
    public static Launcher4A instance;
    public static Loader loader;
    static SurfaceHolder surfHolder;
@@ -545,11 +546,76 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    }
 
    private boolean backDownReceived = false;
+   // Suppress echoes between the legacy key path and the activity dispatcher.
+   private static final long BACK_EVENT_DEDUPLICATION_WINDOW_MS = 250;
+   private long lastLegacyBackEventUptime = Long.MIN_VALUE;
+   private long lastActivityBackEventUptime = Long.MIN_VALUE;
+   private boolean legacyBackKeyDown;
+
+   private boolean isBackEventRecent(long previousEventUptime, long now)
+   {
+      return previousEventUptime != Long.MIN_VALUE
+            && now - previousEventUptime <= BACK_EVENT_DEDUPLICATION_WINDOW_MS;
+   }
+
+   private boolean claimLegacyBackEvent()
+   {
+      long now = SystemClock.uptimeMillis();
+      boolean dispatch = !isBackEventRecent(lastActivityBackEventUptime, now);
+      lastLegacyBackEventUptime = now;
+      return dispatch;
+   }
+
+   private boolean claimActivityBackEvent()
+   {
+      long now = SystemClock.uptimeMillis();
+      if (legacyBackKeyDown || isBackEventRecent(lastLegacyBackEventUptime, now))
+         return false;
+      lastActivityBackEventUptime = now;
+      return true;
+   }
+
+   public boolean dispatchBackFromActivity()
+   {
+      if (!claimActivityBackEvent())
+         return true;
+
+      if (!hardwareKeyboardIsVisible && (sipVisible || sipWasOpen))
+      {
+         setSIP(SIP_HIDE, false);
+         sipWasOpen = false;
+         backDownReceived = false;
+         return true;
+      }
+
+      if (eventThread != null)
+      {
+         eventThread.pushEvent(KEY_PRESS, 0, KeyEvent.KEYCODE_BACK, 0, KeyEvent.FLAG_FROM_SYSTEM, 0);
+         return true;
+      }
+      return false;
+   }
    
    public boolean onKey(View v, int keyCode, KeyEvent event)
    {
       if (Scanner4A.scanner != null && Scanner4A.scanner.checkScanner(event))
          return false;
+
+      boolean isLegacyBackDown = keyCode == KeyEvent.KEYCODE_BACK
+            && event.getAction() == KeyEvent.ACTION_DOWN;
+      boolean isLegacyBackUp = keyCode == KeyEvent.KEYCODE_BACK
+            && event.getAction() == KeyEvent.ACTION_UP;
+      boolean dispatchBackKey = true;
+      if (isLegacyBackDown)
+      {
+         dispatchBackKey = !legacyBackKeyDown && claimLegacyBackEvent();
+         legacyBackKeyDown = true;
+      }
+      if (isLegacyBackUp)
+      {
+         legacyBackKeyDown = false;
+         lastLegacyBackEventUptime = SystemClock.uptimeMillis();
+      }
 
       if (keyCode == KeyEvent.KEYCODE_BACK) // guich@tc130: if the user pressed the back key on the SIP, don't pass it to the application
       {
@@ -622,7 +688,8 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
                alert("Key code: " + keyCode + ", Modifier: " + state+", flags: "+flags);
             if ((flags & KeyEvent.FLAG_FROM_SYSTEM) != 0)
                state |= 8;
-            eventThread.pushEvent(KEY_PRESS, c, keyCode, 0, state, 0);
+            if (keyCode != KeyEvent.KEYCODE_BACK || dispatchBackKey)
+               eventThread.pushEvent(KEY_PRESS, c, keyCode, 0, state, 0);
             break;
          case KeyEvent.ACTION_MULTIPLE: // unicode chars
             String str = event.getCharacters();
@@ -693,12 +760,18 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       }
       else
       {
-         if (eventThread != null) eventThread.running = false;
+         synchronized (CAN_QUIT_LOCK)
+         {
+            if (eventThread != null) eventThread.running = false;
+         }
          loader.finish();
          //if (!loader.isSingleApk())
             System.exit(3);
       }
-      canQuit = true;
+      synchronized (CAN_QUIT_LOCK)
+      {
+         canQuit = true;
+      }
    }
 
    public static void stopVM()
@@ -713,8 +786,11 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          msg.setData(b);
          viewhandler.sendMessage(msg);
       }
-      if (eventThread.running) // only in situation 2 
-         canQuit = false;
+      synchronized (CAN_QUIT_LOCK)
+      {
+         if (eventThread != null && eventThread.running) // only in situation 2
+            canQuit = false;
+      }
       instance.nativeOnEvent(Launcher4A.STOPVM_EVENT, 0,0,0,0,0);
    }
    
@@ -787,7 +863,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       loader.achandler.sendMessage(msg);
    }
    
-   static void showCamera(String fileName, int stillQuality, int width, int height, boolean allowRotation, int cameraType, int videoTimeLimit, int targetFps, int bitrate)
+   static void showCamera(String fileName, int stillQuality, int width, int height, boolean allowRotation, int cameraType, int videoTimeLimit, int targetFps, int bitrate, int captureMode)
    {
       Message msg = loader.achandler.obtainMessage();
       Bundle b = new Bundle();
@@ -800,6 +876,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       b.putInt("showCamera.videoTimeLimit", videoTimeLimit);
       b.putInt("showCamera.targetFps", targetFps);
       b.putInt("showCamera.bitrate", bitrate);
+      b.putInt("showCamera.captureMode", captureMode);
       b.putInt("type",Loader.CAMERA);
       msg.setData(b);
       loader.achandler.sendMessage(msg);
@@ -1187,12 +1264,13 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
 
       if (command.equals("bugreport"))
          return createBugreport() ? 1 : 0;
-      if (command.equals("viewer"))
+      if (command.equalsIgnoreCase("viewer"))
       {
          if (args == null)
             return -1;
-         String argl = args.toLowerCase();
-         if ((AndroidUtils.isImage(argl) || argl.endsWith(".pdf")) && !new java.io.File(args).exists())
+
+         File file = ViewerFilePath.fromArgument(args);
+         if (file != null && !file.isFile())
             return -2;
       }
       Message msg = loader.achandler.obtainMessage();
@@ -1470,6 +1548,25 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    
    public static int fileGetFreeSpace(String fileName)
    {
+      try {
+         return fileGetFreeSpaceOnce(fileName);
+      } catch (SecurityException denied) {
+         if (AndroidPermissionManager.requestFileAccessBlocking() != AndroidPermissionManager.GRANTED) {
+            return -OsConstants.EACCES;
+         }
+         try {
+            return fileGetFreeSpaceOnce(fileName);
+         } catch (SecurityException deniedAgain) {
+            return -OsConstants.EACCES;
+         } catch (IllegalArgumentException missingPath) {
+            return -OsConstants.ENOENT;
+         }
+      } catch (IllegalArgumentException missingPath) {
+         return -OsConstants.ENOENT;
+      }
+   }
+
+   private static int fileGetFreeSpaceOnce(String fileName) {
       StatFs sfs = new StatFs(fileName);
       long size = sfs.getFreeBlocks() * (long)sfs.getBlockSize();
       if (size > 2147483647) // limit to 2 GB, since we're returning an integer
@@ -1855,8 +1952,8 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       return text;
    }
 
-   public static boolean callingSound;
-   public static String soundResult;
+   public static volatile boolean callingSound;
+   public static volatile String soundResult;
    public static String soundToText(String params)
    {
       String text = null;
@@ -1871,8 +1968,20 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          b.putInt("type",Loader.TOTEXT);
          msg.setData(b);
          loader.achandler.sendMessage(msg);
-         while (callingSound)
-            try {Thread.sleep(5);} catch (Exception e) {}
+         long deadline = SystemClock.elapsedRealtime() + 180_000L;
+         while (callingSound && SystemClock.elapsedRealtime() < deadline) {
+            try {
+               Thread.sleep(10);
+            } catch (InterruptedException interrupted) {
+               Thread.currentThread().interrupt();
+               break;
+            }
+         }
+         if (callingSound) {
+            soundResult = null;
+            callingSound = false;
+            if (loader != null) loader.cancelSpeechInput();
+         }
          return soundResult;
       } 
       catch (Throwable e) 
@@ -2065,151 +2174,43 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       loader.enableSmsReceiver(enabled, port);
    }
    
-    public static final PermissionHandler PHONE_STATE = new PermissionHandler(
-            Loader.PermissionRequestCodes.READ_PHONE_STATE,
-            Manifest.permission.READ_PHONE_STATE);
-
-    public static final PermissionHandler LOCATION = new PermissionHandler(
-            Loader.PermissionRequestCodes.ACCESS_FINE_LOCATION,
-            Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.ACCESS_COARSE_LOCATION);
-
-    public static final PermissionHandler STORAGE = new PermissionHandler(
-            Loader.PermissionRequestCodes.EXTERNAL_STORAGE,
-            Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE,
-            Manifest.permission.MANAGE_EXTERNAL_STORAGE);
-
-    public static final PermissionHandler CAMERA = new PermissionHandler(
-            Loader.PermissionRequestCodes.CAMERA,
-            Manifest.permission.CAMERA,
-            Manifest.permission.RECORD_AUDIO,
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU ? Manifest.permission.READ_MEDIA_IMAGES : Manifest.permission.READ_EXTERNAL_STORAGE,
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU ? Manifest.permission.READ_MEDIA_VIDEO : Manifest.permission.WRITE_EXTERNAL_STORAGE);
-
-    public static final PermissionHandler BLUETOOTH = new PermissionHandler(
-            Loader.PermissionRequestCodes.BLUETOOTH,
-            Manifest.permission.BLUETOOTH_SCAN,
-            Manifest.permission.BLUETOOTH_CONNECT);
-
-    public static class PermissionHandler {
-
-        public static final int REQUESTING = 0;
-        public static final int GRANTED = 1;
-        public static final int DENIED = -1;
-
-        public int permissionInitialized = DENIED;
-
-        public final int requestCode;
-        public final String[] permissions;
-
-        public static final HashMap<Integer, PermissionHandler> permissionHandlerMap = new HashMap<>();
-
-        public PermissionHandler(int requestCode, String... permissions) {
-            this.requestCode = requestCode;
-            this.permissions = permissions;
-            permissionHandlerMap.put(requestCode, this);
-        }
-
-        public int requestPermissions(int requestCode, String... permissions) {
-            List<String> missingPermissions = new ArrayList<>();
-            for (String permission : permissions) {
-                if (ContextCompat
-                        .checkSelfPermission(Launcher4A.loader, permission) != PackageManager.PERMISSION_GRANTED) {
-                    missingPermissions.add(permission);
-                }
-            }
-            if (missingPermissions.size() == 0) {
-                return GRANTED;
-            }
-            // request permissions
-            ActivityCompat.requestPermissions(
-                    Launcher4A.loader,
-                    missingPermissions.toArray(new String[missingPermissions.size()]),
-                    requestCode);
-            return REQUESTING;
-        }
-
-        public int requestPermissions() {
-            if (permissionInitialized == GRANTED) {
-                return GRANTED;
-            }
-            permissionInitialized = REQUESTING;
-            if (requestPermissions(requestCode, permissions) == GRANTED) {
-                permissionInitialized = GRANTED;
-                return GRANTED;
-            }
-            while (permissionInitialized == REQUESTING) {
-                try {
-                    Thread.sleep(10);
-                } catch (Exception e) {
-                }
-            }
-            return permissionInitialized;
-        }
-
-        public void onRequestPermissionsResult(String[] permissions, int[] grantResults) {
-            // If request is cancelled, the result arrays are empty.
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                this.permissionInitialized = Launcher4A.PermissionHandler.GRANTED;
-                // permission was granted, yay!
-            } else {
-                this.permissionInitialized = Launcher4A.PermissionHandler.DENIED;
-                // permission denied, boo!
-                // Disable the functionality that depends on this permission.
-            }
-        }
-    }
-
-    private static Boolean needsManageExternalStorage = null;
-
     public static int requestStoragePermission() {
-       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-          if (needsManageExternalStorage == null) {
-             try {
-                needsManageExternalStorage = Boolean.FALSE;
-                PackageInfo packageInfo = Launcher4A.loader
-                      .getPackageManager()
-                      .getPackageInfo(Launcher4A.loader.getPackageName(), PackageManager.GET_PERMISSIONS);
-                if (packageInfo.requestedPermissions != null) {
-                   for (String requestedPermission : packageInfo.requestedPermissions) {
-                      if (Manifest.permission.MANAGE_EXTERNAL_STORAGE.compareTo(requestedPermission) == 0) {
-                         needsManageExternalStorage = Boolean.TRUE;
-                      }
-                   }
-                }
-             } catch (PackageManager.NameNotFoundException e) {
-                e.printStackTrace();
-             }
-          }
-          if (needsManageExternalStorage == Boolean.TRUE) {
-             needsManageExternalStorage = !Launcher4A.loader.requestManageStorageAccess();
-          }
-       }
-
-       return STORAGE.requestPermissions();
+       return AndroidPermissionManager.requestFileAccessBlocking();
     }
 
     public static int requestCameraPermission() {
-        return CAMERA.requestPermissions();
+        return AndroidPermissionManager.requestBlocking(Manifest.permission.CAMERA);
+    }
+
+    public static int requestMicrophonePermission() {
+        return AndroidPermissionManager.requestBlocking(Manifest.permission.RECORD_AUDIO);
     }
 
     public static int requestPhoneStatePermission() {
-        return PHONE_STATE.requestPermissions();
+        int result = AndroidPermissionManager.requestBlocking(Manifest.permission.READ_PHONE_STATE);
+        if (result == AndroidPermissionManager.DENIED) {
+            System.exit(3);
+        }
+        return result;
     }
     
     public static int requestLocationPermission() {
-        return LOCATION.requestPermissions();
+        return AndroidPermissionManager.requestBlocking(
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION);
+    }
+
+    public static int requestBluetoothPermission() {
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        return AndroidPermissionManager.requestBlocking(
+                Manifest.permission.BLUETOOTH_SCAN,
+                Manifest.permission.BLUETOOTH_CONNECT);
+      }
+      return AndroidPermissionManager.GRANTED;
     }
 
     public static void playVideo(String id, boolean autoPlay, int start, int end) {
        loader.playVideo(id, autoPlay, start, end);
     }
 
-    public static int requestBluetoothPermission() {
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        return BLUETOOTH.requestPermissions();
-      }
-      return PermissionHandler.GRANTED;
-    }
 }

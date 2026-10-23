@@ -1,23 +1,27 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
 package totalcross.android.compat;
 
-import android.os.*;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 // must be called from totalcross.android.Loader thread
 
-public class Level5
+public abstract class Level5
 {
-   private static Level5 instance;
+   private static volatile Level5 instance;
+   private static final Map<BluetoothRequest, Boolean> outstandingRequests = new ConcurrentHashMap<>();
+   private static volatile boolean shutdownRequested;
    
-   public static Level5 getInstance()
+   public static synchronized Level5 getInstance()
    {
       if (instance == null)
-         instance = android.os.Build.VERSION.SDK_INT >= 5 ? new Level5Impl() : new Level5();
+         instance = new Level5Impl();
       return instance;
    }
    
@@ -39,35 +43,33 @@ public class Level5
    public static final int ERROR = -999;
    public static final int INVALID_PASSWORD = -998;
    public static final int NO_ERROR = 0;
-   
-   public static boolean isResponseReady;
-   protected static int responseInt;
-   protected static Object responseObject;
-   
-   public void setResponse(boolean b, Object o)
+
+   public static void trackRequest(BluetoothRequest request)
    {
-      setResponse(b ? NO_ERROR : ERROR, o);
+      if (request == null) return;
+      if (shutdownRequested)
+      {
+         request.cancel();
+         return;
+      }
+      outstandingRequests.put(request, Boolean.TRUE);
+      request.registerCompletionCallback(() -> outstandingRequests.remove(request));
+      if (shutdownRequested) request.cancel();
    }
    
-   public void setResponse(int i, Object o)
+   public abstract void processMessage(BluetoothRequest request);
+
+   public abstract boolean handleActivityResult(int requestCode, int resultCode);
+
+   public void onActivityResult(int requestCode, int resultCode)
    {
-      responseObject = o;
-      responseInt = i;
-      isResponseReady = true;
-   }
-   
-   public static int getResponseInt()
-   {
-      isResponseReady = false;
-      return responseInt;
-   }
-   
-   public static Object getResponseObject()
-   {
-      isResponseReady = false;
-      return responseObject;
+      handleActivityResult(requestCode, resultCode);
    }
 
-   // dumb methods
-   public void processMessage(Bundle b) {setResponse(-1,null);}
+   public void shutdown()
+   {
+      shutdownRequested = true;
+      for (BluetoothRequest request : outstandingRequests.keySet())
+         request.cancel();
+   }
 }
