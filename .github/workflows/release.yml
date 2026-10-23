@@ -14,6 +14,21 @@ on:
       tag:
         description: 'Version (name of the tag to be referenced)'
         required: true
+      publish_maven:
+        description: 'Publish SDK jars to legacy maven.totalcross.com'
+        required: false
+        type: boolean
+        default: false
+      publish_maven_central:
+        description: 'Publish SDK bundle to Maven Central'
+        required: false
+        type: boolean
+        default: false
+      dry_run:
+        description: 'Prepare and validate the release without external publication'
+        required: false
+        type: boolean
+        default: true
 
 permissions:
   contents: write
@@ -23,33 +38,73 @@ jobs:
   release:
     name: Create Release
     runs-on: ubuntu-latest
+    environment: maven-central
+    env:
+      PUBLISH_MAVEN: ${{ github.event_name == 'workflow_dispatch' && inputs.publish_maven == true }}
+      PUBLISH_MAVEN_CENTRAL: ${{ github.event_name == 'workflow_dispatch' && inputs.publish_maven_central == true }}
+      # Keep omitted manual inputs safe: only an explicit unchecked/false
+      # value disables dry-run publication guards.
+      DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run != 'false' }}
+      MAVEN_GPG_FINGERPRINT: 052B61DD040CAB45ED61E32F632AAD9D5CCA3531
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
       - name: Resolve release version
         id: release-version
         shell: bash
         run: |
+          set -euo pipefail
+
           tag="${{ github.event.inputs.tag }}"
           if [ -z "$tag" ]; then
             tag="${GITHUB_REF_NAME}"
           fi
 
           version="${tag#v}"
-          if [ -z "$version" ]; then
-            echo "Could not determine release version" >&2
+          if ! [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Release tag must resolve to a numeric MAJOR.MINOR.PATCH version: ${tag}" >&2
             exit 1
+          fi
+
+          if ! git rev-parse --verify "${tag}^{commit}" >/dev/null 2>&1; then
+            echo "Release tag does not exist in the repository: ${tag}" >&2
+            exit 1
+          fi
+          tag_commit="$(git rev-parse "${tag}^{commit}")"
+
+          # Dry runs exercise the workflow ref and may legitimately consume
+          # the latest successful package produced earlier on the same branch.
+          # Real releases remain pinned to the exact commit referenced by tag.
+          if [ "$DRY_RUN" = "true" ]; then
+            package_branch="$GITHUB_REF_NAME"
+            package_commit=""
+            expected_source_commit=""
+            expected_source_ancestor="$GITHUB_SHA"
+          else
+            package_branch=""
+            package_commit="$tag_commit"
+            expected_source_commit="$tag_commit"
+            expected_source_ancestor=""
           fi
 
           echo "tag=${tag}" >> "$GITHUB_OUTPUT"
           echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "tag_commit=${tag_commit}" >> "$GITHUB_OUTPUT"
+          echo "package_branch=${package_branch}" >> "$GITHUB_OUTPUT"
+          echo "package_commit=${package_commit}" >> "$GITHUB_OUTPUT"
+          echo "expected_source_commit=${expected_source_commit}" >> "$GITHUB_OUTPUT"
+          echo "expected_source_ancestor=${expected_source_ancestor}" >> "$GITHUB_OUTPUT"
 
       - name: Download packaged SDK
         uses: dawidd6/action-download-artifact@v6
         with:
           workflow: package.yml
           workflow_conclusion: success
+          commit: ${{ steps.release-version.outputs.package_commit }}
+          branch: ${{ steps.release-version.outputs.package_branch }}
           name: TotalCross-${{ steps.release-version.outputs.version }}
           path: release-assets
 
@@ -58,85 +113,52 @@ jobs:
         with:
           workflow: package.yml
           workflow_conclusion: success
+          commit: ${{ steps.release-version.outputs.package_commit }}
+          branch: ${{ steps.release-version.outputs.package_branch }}
           name: TotalCross-${{ steps.release-version.outputs.version }}-jars
           path: release-assets/jars
 
-      - name: Upload jars to Artifactory
+      - name: Import Maven signing key
         shell: bash
         env:
-          JFROG_USER: ${{ secrets.JFROG_USER }}
-          JFROG_PASSWORD: ${{ secrets.JFROG_PASSWORD }}
+          MAVEN_GPG_PRIVATE_KEY: ${{ secrets.JRELEASER_GPG_SECRET_KEY }}
         run: |
           set -euo pipefail
 
-          version="${{ steps.release-version.outputs.version }}"
-          artifactory_url="https://maven.totalcross.com/artifactory"
-          repository="repo1-release"
-          group_path="com/totalcross"
-          artifact_id="totalcross-sdk"
-          artifact_base_url="${artifactory_url}/${repository}/${group_path}/${artifact_id}/${version}"
-          jars_dir="release-assets/jars"
-          main_jar="${jars_dir}/${artifact_id}-${version}.jar"
-          javadoc_jar="${jars_dir}/${artifact_id}-${version}-javadoc.jar"
-          sources_jar="${jars_dir}/${artifact_id}-${version}-sources.jar"
-          pom_file="$(mktemp)"
-
-          if [ -z "$JFROG_USER" ] || [ -z "$JFROG_PASSWORD" ]; then
-            echo "JFROG_USER and JFROG_PASSWORD secrets must be configured" >&2
+          if [ -z "$MAVEN_GPG_PRIVATE_KEY" ]; then
+            echo "MAVEN_GPG_PRIVATE_KEY must be configured" >&2
             exit 1
           fi
 
-          for artifact in "$main_jar" "$javadoc_jar" "$sources_jar"; do
-            if [ ! -f "$artifact" ]; then
-              echo "Could not find Artifactory artifact: $artifact" >&2
-              exit 1
-            fi
-          done
+          printf '%s\n' "$MAVEN_GPG_PRIVATE_KEY" | gpg --batch --import
+          gpg --batch --list-secret-keys "$MAVEN_GPG_FINGERPRINT" >/dev/null
 
-          unzip -p "$main_jar" "META-INF/maven/com.totalcross/${artifact_id}/pom.xml" > "$pom_file"
-          if [ ! -s "$pom_file" ]; then
-            echo "Could not extract Maven POM from $main_jar" >&2
-            exit 1
-          fi
+      - name: Prepare Maven Central bundle
+        shell: bash
+        env:
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.JRELEASER_GPG_PASSPHRASE }}
+        run: |
+          set -euo pipefail
 
-          upload_artifact() {
-            local file="$1"
-            local name="$2"
+          python3 scripts/prepare-maven-central-bundle.py \
+            --version "${{ steps.release-version.outputs.version }}" \
+            --jars-dir release-assets/jars \
+            --output-dir release-assets/maven-central \
+            --gpg-fingerprint "$MAVEN_GPG_FINGERPRINT" \
+            --expected-source-commit "${{ steps.release-version.outputs.expected_source_commit }}" \
+            --expected-source-ancestor "${{ steps.release-version.outputs.expected_source_ancestor }}"
 
-            curl \
-              --fail \
-              --show-error \
-              --silent \
-              --user "${JFROG_USER}:${JFROG_PASSWORD}" \
-              --upload-file "$file" \
-              "${artifact_base_url}/${name}"
-          }
-
-          upload_artifact "$pom_file" "${artifact_id}-${version}.pom"
-          upload_artifact "$main_jar" "${artifact_id}-${version}.jar"
-          upload_artifact "$javadoc_jar" "${artifact_id}-${version}-javadoc.jar"
-          upload_artifact "$sources_jar" "${artifact_id}-${version}-sources.jar"
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: arn:aws:iam::801206326054:role/github-action-release
-          aws-region: us-east-1
-
-      - name: Upload release zip to S3
+      - name: Validate packaged SDK zip
         shell: bash
         run: |
-          version="${{ steps.release-version.outputs.version }}"
-          zip_asset="release-assets/TotalCross-${version}.zip"
-          version_prefix="$(echo "$version" | awk -F. '{ print $1 "." $2 }')"
-          s3_uri="s3://totalcross-release/${version_prefix}/TotalCross-${version}.zip"
+          set -euo pipefail
 
+          zip_asset="release-assets/TotalCross-${{ steps.release-version.outputs.version }}.zip"
           if [ ! -f "$zip_asset" ]; then
             echo "Could not find release zip: $zip_asset" >&2
             exit 1
           fi
-
-          aws s3 cp "$zip_asset" "$s3_uri"
+          unzip -t "$zip_asset" >/dev/null
 
       - name: Extract release notes
         run: |
@@ -160,7 +182,184 @@ jobs:
             exit 1
           fi
 
+      - name: Upload prepared SDK package
+        uses: actions/upload-artifact@v4
+        with:
+          name: TotalCross-${{ steps.release-version.outputs.version }}
+          if-no-files-found: error
+          path: release-assets/TotalCross-${{ steps.release-version.outputs.version }}.zip
+
+      - name: Upload prepared release assets
+        uses: actions/upload-artifact@v4
+        with:
+          name: TotalCross-${{ steps.release-version.outputs.version }}-release-assets
+          if-no-files-found: error
+          path: |
+            release-assets/jars/totalcross-sdk-${{ steps.release-version.outputs.version }}.jar
+            release-assets/jars/totalcross-sdk-${{ steps.release-version.outputs.version }}-sources.jar
+            release-assets/jars/totalcross-sdk-${{ steps.release-version.outputs.version }}-javadoc.jar
+            release-assets/maven-central/totalcross-sdk-${{ steps.release-version.outputs.version }}-maven-central.zip
+            release-assets/maven-central/central-bundle-manifest.json
+            CHANGELOG-${{ steps.release-version.outputs.tag }}.md
+
+      - name: Publish Maven Central bundle
+        id: central-publication
+        if: ${{ env.DRY_RUN != 'true' && env.PUBLISH_MAVEN_CENTRAL == 'true' }}
+        shell: bash
+        env:
+          MAVEN_CENTRAL_USERNAME: ${{ secrets.JRELEASER_MAVENCENTRAL_USERNAME }}
+          MAVEN_CENTRAL_PASSWORD: ${{ secrets.JRELEASER_MAVENCENTRAL_PASSWORD }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "$MAVEN_CENTRAL_USERNAME" ] || [ -z "$MAVEN_CENTRAL_PASSWORD" ]; then
+            echo "MAVEN_CENTRAL_USERNAME and MAVEN_CENTRAL_PASSWORD must be configured" >&2
+            exit 1
+          fi
+
+          version="${{ steps.release-version.outputs.version }}"
+          bundle="release-assets/maven-central/totalcross-sdk-${version}-maven-central.zip"
+          auth="$(printf '%s:%s' "$MAVEN_CENTRAL_USERNAME" "$MAVEN_CENTRAL_PASSWORD" | base64 | tr -d '\n')"
+          api="https://central.sonatype.com/api/v1/publisher"
+
+          deployment_id="$(
+            curl \
+              --fail-with-body \
+              --show-error \
+              --silent \
+              --request POST \
+              --header "Authorization: Bearer ${auth}" \
+              --form "bundle=@${bundle};type=application/octet-stream" \
+              "${api}/upload?name=totalcross-sdk-${version}&publishingType=USER_MANAGED"
+          )"
+          deployment_id="$(printf '%s' "$deployment_id" | tr -d '[:space:]')"
+          if [ -z "$deployment_id" ]; then
+            echo "Maven Central did not return a deployment id" >&2
+            exit 1
+          fi
+          echo "deployment_id=${deployment_id}" >> "$GITHUB_OUTPUT"
+
+          wait_for_state() {
+            local target="$1"
+            local response state
+
+            for _ in $(seq 1 120); do
+              response="$(
+                curl \
+                  --fail-with-body \
+                  --show-error \
+                  --silent \
+                  --request POST \
+                  --header "Authorization: Bearer ${auth}" \
+                  "${api}/status?id=${deployment_id}"
+              )"
+              state="$(python3 -c 'import json,sys; print(json.load(sys.stdin)["deploymentState"])' <<<"$response")"
+              echo "Maven Central deployment state: ${state}"
+
+              if [ "$state" = "$target" ]; then
+                return 0
+              fi
+              if [ "$state" = "FAILED" ]; then
+                python3 -m json.tool <<<"$response" >&2
+                return 1
+              fi
+              sleep 5
+            done
+
+            echo "Timed out waiting for Maven Central deployment state ${target}" >&2
+            return 1
+          }
+
+          wait_for_state VALIDATED
+
+          curl \
+            --fail-with-body \
+            --show-error \
+            --silent \
+            --request POST \
+            --header "Authorization: Bearer ${auth}" \
+            "${api}/deployment/${deployment_id}" \
+            >/dev/null
+
+          wait_for_state PUBLISHED
+
+      - name: Upload jars to legacy Artifactory
+        if: ${{ env.DRY_RUN != 'true' && env.PUBLISH_MAVEN == 'true' }}
+        shell: bash
+        env:
+          JFROG_USER: ${{ secrets.JFROG_USER }}
+          JFROG_PASSWORD: ${{ secrets.JFROG_PASSWORD }}
+        run: |
+          set -euo pipefail
+
+          version="${{ steps.release-version.outputs.version }}"
+          artifactory_url="https://maven.totalcross.com/artifactory"
+          repository="repo1-release"
+          group_path="com/totalcross"
+          artifact_id="totalcross-sdk"
+          artifact_base_url="${artifactory_url}/${repository}/${group_path}/${artifact_id}/${version}"
+          staged_dir="release-assets/maven-central/repository/com/totalcross/${artifact_id}/${version}"
+          main_jar="${staged_dir}/${artifact_id}-${version}.jar"
+          javadoc_jar="${staged_dir}/${artifact_id}-${version}-javadoc.jar"
+          sources_jar="${staged_dir}/${artifact_id}-${version}-sources.jar"
+          pom_file="${staged_dir}/${artifact_id}-${version}.pom"
+
+          if [ -z "$JFROG_USER" ] || [ -z "$JFROG_PASSWORD" ]; then
+            echo "JFROG_USER and JFROG_PASSWORD secrets must be configured" >&2
+            exit 1
+          fi
+
+          for artifact in "$pom_file" "$main_jar" "$javadoc_jar" "$sources_jar"; do
+            if [ ! -f "$artifact" ]; then
+              echo "Could not find staged Artifactory artifact: $artifact" >&2
+              exit 1
+            fi
+          done
+
+          upload_artifact() {
+            local file="$1"
+            local name="$2"
+
+            curl \
+              --fail \
+              --show-error \
+              --silent \
+              --user "${JFROG_USER}:${JFROG_PASSWORD}" \
+              --upload-file "$file" \
+              "${artifact_base_url}/${name}"
+          }
+
+          upload_artifact "$pom_file" "${artifact_id}-${version}.pom"
+          upload_artifact "$main_jar" "${artifact_id}-${version}.jar"
+          upload_artifact "$javadoc_jar" "${artifact_id}-${version}-javadoc.jar"
+          upload_artifact "$sources_jar" "${artifact_id}-${version}-sources.jar"
+
+      - name: Configure AWS credentials
+        if: ${{ env.DRY_RUN != 'true' }}
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::801206326054:role/github-action-release
+          aws-region: us-east-1
+
+      - name: Upload release zip to S3
+        if: ${{ env.DRY_RUN != 'true' }}
+        shell: bash
+        run: |
+          version="${{ steps.release-version.outputs.version }}"
+          zip_asset="release-assets/TotalCross-${version}.zip"
+          version_prefix="$(echo "$version" | awk -F. '{ print $1 "." $2 }')"
+          s3_uri="s3://totalcross-release/${version_prefix}/TotalCross-${version}.zip"
+
+          if [ ! -f "$zip_asset" ]; then
+            echo "Could not find release zip: $zip_asset" >&2
+            exit 1
+          fi
+
+          aws s3 cp "$zip_asset" "$s3_uri"
+
+
       - name: Create Release
+        if: ${{ env.DRY_RUN != 'true' }}
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -178,6 +377,7 @@ jobs:
             release-assets/jars/*.jar
 
       - name: Verify public release artifacts
+        if: ${{ env.DRY_RUN != 'true' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -201,7 +401,9 @@ jobs:
           }
 
           verify_public_url "$s3_url"
-          verify_public_url "${artifactory_base_url}/totalcross-sdk-${version}.pom"
-          verify_public_url "${artifactory_base_url}/totalcross-sdk-${version}.jar"
-          verify_public_url "${artifactory_base_url}/totalcross-sdk-${version}-javadoc.jar"
-          verify_public_url "${artifactory_base_url}/totalcross-sdk-${version}-sources.jar"
+          if [ "$PUBLISH_MAVEN" = "true" ]; then
+            verify_public_url "${artifactory_base_url}/totalcross-sdk-${version}.pom"
+            verify_public_url "${artifactory_base_url}/totalcross-sdk-${version}.jar"
+            verify_public_url "${artifactory_base_url}/totalcross-sdk-${version}-javadoc.jar"
+            verify_public_url "${artifactory_base_url}/totalcross-sdk-${version}-sources.jar"
+          fi
