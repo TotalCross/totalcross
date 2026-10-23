@@ -109,7 +109,9 @@ android {
     // }
 }
 
-def jniVariant = 'standardDebug'
+// The Release bundle already compiles these Java sources; reuse that variant
+// for JNI headers instead of invoking an additional Debug Java compile.
+def jniVariant = 'standardRelease'
 def jniHeaderCompileTaskName =
     "compile${jniVariant.capitalize()}JavaWithJavac"
 def jniHeadersDirectory =
