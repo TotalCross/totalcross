@@ -11,11 +11,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
@@ -30,14 +26,12 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -49,15 +43,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.concurrent.locks.ReentrantLock;
 
+/**
+ * Owns socket transport, server lifecycle and deferred resource cleanup.
+ * Socket ownership and cancellation remain together intentionally.
+ * Device discovery is delegated to BluetoothDiscovery.
+ */
 public class Level5Impl extends Level5 {
     private static final UUID SPP_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
-    // Present on BOND_NONE broadcasts; value 1 is the platform authentication-failed reason.
-    private static final String EXTRA_UNBOND_REASON = "android.bluetooth.device.extra.REASON";
-    private static final int UNBOND_REASON_AUTH_FAILED = 1;
-    private static final int DISCOVERABILITY_REQUEST_BASE = 0x7000;
-    private static final int DISCOVERABILITY_REQUEST_MASK = 0x0fff;
     private static final int MAX_EMERGENCY_CLEANUP_THREADS = 4;
     private static final int MAX_DEFERRED_CLIENT_CLEANUPS = 256;
     private static final int CLIENT_SOCKET_CLOSE_MAX_ATTEMPTS = 3;
@@ -66,7 +59,6 @@ public class Level5Impl extends Level5 {
     private static final AtomicLong THREAD_IDS = new AtomicLong();
     private static final AtomicLong EMERGENCY_CLEANUP_THREAD_IDS = new AtomicLong();
     private static final AtomicInteger ACTIVE_EMERGENCY_CLEANUP_THREADS = new AtomicInteger();
-    private static final AtomicInteger DISCOVERABILITY_REQUEST_IDS = new AtomicInteger();
 
     private final ThreadPoolExecutor connectionExecutor = boundedExecutor("connection", 2, 16);
     private final ThreadPoolExecutor discoveryControlExecutor = boundedExecutor("discovery-control", 1, 8);
@@ -77,6 +69,8 @@ public class Level5Impl extends Level5 {
     private final ScheduledThreadPoolExecutor cleanupRetryDispatcher = createCleanupRetryDispatcher();
     private final ScheduledThreadPoolExecutor timeoutExecutor = createTimeoutExecutor();
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
+    private final BluetoothDiscovery discovery = new BluetoothDiscovery(this, mainHandler,
+            connectionExecutor, discoveryControlExecutor);
 
     private volatile BluetoothAdapter btAdapter;
     private final ConcurrentHashMap<SessionKey, BluetoothSession> sessionsByKey = new ConcurrentHashMap<>();
@@ -87,9 +81,6 @@ public class Level5Impl extends Level5 {
     private final AtomicLong serverGenerations = new AtomicLong();
     private final AtomicBoolean shuttingDown = new AtomicBoolean();
     private final ConcurrentHashMap<BluetoothRequest, Boolean> outstandingRequests = new ConcurrentHashMap<>();
-    private final AtomicReference<DiscoverabilityOperation> activeDiscoverability = new AtomicReference<>();
-    private final ConcurrentHashMap<Integer, Boolean> discoverabilityRequestCodes = new ConcurrentHashMap<>();
-    private final AtomicReference<DiscoveryOperation> activeDiscovery = new AtomicReference<>();
     private final AtomicReference<ServerAcceptOperation> activeServerAccept = new AtomicReference<>();
     private final Object serverLifecycleLock = new Object();
     private final Object cleanupLock = new Object();
@@ -148,8 +139,6 @@ public class Level5Impl extends Level5 {
 
     private enum SessionState { CONNECTING, CONNECTED, CLOSING, CLOSED }
 
-    private enum DiscoveryState { NOT_STARTED, STARTING, STARTED, CANCELLING, FINISHED }
-
     private enum ServerLifecycleState { IDLE, CLOSING, CLOSE_FAILED }
 
     private static final class SessionKey {
@@ -188,207 +177,18 @@ public class Level5Impl extends Level5 {
         }
     }
 
-    private enum BondOutcome { BONDED, AUTHENTICATION_FAILED, FAILED, CANCELLED }
-
-    private final class BondMonitor {
-        final BluetoothDevice target;
-        final String targetAddress;
-        final BluetoothRequest request;
-        final totalcross.android.Loader loader;
-        final int initialBondState;
-        final BroadcastReceiver receiver;
-        final Object lock = new Object();
-        final CountDownLatch registrationFinished = new CountDownLatch(1);
-        final AtomicBoolean closed = new AtomicBoolean();
-        volatile boolean registered;
-        volatile RuntimeException registrationFailure;
-        private int lastState;
-        private boolean bondingObserved;
-        private boolean bonded;
-        private boolean bondFailed;
-        private boolean authenticationFailed;
-
-        BondMonitor(BluetoothDevice target, BluetoothRequest request, totalcross.android.Loader loader) {
-            this.target = target;
-            this.targetAddress = normalizeApiAddress(target.getAddress());
-            this.request = request;
-            this.loader = loader;
-            this.initialBondState = target.getBondState();
-            this.lastState = initialBondState;
-            this.bondingObserved = initialBondState == BluetoothDevice.BOND_BONDING;
-            this.receiver = new BroadcastReceiver() {
-                @Override
-                public void onReceive(Context context, Intent intent) {
-                    if (closed.get() || request.isComplete() || intent == null
-                            || !BluetoothDevice.ACTION_BOND_STATE_CHANGED.equals(intent.getAction())) return;
-                    final BluetoothDevice changed;
-                    try {
-                        changed = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                    } catch (RuntimeException invalidDevice) {
-                        return;
-                    }
-                    if (changed == null) return;
-                    String changedAddress;
-                    try {
-                        changedAddress = changed.getAddress();
-                    } catch (RuntimeException invalidDevice) {
-                        return;
-                    }
-                    if (changedAddress == null || !normalizeApiAddress(changedAddress).equals(targetAddress)) return;
-                    int state = intent.getIntExtra(BluetoothDevice.EXTRA_BOND_STATE, Integer.MIN_VALUE);
-                    int previousState = intent.getIntExtra(BluetoothDevice.EXTRA_PREVIOUS_BOND_STATE,
-                            Integer.MIN_VALUE);
-                    int reason = intent.getIntExtra(EXTRA_UNBOND_REASON, Integer.MIN_VALUE);
-                    recordBondState(state, previousState, reason);
-                }
-            };
-        }
-
-        boolean register() throws InterruptedException {
-            request.registerCancellationCallback(this::signal);
-            request.registerCancellationCallback(this::unregister);
-            if (loader == null) {
-                registrationFinished.countDown();
-                return false;
-            }
-            boolean posted = mainHandler.post(() -> {
-                try {
-                    if (!closed.get() && !request.isComplete()) {
-                        loader.registerReceiver(receiver, new IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED));
-                        registered = true;
-                    }
-                } catch (RuntimeException failure) {
-                    registrationFailure = failure;
-                } finally {
-                    registrationFinished.countDown();
-                }
-            });
-            if (!posted) registrationFinished.countDown();
-            while (!request.isComplete() && registrationFinished.getCount() > 0) {
-                long remaining = remainingDeadlineMillis(request);
-                if (remaining <= 0) {
-                    request.cancel();
-                    break;
-                }
-                registrationFinished.await(Math.min(remaining, 50), TimeUnit.MILLISECONDS);
-            }
-            return registered && registrationFailure == null && !request.isComplete();
-        }
-
-        void recordBondState(int state, int previousState, int reason) {
-            synchronized (lock) {
-                if (state == BluetoothDevice.BOND_BONDING) bondingObserved = true;
-                if (previousState == BluetoothDevice.BOND_BONDING) bondingObserved = true;
-                if (state == BluetoothDevice.BOND_BONDED && bondingObserved) bonded = true;
-                if (state == BluetoothDevice.BOND_NONE && bondingObserved
-                        && (previousState == BluetoothDevice.BOND_BONDING
-                        || lastState == BluetoothDevice.BOND_BONDING)) {
-                    bondFailed = true;
-                    authenticationFailed = reason == UNBOND_REASON_AUTH_FAILED;
-                }
-                lastState = state;
-                lock.notifyAll();
-            }
-        }
-
-        boolean hasObservedBonding() {
-            synchronized (lock) {
-                return bondingObserved;
-            }
-        }
-
-        BondOutcome awaitOutcome() throws InterruptedException {
-            synchronized (lock) {
-                while (!bonded && !bondFailed && !request.isComplete()) {
-                    long remaining = remainingDeadlineMillis(request);
-                    if (remaining <= 0) {
-                        request.cancel();
-                        break;
-                    }
-                    lock.wait(remaining);
-                }
-                if (bonded) return BondOutcome.BONDED;
-                if (authenticationFailed) return BondOutcome.AUTHENTICATION_FAILED;
-                if (bondFailed) return BondOutcome.FAILED;
-                return BondOutcome.CANCELLED;
-            }
-        }
-
-        BondOutcome currentOutcome() {
-            synchronized (lock) {
-                if (bonded) return BondOutcome.BONDED;
-                if (authenticationFailed) return BondOutcome.AUTHENTICATION_FAILED;
-                if (bondFailed) return BondOutcome.FAILED;
-                return BondOutcome.CANCELLED;
-            }
-        }
-
-        void reconcileAfterConnectionFailure() {
-            final int currentState;
-            try {
-                currentState = target.getBondState();
-            } catch (RuntimeException failure) {
-                return;
-            }
-            synchronized (lock) {
-                if (currentState == BluetoothDevice.BOND_BONDING) {
-                    bondingObserved = true;
-                    bonded = false;
-                    bondFailed = false;
-                    authenticationFailed = false;
-                } else if (currentState == BluetoothDevice.BOND_BONDED) {
-                    if (bondingObserved || initialBondState == BluetoothDevice.BOND_NONE
-                            || initialBondState == BluetoothDevice.BOND_BONDING) {
-                        bondingObserved = true;
-                        bonded = true;
-                        bondFailed = false;
-                        authenticationFailed = false;
-                    } else {
-                        bonded = false;
-                    }
-                } else if (currentState == BluetoothDevice.BOND_NONE) {
-                    bonded = false;
-                    if (bondingObserved) bondFailed = true;
-                }
-                lastState = currentState;
-                lock.notifyAll();
-            }
-        }
-
-        void signal() {
-            synchronized (lock) {
-                lock.notifyAll();
-            }
-        }
-
-        void unregister() {
-            if (!closed.compareAndSet(false, true) || loader == null) return;
-            Runnable cleanup = () -> {
-                if (!registered) return;
-                registered = false;
-                try {
-                    loader.unregisterReceiver(receiver);
-                } catch (RuntimeException ignored) {
-                    // Activity teardown may have already released the receiver.
-                }
-            };
-            if (Looper.myLooper() == Looper.getMainLooper()) cleanup.run();
-            else mainHandler.post(cleanup);
-        }
-    }
-
     private static ThreadPoolExecutor boundedExecutor(String name, int threads, int queueCapacity) {
         return new ThreadPoolExecutor(threads, threads, 0L, TimeUnit.MILLISECONDS,
                 new ArrayBlockingQueue<>(queueCapacity), namedDaemonFactory(name),
                 new ThreadPoolExecutor.AbortPolicy());
     }
 
-    private static String normalizeApiAddress(String address) {
+    static String normalizeApiAddress(String address) {
         String normalized = normalizeBluetoothAddressOrNull(address);
         return normalized == null ? "" : normalized;
     }
 
-    private static String normalizeBluetoothAddressOrNull(String address) {
+    static String normalizeBluetoothAddressOrNull(String address) {
         if (address == null) return null;
         boolean colonSeparated = address.length() == 17;
         if (!colonSeparated && address.length() != 12) return null;
@@ -406,7 +206,7 @@ public class Level5Impl extends Level5 {
         return normalized.length() == 12 ? normalized.toString() : null;
     }
 
-    private static long remainingDeadlineMillis(BluetoothRequest request) {
+    static long remainingDeadlineMillis(BluetoothRequest request) {
         long deadline = request.getDeadlineElapsedRealtime();
         return Math.max(0, deadline - SystemClock.elapsedRealtime());
     }
@@ -421,20 +221,20 @@ public class Level5Impl extends Level5 {
 
     private static ScheduledThreadPoolExecutor createTimeoutExecutor() {
         ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1, namedDaemonFactory("timeout"));
-        if (Build.VERSION.SDK_INT >= 21) executor.setRemoveOnCancelPolicy(true);
+        executor.setRemoveOnCancelPolicy(true);
         return executor;
     }
 
     private static ScheduledThreadPoolExecutor createCleanupRetryDispatcher() {
         ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1,
                 namedDaemonFactory("cleanup-retry"));
-        if (Build.VERSION.SDK_INT >= 21) executor.setRemoveOnCancelPolicy(true);
+        executor.setRemoveOnCancelPolicy(true);
         executor.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
         executor.setContinueExistingPeriodicTasksAfterShutdownPolicy(false);
         return executor;
     }
 
-    private BluetoothAdapter getAdapter() {
+    BluetoothAdapter getAdapter() {
         BluetoothAdapter adapter = btAdapter;
         if (adapter != null) return adapter;
         synchronized (this) {
@@ -482,10 +282,10 @@ public class Level5Impl extends Level5 {
                 dispatchServerAccept(request);
                 break;
             case BT_MAKE_DISCOVERABLE:
-                dispatch(request, socketControlExecutor, () -> btMakeDiscoverable(request));
+                dispatch(request, socketControlExecutor, () -> discovery.makeDiscoverable(request));
                 break;
             case BT_GET_UNPAIRED_DEVICES:
-                dispatch(request, connectionExecutor, () -> btGetUnpairedDevices(request));
+                dispatch(request, connectionExecutor, () -> discovery.getUnpairedDevices(request));
                 break;
             case BT_IS_SUPPORTED:
             case BT_IS_RADIO_ON:
@@ -538,6 +338,23 @@ public class Level5Impl extends Level5 {
             runCleanup(cleanup);
             request.complete(ERROR, null);
         }
+    }
+
+    boolean isShuttingDown() {
+        return shuttingDown.get();
+    }
+
+    void enqueueDiscoveryCleanup(Object resource, Runnable cancel,
+                                 java.util.function.Consumer<Boolean> completed) {
+        enqueuePendingCleanup(resource, () -> {
+            cancel.run();
+            return true;
+        }, completed::accept);
+    }
+
+    @Override
+    public boolean handleActivityResult(int requestCode, int resultCode) {
+        return discovery.handleActivityResult(requestCode, resultCode);
     }
 
     private static void runCleanup(Runnable cleanup) {
@@ -989,147 +806,6 @@ public class Level5Impl extends Level5 {
         return result.isEmpty() ? null : result.toArray(new String[0]);
     }
 
-    private void btMakeDiscoverable(final BluetoothRequest request) throws Exception {
-        if (request.isComplete()) return;
-        if (activeDiscoverability.get() != null) {
-            request.complete(ERROR, null);
-            return;
-        }
-        BluetoothAdapter adapter = getAdapter();
-        if (adapter == null) {
-            request.complete(ERROR, null);
-            return;
-        }
-        if (adapter.getScanMode() == BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE) {
-            request.complete(NO_ERROR, null);
-            return;
-        }
-        int activityRequestCode = reserveDiscoverabilityRequestCode();
-        if (activityRequestCode < 0) {
-            request.complete(ERROR, null);
-            return;
-        }
-        final DiscoverabilityOperation operation = new DiscoverabilityOperation(request, activityRequestCode);
-        if (!activeDiscoverability.compareAndSet(null, operation)) {
-            discoverabilityRequestCodes.remove(activityRequestCode);
-            request.complete(ERROR, null);
-            return;
-        }
-        request.registerCompletionCallback(() -> {
-            synchronized (operation) {
-                activeDiscoverability.compareAndSet(operation, null);
-                if (!operation.activityLaunched || !request.isCancelled()) {
-                    discoverabilityRequestCodes.remove(operation.activityRequestCode);
-                }
-            }
-        });
-        boolean posted = mainHandler.post(() -> {
-            if (request.isDeadlineExpired()) request.cancel();
-            if (request.isComplete() || activeDiscoverability.get() != operation || shuttingDown.get()) return;
-            LoaderHost host = currentLoader();
-            if (host == null) {
-                request.complete(ERROR, null);
-                return;
-            }
-            Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-            intent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);
-            synchronized (operation) {
-                if (request.isComplete() || activeDiscoverability.get() != operation || shuttingDown.get()) return;
-                operation.activityLaunched = true;
-                try {
-                    host.loader.startActivityForResult(intent, operation.activityRequestCode);
-                } catch (RuntimeException failure) {
-                    operation.activityLaunched = false;
-                    AndroidUtils.handleException(failure, false);
-                    request.complete(ERROR, null);
-                }
-            }
-        });
-        if (!posted) {
-            request.complete(ERROR, null);
-        }
-    }
-
-    private static final class LoaderHost {
-        final totalcross.android.Loader loader;
-        LoaderHost(totalcross.android.Loader loader) { this.loader = loader; }
-    }
-
-    private static LoaderHost currentLoader() {
-        totalcross.android.Loader loader = Launcher4A.loader;
-        return loader == null ? null : new LoaderHost(loader);
-    }
-
-    @Override
-    public boolean handleActivityResult(int requestCode, int resultCode) {
-        if (!isDiscoverabilityRequestCode(requestCode)) return false;
-        discoverabilityRequestCodes.remove(requestCode);
-        DiscoverabilityOperation operation = activeDiscoverability.get();
-        if (shuttingDown.get()) {
-            if (operation != null && operation.activityRequestCode == requestCode)
-                activeDiscoverability.compareAndSet(operation, null);
-            return true;
-        }
-        if (operation != null && operation.activityRequestCode == requestCode
-                && activeDiscoverability.compareAndSet(operation, null)
-                && operation.activityLaunched && !operation.request.isComplete()) {
-            operation.request.complete(resultCode == Activity.RESULT_CANCELED ? ERROR : NO_ERROR, null);
-        }
-        return true;
-    }
-
-    private int reserveDiscoverabilityRequestCode() {
-        for (int i = 0; i <= DISCOVERABILITY_REQUEST_MASK; i++) {
-            int requestCode = DISCOVERABILITY_REQUEST_BASE
-                    + (DISCOVERABILITY_REQUEST_IDS.getAndIncrement() & DISCOVERABILITY_REQUEST_MASK);
-            if (discoverabilityRequestCodes.putIfAbsent(requestCode, Boolean.TRUE) == null) return requestCode;
-        }
-        return -1;
-    }
-
-    private static boolean isDiscoverabilityRequestCode(int requestCode) {
-        return requestCode >= DISCOVERABILITY_REQUEST_BASE
-                && requestCode <= DISCOVERABILITY_REQUEST_BASE + DISCOVERABILITY_REQUEST_MASK;
-    }
-
-    private static final class DiscoveryOperation {
-        final BluetoothRequest request;
-        final BluetoothAdapter adapter;
-        final ReentrantLock transitionLock = new ReentrantLock();
-        final AtomicBoolean finished = new AtomicBoolean();
-        final AtomicBoolean cleanupStarted = new AtomicBoolean();
-        final AtomicBoolean cancelRequested = new AtomicBoolean();
-        final AtomicBoolean cancelEnqueued = new AtomicBoolean();
-        final AtomicBoolean cancelFallbackEnqueued = new AtomicBoolean();
-        final AtomicInteger cancellationAttempts = new AtomicInteger();
-        final AtomicBoolean finishStateRequested = new AtomicBoolean();
-        final AtomicInteger pendingDeviceQueries = new AtomicInteger();
-        final Map<String, String> found = new LinkedHashMap<>();
-        volatile BroadcastReceiver receiver;
-        volatile totalcross.android.Loader owner;
-        final AtomicBoolean receiverRegistered = new AtomicBoolean();
-        volatile boolean startRequested;
-        volatile boolean discoveryFinished;
-        volatile boolean finishSuccess;
-        DiscoveryState state = DiscoveryState.NOT_STARTED;
-
-        DiscoveryOperation(BluetoothRequest request, BluetoothAdapter adapter) {
-            this.request = request;
-            this.adapter = adapter;
-        }
-    }
-
-    private static final class DiscoverabilityOperation {
-        final BluetoothRequest request;
-        final int activityRequestCode;
-        volatile boolean activityLaunched;
-
-        DiscoverabilityOperation(BluetoothRequest request, int activityRequestCode) {
-            this.request = request;
-            this.activityRequestCode = activityRequestCode;
-        }
-    }
-
     private static final class ServerAcceptOperation {
         final BluetoothRequest request;
         final String serviceKey;
@@ -1176,318 +852,6 @@ public class Level5Impl extends Level5 {
             this.closeRequest = closeRequest;
             this.resumeAccept = resumeAccept;
         }
-    }
-
-    private void btGetUnpairedDevices(final BluetoothRequest request) {
-        final BluetoothAdapter adapter;
-        try {
-            adapter = getAdapter();
-        } catch (RuntimeException failure) {
-            request.complete(ERROR, null);
-            return;
-        }
-        if (adapter == null) {
-            request.complete(ERROR, null);
-            return;
-        }
-        final DiscoveryOperation operation = new DiscoveryOperation(request, adapter);
-        if (!activeDiscovery.compareAndSet(null, operation)) {
-            DiscoveryOperation previous = activeDiscovery.get();
-            if (previous != null && previous.cancelRequested.get()) {
-                try {
-                    discoveryControlExecutor.execute(() -> cancelDiscoveryOnWorker(previous));
-                } catch (RejectedExecutionException rejected) {
-                    reportCleanupFailure(rejected);
-                }
-            }
-            request.complete(ERROR, null);
-            return;
-        }
-        request.registerCancellationCallback(() -> finishDiscovery(operation, false, true));
-        if (!mainHandler.post(() -> setupDiscoveryOnMain(operation))) {
-            finishDiscovery(operation, false, false);
-        }
-    }
-
-    private void setupDiscoveryOnMain(final DiscoveryOperation operation) {
-        if (operation.request.isDeadlineExpired()) operation.request.cancel();
-        if (operation.request.isComplete() || activeDiscovery.get() != operation) {
-            finishDiscovery(operation, false, false);
-            return;
-        }
-        final totalcross.android.Loader loader = Launcher4A.loader;
-        if (loader == null) {
-            finishDiscovery(operation, false, false);
-            return;
-        }
-        operation.owner = loader;
-        BroadcastReceiver receiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                if (intent == null) return;
-                String action = intent.getAction();
-                if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
-                    operation.discoveryFinished = true;
-                    if (operation.finished.get() || operation.request.isComplete() || shuttingDown.get()) return;
-                    if (operation.pendingDeviceQueries.get() == 0) finishDiscovery(operation, true, false);
-                    return;
-                }
-                if (operation.finished.get() || operation.request.isComplete() || shuttingDown.get()) return;
-                if (BluetoothDevice.ACTION_FOUND.equals(action)) {
-                    final BluetoothDevice device;
-                    try {
-                        device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                    } catch (RuntimeException invalidDevice) {
-                        return;
-                    }
-                    if (device == null || operation.finished.get() || operation.discoveryFinished) return;
-                    operation.pendingDeviceQueries.incrementAndGet();
-                    try {
-                        connectionExecutor.execute(() -> {
-                            try {
-                                if (operation.finished.get()) return;
-                                String address = device.getAddress();
-                                address = normalizeBluetoothAddressOrNull(address);
-                                if (address == null) return;
-                                String name = device.getName();
-                                synchronized (operation.found) {
-                                    operation.found.put(address, name == null ? "" : name);
-                                }
-                            } catch (RuntimeException invalidDevice) {
-                                // Discovery can deliver a device that disappears before it is queried.
-                            } finally {
-                                if (operation.pendingDeviceQueries.decrementAndGet() == 0
-                                        && operation.discoveryFinished) {
-                                    finishDiscovery(operation, true, false);
-                                }
-                            }
-                        });
-                    } catch (RejectedExecutionException ignored) {
-                        if (operation.pendingDeviceQueries.decrementAndGet() == 0
-                                && operation.discoveryFinished) {
-                            finishDiscovery(operation, true, false);
-                        }
-                    }
-                }
-            }
-        };
-        operation.receiver = receiver;
-        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
-        try {
-            loader.registerReceiver(receiver, filter);
-            operation.receiverRegistered.set(true);
-        } catch (RuntimeException failure) {
-            finishDiscovery(operation, false, false);
-            return;
-        }
-        operation.startRequested = true;
-        try {
-            discoveryControlExecutor.execute(() -> startDiscoveryOnWorker(operation));
-        } catch (RejectedExecutionException rejected) {
-            finishDiscovery(operation, false, false);
-        }
-    }
-
-    private void startDiscoveryOnWorker(DiscoveryOperation operation) {
-        boolean completeWithError = false;
-        RuntimeException startFailure = null;
-        RuntimeException cancelFailure = null;
-        if (operation.request.isDeadlineExpired()) operation.request.cancel();
-        operation.transitionLock.lock();
-        try {
-            boolean cancelledBeforeStart = operation.cancelRequested.get() || operation.finished.get()
-                    || operation.request.isComplete() || shuttingDown.get()
-                    || activeDiscovery.get() != operation || operation.state != DiscoveryState.NOT_STARTED;
-            if (cancelledBeforeStart) {
-                operation.state = DiscoveryState.FINISHED;
-                completeWithError = true;
-            } else {
-                operation.state = DiscoveryState.STARTING;
-                boolean started = false;
-                try {
-                    started = operation.adapter.startDiscovery();
-                } catch (RuntimeException failure) {
-                    startFailure = failure;
-                }
-
-                boolean cancelledDuringStart = operation.cancelRequested.get() || operation.request.isCancelled()
-                        || shuttingDown.get() || activeDiscovery.get() != operation;
-                if (cancelledDuringStart || startFailure != null || !started) {
-                    operation.state = DiscoveryState.CANCELLING;
-                    if (activeDiscovery.get() == operation)
-                        cancelFailure = cancelAdapterDiscoveryLocked(operation);
-                    if (cancelFailure != null) operation.cancelRequested.set(true);
-                    operation.state = cancelFailure == null ? DiscoveryState.FINISHED : DiscoveryState.CANCELLING;
-                    completeWithError = cancelledDuringStart || startFailure != null || !started;
-                } else if (operation.finishStateRequested.get() || operation.finished.get()) {
-                    operation.state = DiscoveryState.FINISHED;
-                } else {
-                    operation.state = DiscoveryState.STARTED;
-                }
-            }
-        } finally {
-            operation.transitionLock.unlock();
-        }
-
-        if (startFailure != null) reportCleanupFailure(startFailure);
-        if (cancelFailure != null) reportCleanupFailure(cancelFailure);
-        if (operation.cancelRequested.get()) cancelDiscoveryOnWorker(operation);
-        else if (operation.finished.get() && operation.finishStateRequested.get())
-            completeDiscoveryCleanup(operation, operation.finishSuccess);
-        if (completeWithError) finishDiscovery(operation, false, false);
-    }
-
-    private RuntimeException cancelAdapterDiscoveryLocked(DiscoveryOperation operation) {
-        try {
-            if (!operation.adapter.isDiscovering()) return null;
-            boolean accepted = operation.adapter.cancelDiscovery();
-            if (!accepted && operation.adapter.isDiscovering())
-                return new IllegalStateException("Android Bluetooth discovery cancellation was rejected");
-            return null;
-        } catch (RuntimeException failure) {
-            return failure;
-        }
-    }
-
-    private void finishDiscovery(final DiscoveryOperation operation, final boolean success,
-                                 final boolean cancelDiscovery) {
-        if (cancelDiscovery) {
-            operation.cancelRequested.set(true);
-            if (operation.startRequested) cancelDiscoveryAsync(operation);
-        }
-        operation.finishSuccess = success && !cancelDiscovery;
-        if (!operation.finished.compareAndSet(false, true)) return;
-        if (cancelDiscovery && operation.startRequested) return;
-        if (markDiscoveryStateFinishedWithoutWaiting(operation))
-            completeDiscoveryCleanup(operation, operation.finishSuccess);
-    }
-
-    private void completeDiscoveryCleanup(final DiscoveryOperation operation, final boolean success) {
-        if (!operation.cleanupStarted.compareAndSet(false, true)) return;
-        Runnable cleanup = () -> {
-            BroadcastReceiver receiver = operation.receiver;
-            totalcross.android.Loader loader = operation.owner;
-            if (receiver != null && loader != null && operation.receiverRegistered.compareAndSet(true, false)) {
-                try {
-                    loader.unregisterReceiver(receiver);
-                } catch (RuntimeException ignored) {
-                    // The receiver may already have been unregistered by Activity teardown.
-                }
-            }
-            activeDiscovery.compareAndSet(operation, null);
-            if (!operation.request.isComplete()) {
-                operation.request.complete(success ? NO_ERROR : ERROR,
-                        success ? discoveryResults(operation) : null);
-            }
-        };
-        if (Looper.myLooper() == Looper.getMainLooper()) cleanup.run();
-        else if (!mainHandler.post(cleanup)) cleanup.run();
-    }
-
-    private void cancelDiscoveryAsync(final DiscoveryOperation operation) {
-        if (!operation.cancelEnqueued.compareAndSet(false, true)) return;
-        try {
-            discoveryControlExecutor.execute(() -> cancelDiscoveryOnWorker(operation));
-        } catch (RejectedExecutionException rejected) {
-            reportCleanupFailure(rejected);
-            boolean canFinish = false;
-            if (operation.transitionLock.tryLock()) {
-                try {
-                    if (operation.state == DiscoveryState.NOT_STARTED) {
-                        operation.state = DiscoveryState.FINISHED;
-                        canFinish = true;
-                    } else if (operation.state == DiscoveryState.FINISHED) {
-                        canFinish = true;
-                    } else {
-                        operation.state = DiscoveryState.CANCELLING;
-                    }
-                } finally {
-                    operation.transitionLock.unlock();
-                }
-            }
-            if (canFinish) {
-                completeDiscoveryCleanup(operation, false);
-            } else if (operation.cancelFallbackEnqueued.compareAndSet(false, true)) {
-                enqueuePendingCleanup(operation, () -> {
-                    cancelDiscoveryOnWorker(operation);
-                    return true;
-                }, closed -> {
-                    if (!closed) reportCleanupFailure(new IllegalStateException(
-                            "Bluetooth discovery cancellation remains unresolved"));
-                });
-            }
-        }
-    }
-
-    private void cancelDiscoveryOnWorker(DiscoveryOperation operation) {
-        RuntimeException failure = null;
-        boolean resolved = false;
-        operation.transitionLock.lock();
-        try {
-            if (operation.state == DiscoveryState.NOT_STARTED) {
-                operation.state = DiscoveryState.FINISHED;
-                resolved = true;
-            } else if (operation.state == DiscoveryState.FINISHED) {
-                resolved = true;
-            } else if (activeDiscovery.get() == operation) {
-                operation.state = DiscoveryState.CANCELLING;
-                failure = cancelAdapterDiscoveryLocked(operation);
-                if (failure == null) {
-                    operation.state = DiscoveryState.FINISHED;
-                    resolved = true;
-                }
-            } else {
-                operation.state = DiscoveryState.FINISHED;
-                resolved = true;
-            }
-        } finally {
-            operation.transitionLock.unlock();
-        }
-        if (failure != null) {
-            reportCleanupFailure(failure);
-            if (operation.cancellationAttempts.incrementAndGet() <= 1) {
-                try {
-                    discoveryControlExecutor.execute(() -> cancelDiscoveryOnWorker(operation));
-                    return;
-                } catch (RejectedExecutionException rejected) {
-                    reportCleanupFailure(rejected);
-                }
-            }
-            // Keep activeDiscovery reserved when Android may still be discovering.
-            // A subsequent explicit request may retry the unresolved cancellation.
-            return;
-        }
-        if (resolved) completeDiscoveryCleanup(operation, false);
-    }
-
-    private boolean markDiscoveryStateFinishedWithoutWaiting(DiscoveryOperation operation) {
-        if (!operation.transitionLock.tryLock()) {
-            operation.finishStateRequested.set(true);
-            return false;
-        }
-        try {
-            if (operation.cancelRequested.get() && operation.startRequested
-                    && operation.state != DiscoveryState.NOT_STARTED
-                    && operation.state != DiscoveryState.FINISHED) {
-                operation.state = DiscoveryState.CANCELLING;
-                return false;
-            }
-            operation.state = DiscoveryState.FINISHED;
-            return true;
-        } finally {
-            operation.transitionLock.unlock();
-        }
-    }
-
-    private static String[] discoveryResults(DiscoveryOperation operation) {
-        List<String> results = new ArrayList<>();
-        synchronized (operation.found) {
-            for (Map.Entry<String, String> device : operation.found.entrySet()) {
-                results.add(device.getKey() + "|" + device.getValue());
-            }
-        }
-        return results.isEmpty() ? null : results.toArray(new String[0]);
     }
 
     private static final class ParsedAddress {
@@ -1573,7 +937,7 @@ public class Level5Impl extends Level5 {
         final BluetoothSession connectingSession = session;
         request.registerCancellationCallback(() -> invalidateSession(connectingSession, connectingSession.socket));
         boolean connectedSuccessfully = false;
-        BondMonitor bondMonitor = null;
+        BluetoothBondMonitor bondMonitor = null;
         BluetoothSocket pendingSocket = null;
         try {
             if (request.isComplete()) return;
@@ -1589,7 +953,7 @@ public class Level5Impl extends Level5 {
             BluetoothDevice device = adapter.getRemoteDevice(formatAddress(parsed.normalized));
             if (request.isDeadlineExpired()) request.cancel();
             if (request.isComplete()) return;
-            bondMonitor = new BondMonitor(device, request, Launcher4A.loader);
+            bondMonitor = new BluetoothBondMonitor(device, request, Launcher4A.loader, mainHandler);
             if (!bondMonitor.register()) {
                 request.complete(ERROR, null);
                 return;
@@ -1605,8 +969,8 @@ public class Level5Impl extends Level5 {
                 pendingSocket = null;
                 if (request.isComplete()) return;
                 bondMonitor.reconcileAfterConnectionFailure();
-                BondOutcome outcome = bondMonitor.currentOutcome();
-                if (outcome == BondOutcome.AUTHENTICATION_FAILED) {
+                BluetoothBondMonitor.Outcome outcome = bondMonitor.currentOutcome();
+                if (outcome == BluetoothBondMonitor.Outcome.AUTHENTICATION_FAILED) {
                     request.complete(INVALID_PASSWORD, null);
                     return;
                 }
@@ -1616,11 +980,11 @@ public class Level5Impl extends Level5 {
                     return;
                 }
                 outcome = bondMonitor.awaitOutcome();
-                if (outcome == BondOutcome.AUTHENTICATION_FAILED) {
+                if (outcome == BluetoothBondMonitor.Outcome.AUTHENTICATION_FAILED) {
                     request.complete(INVALID_PASSWORD, null);
                     return;
                 }
-                if (outcome != BondOutcome.BONDED || request.isComplete()) {
+                if (outcome != BluetoothBondMonitor.Outcome.BONDED || request.isComplete()) {
                     AndroidUtils.handleException(firstFailure, false);
                     request.complete(ERROR, null);
                     return;
@@ -1637,7 +1001,7 @@ public class Level5Impl extends Level5 {
                     closeSocketAsync(pendingSocket);
                     pendingSocket = null;
                     AndroidUtils.handleException(retryFailure, false);
-                    request.complete(bondMonitor.currentOutcome() == BondOutcome.AUTHENTICATION_FAILED
+                    request.complete(bondMonitor.currentOutcome() == BluetoothBondMonitor.Outcome.AUTHENTICATION_FAILED
                             ? INVALID_PASSWORD : ERROR, null);
                     return;
                 }
@@ -1876,7 +1240,7 @@ public class Level5Impl extends Level5 {
         }
     }
 
-    private static void reportCleanupFailure(Throwable failure) {
+    static void reportCleanupFailure(Throwable failure) {
         try {
             AndroidUtils.handleException(failure, false);
         } catch (Throwable ignored) {
@@ -2318,11 +1682,7 @@ public class Level5Impl extends Level5 {
         super.shutdown();
         for (BluetoothRequest request : outstandingRequests.keySet()) request.cancel();
 
-        DiscoveryOperation discovery = activeDiscovery.get();
-        if (discovery != null) finishDiscovery(discovery, false, true);
-
-        DiscoverabilityOperation discoverability = activeDiscoverability.getAndSet(null);
-        if (discoverability != null) discoverability.request.cancel();
+        discovery.shutdown();
 
         ServerAcceptOperation accept = activeServerAccept.get();
         if (accept != null) cancelServerAccept(accept);
