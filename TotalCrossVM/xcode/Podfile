@@ -2,7 +2,7 @@ workspace 'TotalCross'
 
 use_modular_headers!
 
-platform :ios, '12.1'
+platform :ios, '13.0'
 target 'TotalCross' do
   project 'TotalCross.xcodeproj'
   pod 'FirebaseMessaging', '10.8.0'
