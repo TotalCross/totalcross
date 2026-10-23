@@ -40,6 +40,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.ResultReceiver;
 import android.os.StatFs;
+import android.os.SystemClock;
 import android.os.Vibrator;
 import android.provider.Settings;
 import android.telephony.CellLocation;
@@ -545,11 +546,76 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    }
 
    private boolean backDownReceived = false;
+   // Suppress echoes between the legacy key path and the activity dispatcher.
+   private static final long BACK_EVENT_DEDUPLICATION_WINDOW_MS = 250;
+   private long lastLegacyBackEventUptime = Long.MIN_VALUE;
+   private long lastActivityBackEventUptime = Long.MIN_VALUE;
+   private boolean legacyBackKeyDown;
+
+   private boolean isBackEventRecent(long previousEventUptime, long now)
+   {
+      return previousEventUptime != Long.MIN_VALUE
+            && now - previousEventUptime <= BACK_EVENT_DEDUPLICATION_WINDOW_MS;
+   }
+
+   private boolean claimLegacyBackEvent()
+   {
+      long now = SystemClock.uptimeMillis();
+      boolean dispatch = !isBackEventRecent(lastActivityBackEventUptime, now);
+      lastLegacyBackEventUptime = now;
+      return dispatch;
+   }
+
+   private boolean claimActivityBackEvent()
+   {
+      long now = SystemClock.uptimeMillis();
+      if (legacyBackKeyDown || isBackEventRecent(lastLegacyBackEventUptime, now))
+         return false;
+      lastActivityBackEventUptime = now;
+      return true;
+   }
+
+   public boolean dispatchBackFromActivity()
+   {
+      if (!claimActivityBackEvent())
+         return true;
+
+      if (!hardwareKeyboardIsVisible && (sipVisible || sipWasOpen))
+      {
+         setSIP(SIP_HIDE, false);
+         sipWasOpen = false;
+         backDownReceived = false;
+         return true;
+      }
+
+      if (eventThread != null)
+      {
+         eventThread.pushEvent(KEY_PRESS, 0, KeyEvent.KEYCODE_BACK, 0, KeyEvent.FLAG_FROM_SYSTEM, 0);
+         return true;
+      }
+      return false;
+   }
    
    public boolean onKey(View v, int keyCode, KeyEvent event)
    {
       if (Scanner4A.scanner != null && Scanner4A.scanner.checkScanner(event))
          return false;
+
+      boolean isLegacyBackDown = keyCode == KeyEvent.KEYCODE_BACK
+            && event.getAction() == KeyEvent.ACTION_DOWN;
+      boolean isLegacyBackUp = keyCode == KeyEvent.KEYCODE_BACK
+            && event.getAction() == KeyEvent.ACTION_UP;
+      boolean dispatchBackKey = true;
+      if (isLegacyBackDown)
+      {
+         dispatchBackKey = !legacyBackKeyDown && claimLegacyBackEvent();
+         legacyBackKeyDown = true;
+      }
+      if (isLegacyBackUp)
+      {
+         legacyBackKeyDown = false;
+         lastLegacyBackEventUptime = SystemClock.uptimeMillis();
+      }
 
       if (keyCode == KeyEvent.KEYCODE_BACK) // guich@tc130: if the user pressed the back key on the SIP, don't pass it to the application
       {
@@ -622,7 +688,8 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
                alert("Key code: " + keyCode + ", Modifier: " + state+", flags: "+flags);
             if ((flags & KeyEvent.FLAG_FROM_SYSTEM) != 0)
                state |= 8;
-            eventThread.pushEvent(KEY_PRESS, c, keyCode, 0, state, 0);
+            if (keyCode != KeyEvent.KEYCODE_BACK || dispatchBackKey)
+               eventThread.pushEvent(KEY_PRESS, c, keyCode, 0, state, 0);
             break;
          case KeyEvent.ACTION_MULTIPLE: // unicode chars
             String str = event.getCharacters();

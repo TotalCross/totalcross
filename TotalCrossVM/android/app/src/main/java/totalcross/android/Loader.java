@@ -36,6 +36,7 @@ import android.view.inputmethod.*;
 import android.webkit.MimeTypeMap;
 import android.widget.*;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
@@ -99,6 +100,14 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
    public void onCreate(Bundle savedInstanceState)
    {
     super.onCreate(savedInstanceState);
+      getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+         @Override
+         public void handleOnBackPressed() {
+            Launcher4A launcher = Launcher4A.instance;
+            if (launcher == null || !launcher.dispatchBackFromActivity())
+               finish();
+         }
+      });
       try
       {
       AndroidUtils.initialize(this);
