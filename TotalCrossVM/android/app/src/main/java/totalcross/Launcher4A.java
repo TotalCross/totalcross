@@ -41,6 +41,7 @@ import android.os.ResultReceiver;
 import android.os.StatFs;
 import android.os.SystemClock;
 import android.os.Vibrator;
+import android.system.OsConstants;
 import android.provider.Settings;
 import android.telephony.CellLocation;
 import android.telephony.PhoneStateListener;
@@ -1537,6 +1538,25 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    
    public static int fileGetFreeSpace(String fileName)
    {
+      try {
+         return fileGetFreeSpaceOnce(fileName);
+      } catch (SecurityException denied) {
+         if (AndroidPermissionManager.requestFileAccessBlocking() != AndroidPermissionManager.GRANTED) {
+            return -OsConstants.EACCES;
+         }
+         try {
+            return fileGetFreeSpaceOnce(fileName);
+         } catch (SecurityException deniedAgain) {
+            return -OsConstants.EACCES;
+         } catch (IllegalArgumentException missingPath) {
+            return -OsConstants.ENOENT;
+         }
+      } catch (IllegalArgumentException missingPath) {
+         return -OsConstants.ENOENT;
+      }
+   }
+
+   private static int fileGetFreeSpaceOnce(String fileName) {
       StatFs sfs = new StatFs(fileName);
       long size = sfs.getFreeBlocks() * (long)sfs.getBlockSize();
       if (size > 2147483647) // limit to 2 GB, since we're returning an integer
