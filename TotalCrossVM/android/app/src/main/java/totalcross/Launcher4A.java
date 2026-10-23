@@ -1187,12 +1187,13 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
 
       if (command.equals("bugreport"))
          return createBugreport() ? 1 : 0;
-      if (command.equals("viewer"))
+      if (command.equalsIgnoreCase("viewer"))
       {
          if (args == null)
             return -1;
-         String argl = args.toLowerCase();
-         if ((AndroidUtils.isImage(argl) || argl.endsWith(".pdf")) && !new java.io.File(args).exists())
+
+         File file = ViewerFilePath.fromArgument(args);
+         if (file != null && !file.isFile())
             return -2;
       }
       Message msg = loader.achandler.obtainMessage();
