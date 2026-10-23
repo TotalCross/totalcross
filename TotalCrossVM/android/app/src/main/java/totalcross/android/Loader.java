@@ -283,13 +283,9 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
       try {
       File f = new File(imagePath);
         ExifInterface exif;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-          try (android.os.ParcelFileDescriptor descriptor = contentResolver.openFileDescriptor(Uri.fromFile(f), "r")) {
-            if (descriptor == null) return;
-            exif = new ExifInterface(descriptor.getFileDescriptor());
-          }
-        } else {
-          exif = new ExifInterface(f.getPath());
+        try (android.os.ParcelFileDescriptor descriptor = contentResolver.openFileDescriptor(Uri.fromFile(f), "r")) {
+          if (descriptor == null) return;
+          exif = new ExifInterface(descriptor.getFileDescriptor());
         }
       int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
       AndroidUtils.debug(imagePath + " -> " + orientation);
@@ -395,13 +391,9 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
   }
    
    private Uri getFileUri4Intent(File file) {
-	   if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
-      	 return FileProvider.getUriForFile(this,
- 		         "com.totalcross." + Launcher4A.instance.tczname + ".fileprovider",
- 		        file);
-	   } else { 
-		   return Uri.fromFile(file);
-	   } 
+      return FileProvider.getUriForFile(this,
+              "com.totalcross." + Launcher4A.instance.tczname + ".fileprovider",
+              file);
    }
 
   private String imageFN;
@@ -2090,33 +2082,11 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
   IntentFilter intentFilterData = new IntentFilter(Telephony.Sms.Intents.DATA_SMS_RECEIVED_ACTION);
 
   BroadcastReceiver mReceiver = new BroadcastReceiver() {
-
     @Override
     public void onReceive(Context context, Intent intent) {
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-        for (android.telephony.SmsMessage smsMessage : Telephony.Sms.Intents.getMessagesFromIntent(intent)) {
-          Launcher4A.nativeSmsReceived(smsMessage.getDisplayOriginatingAddress(), smsMessage.getDisplayMessageBody(),
-              smsMessage.getUserData());
-        }
-      } else {
-        // Get the data (SMS data) bound to intent
-        Bundle bundle = intent.getExtras();
-
-        android.telephony.SmsMessage[] msgs = null;
-
-        if (bundle != null) {
-          // Retrieve the SMS Messages received
-          Object[] pdus = (Object[]) bundle.get("pdus");
-          msgs = new android.telephony.SmsMessage[pdus.length];
-
-          // For every SMS message received
-          for (int i = 0; i < msgs.length; i++) {
-            // Convert Object array
-            msgs[i] = android.telephony.SmsMessage.createFromPdu((byte[]) pdus[i]);
-            Launcher4A.nativeSmsReceived(msgs[i].getDisplayOriginatingAddress(), msgs[i].getDisplayMessageBody(),
-                msgs[i].getUserData());
-          }
-        }
+      for (android.telephony.SmsMessage message : Telephony.Sms.Intents.getMessagesFromIntent(intent)) {
+        Launcher4A.nativeSmsReceived(message.getDisplayOriginatingAddress(),
+            message.getDisplayMessageBody(), message.getUserData());
       }
     }
   };
@@ -2147,20 +2117,12 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
   
   private PowerManager powerManager;
   
-  /**
-   * On Android 4.4W+, it will correctly return if the device is awake and ready
-   * for user interaction
-   * 
-   * @return True if the device is in an interactive state.
-   */
+  /** Returns whether the device is awake and available for user interaction. */
   public boolean isInteractive() {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
-      if (powerManager == null) {
-        powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
-      }
-      return powerManager.isInteractive();
+    if (powerManager == null) {
+      powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
     }
-    return !Launcher4A.appPaused;
+    return powerManager.isInteractive();
   }
   
     public static interface PermissionRequestCodes {
