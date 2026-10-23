@@ -454,11 +454,32 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
       } else {
           directory = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
       }
-      if (directory == null || (!directory.exists() && !directory.mkdirs())) {
-          throw new IOException("Unable to create the camera output directory.");
-      }
+      ensureCameraOutputDirectory(directory);
       capturedCameraFile = File.createTempFile("TotalCross_", ".jpg", directory);
       return getFileUri4Intent(capturedCameraFile);
+  }
+
+  private static void ensureCameraOutputDirectory(File directory) throws IOException {
+      if (directory == null) {
+          throw new IOException("Unable to create the camera output directory.");
+      }
+      android.system.StructStat stat;
+      try {
+          stat = Os.stat(directory.getAbsolutePath());
+      } catch (ErrnoException failure) {
+          if (failure.errno != OsConstants.ENOENT) {
+              throw new IOException("Unable to access the camera output directory.", failure);
+          }
+          if (directory.mkdirs()) return;
+          try {
+              stat = Os.stat(directory.getAbsolutePath());
+          } catch (ErrnoException retryFailure) {
+              throw new IOException("Unable to create the camera output directory.", retryFailure);
+          }
+      }
+      if ((stat.st_mode & OsConstants.S_IFMT) != OsConstants.S_IFDIR) {
+          throw new IOException("The camera output path is not a directory.");
+      }
   }
 
   private void launchExternalCamera(int cameraType, boolean permissionRetry) {
@@ -747,7 +768,7 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
         try {
             destination = new File(destinationPath).getAbsoluteFile();
             parent = destination.getParentFile();
-            if (parent == null || !parent.isDirectory()) {
+            if (parent == null) {
                 IOException closeFailure = closeSource(input);
                 return new UriCopyResult(false, false, closeFailure == null
                         ? new IOException("The selected image destination directory is unavailable.") : closeFailure);
