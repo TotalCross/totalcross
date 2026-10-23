@@ -1,5 +1,6 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
@@ -78,11 +79,14 @@ static void cameraClick(NMParams p)
 
    if (env)                      
    {
-	   jmethodID method = (*env)->GetStaticMethodID(env, applicationClass, "requestCameraPermission", "()I");
-	   jint result = (*env)->CallStaticIntMethod(env, applicationClass, method);
-	   if (result <= 0) {
-		   p->retO = null;
-		   return;
+	   // Gallery selection and video playback do not operate camera hardware.
+	   if (cameraType != 3 && cameraType != 4) {
+	      jmethodID method = (*env)->GetStaticMethodID(env, applicationClass, "requestCameraPermission", "()I");
+	      jint result = (*env)->CallStaticIntMethod(env, applicationClass, method);
+	      if (result <= 0) {
+		      p->retO = null;
+		      return;
+	      }
 	   }
 	   
       char fileName[MAX_PATHNAME];
@@ -122,7 +126,7 @@ static void cameraClick(NMParams p)
       }
       CharP2JCharPBuf(fileName,len,jfn,true);
       s = (*env)->NewString(env,jfn,len);
-      (*env)->CallStaticVoidMethod(env, applicationClass, jshowCamera, s,quality,width,height, (jboolean)allowRotation,cameraType, videoTimeLimit, targetFps, bitrate); 
+      (*env)->CallStaticVoidMethod(env, applicationClass, jshowCamera, s,quality,width,height, (jboolean)allowRotation,cameraType, videoTimeLimit, targetFps, bitrate, Camera_captureMode(obj));
       for (takingPicture = true; takingPicture;) // block vm until the picture is taken
          Sleep(250);
       switch (code)

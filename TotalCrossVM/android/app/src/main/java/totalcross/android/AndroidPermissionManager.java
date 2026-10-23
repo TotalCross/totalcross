@@ -5,6 +5,7 @@
 package totalcross.android;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -40,17 +41,17 @@ public final class AndroidPermissionManager {
     public static final int PENDING = 0;
     public static final int GRANTED = 1;
 
-    private static final int REQUEST_RUNTIME = 0x5201;
-    private static final int REQUEST_ALL_FILES = 0x5202;
-    private static final int REQUEST_UNKNOWN_SOURCES = 0x5203;
+    private static final int FIRST_OPERATION_REQUEST = 0x6000;
+    private static final int LAST_OPERATION_REQUEST = 0x6FFF;
     private static final long REQUEST_TIMEOUT_MS = 120_000L;
     private static final Handler MAIN = new Handler(Looper.getMainLooper());
     private static final AtomicLong NEXT_ID = new AtomicLong();
     private static final Map<String, Operation> pending = new HashMap<>();
     private static final ArrayDeque<Operation> queue = new ArrayDeque<>();
-    private static WeakReference<Loader> host = new WeakReference<>(null);
+    private static WeakReference<Activity> host = new WeakReference<>(null);
     private static Operation active;
     private static Map<String, Boolean> deniedFileAccessSnapshot;
+    private static int nextRequestCode = FIRST_OPERATION_REQUEST;
 
     public enum MediaAccess {
         FULL,
@@ -109,7 +110,7 @@ public final class AndroidPermissionManager {
                 }
             }
             this.permissions = new ArrayList<>(ordered);
-            this.key = type.name() + ":" + String.join(",", this.permissions);
+            this.key = type.name() + ":" + (explicit ? "explicit:" : "") + String.join(",", this.permissions);
         }
     }
 
@@ -131,6 +132,8 @@ public final class AndroidPermissionManager {
         int stageIndex;
         long id;
         boolean authorizationChangedBeforeStart;
+        int pendingRequestCode;
+        StageType waitingFor;
 
         Operation(Plan plan) {
             this.plan = plan;
@@ -140,7 +143,7 @@ public final class AndroidPermissionManager {
     private AndroidPermissionManager() {
     }
 
-    static void attach(Loader activity) {
+    static void attach(Activity activity) {
         synchronized (pending) {
             host = new WeakReference<>(activity);
         }
@@ -182,15 +185,18 @@ public final class AndroidPermissionManager {
         }
         CountDownLatch latch = new CountDownLatch(1);
         final Result[] result = new Result[1];
-        submit(plan, completed -> {
+        Callback waiter = completed -> {
             result[0] = completed;
             latch.countDown();
-        });
+        };
+        submit(plan, waiter);
         try {
             if (!latch.await(REQUEST_TIMEOUT_MS + 5_000L, TimeUnit.MILLISECONDS)) {
+                cancelWaiter(plan.key, waiter);
                 return DENIED;
             }
         } catch (InterruptedException interrupted) {
+            cancelWaiter(plan.key, waiter);
             Thread.currentThread().interrupt();
             return DENIED;
         }
@@ -205,7 +211,7 @@ public final class AndroidPermissionManager {
     private static void submit(Plan plan, Callback callback) {
         Callback effectiveCallback = callback == null ? result -> { } : callback;
         Runnable enqueue = () -> {
-            Loader activity = currentHost();
+            Activity activity = currentHost();
             if (activity == null) {
                 effectiveCallback.onComplete(new Result(false, false, MediaAccess.DENIED));
                 return;
@@ -229,6 +235,18 @@ public final class AndroidPermissionManager {
         }
     }
 
+    private static void cancelWaiter(String key, Callback waiter) {
+        MAIN.post(() -> {
+            Operation operation = pending.get(key);
+            if (operation == null) return;
+            operation.callbacks.remove(waiter);
+            if (operation.callbacks.isEmpty() && operation != active) {
+                queue.remove(operation);
+                pending.remove(key);
+            }
+        });
+    }
+
     private static void startNext() {
         if (Looper.myLooper() != Looper.getMainLooper()) {
             MAIN.post(AndroidPermissionManager::startNext);
@@ -237,7 +255,7 @@ public final class AndroidPermissionManager {
         if (active != null) {
             return;
         }
-        Loader activity = currentHost();
+        Activity activity = currentHost();
         if (activity == null) {
             return;
         }
@@ -278,7 +296,7 @@ public final class AndroidPermissionManager {
         advance();
     }
 
-    private static List<Stage> buildStages(Loader activity, Plan plan) {
+    private static List<Stage> buildStages(Activity activity, Plan plan) {
         List<Stage> stages = new ArrayList<>();
         switch (plan.type) {
             case RUNTIME:
@@ -302,7 +320,7 @@ public final class AndroidPermissionManager {
         return stages;
     }
 
-    private static List<String> relevantPermissions(Loader activity, Plan plan) {
+    private static List<String> relevantPermissions(Activity activity, Plan plan) {
         Set<String> names = new LinkedHashSet<>();
         if (plan.type == PlanType.RUNTIME) {
             names.addAll(plan.permissions);
@@ -317,7 +335,7 @@ public final class AndroidPermissionManager {
         return new ArrayList<>(names);
     }
 
-    private static Map<String, Boolean> authorizationSnapshot(Loader activity, Plan plan) {
+    private static Map<String, Boolean> authorizationSnapshot(Activity activity, Plan plan) {
         Map<String, Boolean> snapshot = new HashMap<>();
         for (String permission : relevantPermissions(activity, plan)) {
             snapshot.put(permission, isAuthorized(activity, permission));
@@ -325,7 +343,7 @@ public final class AndroidPermissionManager {
         return snapshot;
     }
 
-    private static boolean hasMissingFileAccessPermission(Loader activity) {
+    private static boolean hasMissingFileAccessPermission(Activity activity) {
         for (String permission : mediaPermissionCandidates(activity)) {
             if (isDeclared(activity, permission) && !isAuthorized(activity, permission)) {
                 return true;
@@ -336,7 +354,7 @@ public final class AndroidPermissionManager {
                 && isDeclared(activity, allFiles) && !isAuthorized(activity, allFiles);
     }
 
-    private static List<String> mediaPermissionCandidates(Loader activity) {
+    private static List<String> mediaPermissionCandidates(Activity activity) {
         Set<String> declared = declaredPermissions(activity);
         List<String> candidates = new ArrayList<>();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -361,7 +379,7 @@ public final class AndroidPermissionManager {
     }
 
     private static void advance() {
-        Loader activity = currentHost();
+        Activity activity = currentHost();
         if (active == null || activity == null) {
             finishActive(false);
             return;
@@ -380,9 +398,13 @@ public final class AndroidPermissionManager {
                     active.stageIndex++;
                     continue;
                 }
+                active.pendingRequestCode = allocateRequestCode();
+                active.waitingFor = StageType.RUNTIME;
                 try {
-                    ActivityCompat.requestPermissions(activity, missing.toArray(new String[0]), REQUEST_RUNTIME);
+                    ActivityCompat.requestPermissions(activity, missing.toArray(new String[0]), active.pendingRequestCode);
                 } catch (RuntimeException exception) {
+                    active.pendingRequestCode = 0;
+                    active.waitingFor = null;
                     finishActive(false);
                 }
                 return;
@@ -395,7 +417,7 @@ public final class AndroidPermissionManager {
                 }
                 Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION,
                         Uri.parse("package:" + activity.getPackageName()));
-                if (!canHandle(activity, intent) || !startSettings(activity, intent, REQUEST_ALL_FILES)) {
+                if (!canHandle(activity, intent) || !startSettings(activity, intent, StageType.ALL_FILES)) {
                     active.stageIndex++;
                     continue;
                 }
@@ -408,7 +430,7 @@ public final class AndroidPermissionManager {
             }
             Intent intent = new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
                     Uri.parse("package:" + activity.getPackageName()));
-            if (!canHandle(activity, intent) || !startSettings(activity, intent, REQUEST_UNKNOWN_SOURCES)) {
+            if (!canHandle(activity, intent) || !startSettings(activity, intent, StageType.INSTALL)) {
                 active.stageIndex++;
                 continue;
             }
@@ -417,16 +439,27 @@ public final class AndroidPermissionManager {
         finishActive(true);
     }
 
-    private static boolean startSettings(Loader activity, Intent intent, int requestCode) {
+    private static boolean startSettings(Activity activity, Intent intent, StageType stageType) {
+        int requestCode = allocateRequestCode();
         try {
+            active.pendingRequestCode = requestCode;
+            active.waitingFor = stageType;
             activity.startActivityForResult(intent, requestCode);
             return true;
         } catch (RuntimeException exception) {
+            active.pendingRequestCode = 0;
+            active.waitingFor = null;
             return false;
         }
     }
 
-    private static boolean canHandle(Loader activity, Intent intent) {
+    private static int allocateRequestCode() {
+        int code = nextRequestCode++;
+        if (nextRequestCode > LAST_OPERATION_REQUEST) nextRequestCode = FIRST_OPERATION_REQUEST;
+        return code;
+    }
+
+    private static boolean canHandle(Activity activity, Intent intent) {
         try {
             return intent.resolveActivity(activity.getPackageManager()) != null;
         } catch (RuntimeException exception) {
@@ -435,13 +468,16 @@ public final class AndroidPermissionManager {
     }
 
     static boolean onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        if (requestCode != REQUEST_RUNTIME) {
+        if (active == null || requestCode != active.pendingRequestCode || active.waitingFor != StageType.RUNTIME) {
             return false;
         }
+        long operationId = active.id;
         MAIN.post(() -> {
-            if (active == null) {
+            if (active == null || active.id != operationId || active.pendingRequestCode != requestCode) {
                 return;
             }
+            active.pendingRequestCode = 0;
+            active.waitingFor = null;
             if (active.stageIndex >= active.stages.size()
                     || active.stages.get(active.stageIndex).type != StageType.RUNTIME) {
                 finishActive(false);
@@ -455,18 +491,22 @@ public final class AndroidPermissionManager {
     }
 
     static boolean onActivityResult(int requestCode, int resultCode) {
-        if (requestCode != REQUEST_ALL_FILES && requestCode != REQUEST_UNKNOWN_SOURCES) {
+        if (active == null || requestCode != active.pendingRequestCode
+                || (active.waitingFor != StageType.ALL_FILES && active.waitingFor != StageType.INSTALL)) {
             return false;
         }
+        long operationId = active.id;
+        StageType expected = active.waitingFor;
         MAIN.post(() -> {
-            if (active == null) {
+            if (active == null || active.id != operationId || active.pendingRequestCode != requestCode) {
                 return;
             }
-            StageType expected = requestCode == REQUEST_ALL_FILES ? StageType.ALL_FILES : StageType.INSTALL;
             if (active.stageIndex >= active.stages.size() || active.stages.get(active.stageIndex).type != expected) {
                 finishActive(false);
                 return;
             }
+            active.pendingRequestCode = 0;
+            active.waitingFor = null;
             // Settings Activities do not promise a useful result code. Authorization is re-read.
             active.stageIndex++;
             advance();
@@ -480,7 +520,7 @@ public final class AndroidPermissionManager {
             startNext();
             return;
         }
-        Loader activity = currentHost();
+        Activity activity = currentHost();
         boolean changed = false;
         boolean granted = completedStages;
         if (activity != null) {
@@ -511,6 +551,8 @@ public final class AndroidPermissionManager {
         }
         MediaAccess mediaAccess = activity == null ? MediaAccess.DENIED : getMediaAccess(activity);
         Result result = new Result(granted, changed, mediaAccess);
+        operation.pendingRequestCode = 0;
+        operation.waitingFor = null;
         active = null;
         pending.remove(operation.plan.key);
         for (Callback callback : operation.callbacks) {
@@ -523,15 +565,20 @@ public final class AndroidPermissionManager {
     }
 
     public static boolean isDeclared(String permission) {
-        Loader activity = currentHost();
+        Activity activity = currentHost();
         return activity != null && isDeclared(activity, permission);
     }
 
-    private static boolean isDeclared(Loader activity, String permission) {
+    public static boolean isAuthorized(String permission) {
+        Activity activity = currentHost();
+        return activity != null && isDeclared(activity, permission) && isAuthorized(activity, permission);
+    }
+
+    private static boolean isDeclared(Activity activity, String permission) {
         return declaredPermissions(activity).contains(permission);
     }
 
-    private static Set<String> declaredPermissions(Loader activity) {
+    private static Set<String> declaredPermissions(Activity activity) {
         try {
             PackageInfo info;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -550,7 +597,7 @@ public final class AndroidPermissionManager {
         }
     }
 
-    private static boolean isRuntimePermission(Loader activity, String permission) {
+    private static boolean isRuntimePermission(Activity activity, String permission) {
         if (isSpecial(permission)) {
             return false;
         }
@@ -568,7 +615,7 @@ public final class AndroidPermissionManager {
                 || Manifest.permission.REQUEST_INSTALL_PACKAGES.equals(permission);
     }
 
-    private static boolean isAuthorized(Loader activity, String permission) {
+    private static boolean isAuthorized(Activity activity, String permission) {
         if (Manifest.permission.MANAGE_EXTERNAL_STORAGE.equals(permission)) {
             return Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && Environment.isExternalStorageManager();
         }
@@ -579,13 +626,17 @@ public final class AndroidPermissionManager {
         return ContextCompat.checkSelfPermission(activity, permission) == PackageManager.PERMISSION_GRANTED;
     }
 
-    private static Loader currentHost() {
+    private static Activity currentHost() {
         synchronized (pending) {
-            return host.get();
+            Activity activity = host.get();
+            if (activity == null || activity.isFinishing() || activity.isDestroyed()) {
+                return null;
+            }
+            return activity;
         }
     }
 
-    public static MediaAccess getMediaAccess(Loader activity) {
+    public static MediaAccess getMediaAccess(Activity activity) {
         Set<String> declared = declaredPermissions(activity);
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
             return declared.contains(Manifest.permission.READ_EXTERNAL_STORAGE)
@@ -610,7 +661,7 @@ public final class AndroidPermissionManager {
         return MediaAccess.DENIED;
     }
 
-    private static int targetSdk(Loader activity) {
+    private static int targetSdk(Activity activity) {
         try {
             return activity.getApplicationInfo().targetSdkVersion;
         } catch (RuntimeException exception) {

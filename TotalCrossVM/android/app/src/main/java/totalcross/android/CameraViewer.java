@@ -1,29 +1,26 @@
 // Copyright (C) 2000-2013 SuperWaba Ltda.
-// Copyright (C) 2014-2020 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2014-2021 TotalCross Global Mobile Platform Ltda.
+// Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
 package totalcross.android;
 
-import android.Manifest;
 import android.content.Context;
-import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Matrix;
-import android.net.Uri;
+import android.Manifest;
 import android.os.Bundle;
 import android.util.Size;
 import android.view.ScaleGestureDetector;
+import android.view.Surface;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.camera.core.Camera;
 import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ImageCapture;
 import androidx.camera.core.ImageCaptureException;
-import androidx.camera.core.ImageProxy;
 import androidx.camera.core.Preview;
 import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.camera.video.FileOutputOptions;
@@ -34,15 +31,12 @@ import androidx.camera.video.Recording;
 import androidx.camera.video.VideoCapture;
 import androidx.camera.video.VideoRecordEvent;
 import androidx.camera.view.PreviewView;
-import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.google.common.util.concurrent.ListenableFuture;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.ByteBuffer;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
@@ -60,6 +54,10 @@ public class CameraViewer extends AdjustedInsetsActivity {
     boolean isMovie;
     String fileName;
     int stillQuality, width, height;
+    int captureMode;
+    boolean audioRequired;
+    boolean recordingStartPending;
+    Button captureButton;
 
     boolean allowRotation;
 
@@ -69,6 +67,7 @@ public class CameraViewer extends AdjustedInsetsActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        AndroidPermissionManager.attach(this);
         setContentView(R.layout.main);
         setTitle("");
 
@@ -78,8 +77,10 @@ public class CameraViewer extends AdjustedInsetsActivity {
         width = b.getInt("width");
         height = b.getInt("height");
         allowRotation = b.getBoolean("allowRotation");
+        captureMode = b.getInt("capture_mode", 0);
+        audioRequired = captureMode != 1;
 
-        isMovie = fileName.endsWith(".3gp");
+        isMovie = captureMode != 0;
 
         previewView = findViewById(R.id.previewView);
 
@@ -94,17 +95,19 @@ public class CameraViewer extends AdjustedInsetsActivity {
         });
 
         final Button buttonClick = (Button) findViewById(R.id.buttonClick);
+        captureButton = buttonClick;
         if (isMovie) {
             buttonClick.setText("Start");
             buttonClick.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
                     try {
-                        if (buttonClick.getText() == "Start") {
+                        if (buttonClick.getText().toString().equals("Start")) {
                             buttonClick.setText("Stop");
                             File f = new File(fileName);
-                            recordVideo(f);
+                            requestMicrophoneAndRecord(f);
                         } else {
                             stopRecording();
+                            buttonClick.setText("Start");
                         }
 //                  if (recorder == null) {
 //                     buttonClick.setText("Stop");
@@ -126,8 +129,7 @@ public class CameraViewer extends AdjustedInsetsActivity {
             buttonClick.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
                     try {
-                        OutputStream outStream = getContentResolver().openOutputStream(Uri.fromFile(new File(fileName)));
-                        capturePhoto(outStream);
+                        capturePhoto(new File(fileName), false);
 //                  if (camera == null) // guich@tc130: prevent NPE
 //                     startPreview();
 //                  if (camera != null) {
@@ -159,11 +161,31 @@ public class CameraViewer extends AdjustedInsetsActivity {
         cameraProviderFuture.addListener(() -> {
             try {
                 ProcessCameraProvider cameraProvider = cameraProviderFuture.get();
-                startCameraX(cameraProvider);
+                if (AndroidPermissionManager.isAuthorized(Manifest.permission.CAMERA)) {
+                    startCameraX(cameraProvider);
+                } else {
+                    AndroidPermissionManager.requestRuntime(result -> {
+                        if (result.granted && !isFinishing() && !isDestroyed()) {
+                            startCameraX(cameraProvider);
+                        } else if (!isFinishing() && !isDestroyed()) {
+                            setResult(RESULT_CANCELED);
+                            finish();
+                        }
+                    }, Manifest.permission.CAMERA);
+                }
             } catch (ExecutionException e) {
-                e.printStackTrace();
+                AndroidUtils.handleException(e, false);
+                setResult(RESULT_CANCELED);
+                finish();
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                Thread.currentThread().interrupt();
+                AndroidUtils.handleException(e, false);
+                setResult(RESULT_CANCELED);
+                finish();
+            } catch (RuntimeException failure) {
+                AndroidUtils.handleException(failure, false);
+                setResult(RESULT_CANCELED);
+                finish();
             }
 
         }, getExecutor());
@@ -171,6 +193,24 @@ public class CameraViewer extends AdjustedInsetsActivity {
 
     private Executor getExecutor() {
         return ContextCompat.getMainExecutor(this);
+    }
+
+    @Override
+    protected void onResume() {
+        AndroidPermissionManager.attach(this);
+        super.onResume();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        AndroidPermissionManager.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, android.content.Intent data) {
+        if (AndroidPermissionManager.onActivityResult(requestCode, resultCode)) return;
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
     private void startCameraX(ProcessCameraProvider cameraProvider) {
@@ -191,6 +231,8 @@ public class CameraViewer extends AdjustedInsetsActivity {
                 .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
                 .setFlashMode(ImageCapture.FLASH_MODE_AUTO)
                 .setJpegQuality(stillQuality == 1 ? 75 : stillQuality == 2 ? 85 : 100)
+                .setTargetRotation(allowRotation && previewView.getDisplay() != null
+                        ? previewView.getDisplay().getRotation() : Surface.ROTATION_0)
                 /*
                     We'll keep using setTargetResolution for the time being, because the preferred
                     method using ResolutionSelector, as of now, only allows selecting 4:3 or 16:9
@@ -222,86 +264,126 @@ public class CameraViewer extends AdjustedInsetsActivity {
         enablePinchToZoom(this, camera, previewView);
     }
 
-    private void recordVideo(File f) {
-        if (videoCapture != null) {
-            if (ActivityCompat.checkSelfPermission(
-                    this, Manifest.permission.RECORD_AUDIO) !=
-                    PackageManager.PERMISSION_GRANTED) {
-                return;
+    private void requestMicrophoneAndRecord(File file) {
+        if (recordingStartPending) return;
+        if (!audioRequired) {
+            recordVideo(file, false);
+            return;
+        }
+        recordingStartPending = true;
+        captureButton.setEnabled(false);
+        AndroidPermissionManager.requestRuntime(result -> {
+            recordingStartPending = false;
+            captureButton.setEnabled(true);
+            if (result.granted && !isFinishing()) {
+                recordVideo(file, true);
+            } else {
+                Toast.makeText(this, "Microphone permission is required for audio recording.", Toast.LENGTH_LONG).show();
+                setResult(RESULT_CANCELED);
+                finish();
             }
+        }, Manifest.permission.RECORD_AUDIO);
+    }
 
-            recorder = videoCapture.getOutput()
-                    .prepareRecording(this,
-                            new FileOutputOptions.Builder(f).build())
-                    .withAudioEnabled()
-                    .start(getExecutor(), event -> {
-                        if (event instanceof VideoRecordEvent.Finalize) {
-                            setResult(RESULT_OK);
-                            finish();
-                        }
-                    });
+    private void recordVideo(File file, boolean withAudio) {
+        if (videoCapture == null) {
+            setResult(RESULT_CANCELED);
+            finish();
+            return;
+        }
+        try {
+            androidx.camera.video.PendingRecording pending = videoCapture.getOutput()
+                    .prepareRecording(this, new FileOutputOptions.Builder(file).build());
+            if (withAudio) pending = pending.withAudioEnabled();
+            recorder = pending.start(getExecutor(), event -> {
+                if (event instanceof VideoRecordEvent.Finalize) {
+                    if (isFinishing()) return;
+                    VideoRecordEvent.Finalize finalize = (VideoRecordEvent.Finalize) event;
+                    if (!finalize.hasError() && file.isFile() && file.length() > 0) {
+                        setResult(RESULT_OK);
+                    } else {
+                        if (isFileAccessDenied(finalize.getCause())) requestFileAccessAfterCameraFailure();
+                        if (file.exists() && file.length() == 0) file.delete();
+                        AndroidUtils.handleException(finalize.getCause() == null
+                                ? new IOException("Camera recording failed: " + finalize.getError())
+                                : finalize.getCause(), false);
+                        setResult(RESULT_CANCELED);
+                    }
+                    finish();
+                }
+            });
+        } catch (SecurityException deniedOutput) {
+            if (isFileAccessDenied(deniedOutput)) requestFileAccessAfterCameraFailure();
+            AndroidUtils.handleException(deniedOutput, false);
+            setResult(RESULT_CANCELED);
+            finish();
+        } catch (RuntimeException failure) {
+            AndroidUtils.handleException(failure, false);
+            setResult(RESULT_CANCELED);
+            finish();
         }
     }
 
-    private Bitmap imageProxyToBitmap(ImageProxy image) {
-        ByteBuffer buffer = image.getPlanes()[0].getBuffer();
-        byte[] bytes = new byte[buffer.remaining()];
-        buffer.get(bytes);
-        return BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+    private void capturePhoto(File file, boolean permissionRetry) {
+        if (imageCapture == null) {
+            setResult(RESULT_CANCELED);
+            finish();
+            return;
+        }
+        ImageCapture.OutputFileOptions output = new ImageCapture.OutputFileOptions.Builder(file).build();
+        imageCapture.takePicture(output, getExecutor(), new ImageCapture.OnImageSavedCallback() {
+            @Override
+            public void onImageSaved(@NonNull ImageCapture.OutputFileResults results) {
+                if (file.isFile() && file.length() > 0) {
+                    setResult(RESULT_OK);
+                    finish();
+                } else {
+                    failPhoto(file, new IOException("Camera produced an empty image file."));
+                }
+            }
+
+            @Override
+            public void onError(@NonNull ImageCaptureException exception) {
+                if (!permissionRetry && isFileAccessDenied(exception.getCause())) {
+                    AndroidPermissionManager.requestFileAccess(result -> {
+                        if (result.authorizationChanged && !isFinishing()) capturePhoto(file, true);
+                        else failPhoto(file, exception);
+                    });
+                } else {
+                    failPhoto(file, exception);
+                }
+            }
+        });
     }
 
-    private Bitmap rotateBitmap(Bitmap bitmap, int rotationDegrees) {
-        Matrix matrix = new Matrix();
-        matrix.postRotate(rotationDegrees);
-        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+    private void failPhoto(File file, Throwable failure) {
+        if (file.exists() && file.length() == 0) file.delete();
+        AndroidUtils.handleException(failure, false);
+        setResult(RESULT_CANCELED);
+        finish();
     }
 
-    private void saveBitmap(Bitmap bitmap, OutputStream outStream) throws IOException {
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 85, outStream);
-        outStream.flush();
-        outStream.close();
+    private boolean isFileAccessDenied(Throwable failure) {
+        while (failure != null) {
+            String message = failure.getMessage();
+            if (message != null) {
+                String normalized = message.toLowerCase(java.util.Locale.ROOT);
+                if (normalized.contains("eacces") || normalized.contains("eperm")
+                        || (normalized.contains("permission denied")
+                        && !normalized.contains("camera") && !normalized.contains("microphone"))) return true;
+            }
+            failure = failure.getCause();
+        }
+        return false;
     }
 
-    private void capturePhoto(OutputStream outStream) {
-//      long timeStamp = System.currentTimeMillis();
-//      ContentValues contentValues = new ContentValues();
-//      contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, timeStamp);
-//      contentValues.put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg");
-
-        imageCapture.takePicture(
-                getExecutor(),
-                new ImageCapture.OnImageCapturedCallback() {
-                    @Override
-                    public void onCaptureSuccess(@NonNull ImageProxy image) {
-//                    Toast.makeText(CameraViewer.this,"Saving...",Toast.LENGTH_SHORT).show();
-                        int rotation = image.getImageInfo().getRotationDegrees();
-
-                        // 1. Convert ImageProxy to Bitmap
-                        Bitmap bmp = imageProxyToBitmap(image);
-
-                        // 2. Adjust rotation
-                        bmp = rotateBitmap(bmp, rotation);
-
-                        try {
-                            saveBitmap(bmp, outStream);
-                            setResult(RESULT_OK);
-                            finish();
-                        } catch (IOException e) {
-                            AndroidUtils.handleException(e, false);
-                        }
-
-                        image.close();
-                    }
-
-                    @Override
-                    public void onError(@NonNull ImageCaptureException exception) {
-//                    Toast.makeText(CameraViewer.this,"Error: "+exception.getMessage(),Toast.LENGTH_SHORT).show();
-                        AndroidUtils.handleException(exception, false);
-                        setResult(RESULT_CANCELED);
-                        finish();
-                    }
-                });
-
+    private void requestFileAccessAfterCameraFailure() {
+        AndroidPermissionManager.requestFileAccess(result -> {
+            String message = result.authorizationChanged
+                    ? "File access changed. Start the recording again."
+                    : "Unable to access the selected output file.";
+            Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+        });
     }
 
     private void stopRecording() {
@@ -309,6 +391,12 @@ public class CameraViewer extends AdjustedInsetsActivity {
             recorder.stop();
             recorder = null;
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        stopRecording();
+        super.onDestroy();
     }
 
     /* =========================

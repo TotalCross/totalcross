@@ -852,7 +852,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       loader.achandler.sendMessage(msg);
    }
    
-   static void showCamera(String fileName, int stillQuality, int width, int height, boolean allowRotation, int cameraType, int videoTimeLimit, int targetFps, int bitrate)
+   static void showCamera(String fileName, int stillQuality, int width, int height, boolean allowRotation, int cameraType, int videoTimeLimit, int targetFps, int bitrate, int captureMode)
    {
       Message msg = loader.achandler.obtainMessage();
       Bundle b = new Bundle();
@@ -865,6 +865,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       b.putInt("showCamera.videoTimeLimit", videoTimeLimit);
       b.putInt("showCamera.targetFps", targetFps);
       b.putInt("showCamera.bitrate", bitrate);
+      b.putInt("showCamera.captureMode", captureMode);
       b.putInt("type",Loader.CAMERA);
       msg.setData(b);
       loader.achandler.sendMessage(msg);
