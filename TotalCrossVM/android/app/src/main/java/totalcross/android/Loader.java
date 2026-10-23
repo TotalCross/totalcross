@@ -1061,6 +1061,28 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
     startActivity(Intent.createChooser(intent, null));
   }
 
+  private void openExternalFile(File file) {
+    Uri uri = getFileUri4Intent(file);
+
+    String mimeType = getMimeType(uri, file.getName());
+    if (mimeType == null || mimeType.isEmpty()) {
+      mimeType = "application/octet-stream";
+    }
+
+    Intent intent = new Intent(Intent.ACTION_VIEW);
+    intent.setDataAndType(uri, mimeType);
+    intent.setClipData(ClipData.newRawUri("", uri));
+    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
+    try {
+      startActivity(intent);
+    } catch (ActivityNotFoundException e) {
+      AndroidUtils.debug("No application found to open " + file.getPath()
+          + " (MIME: " + mimeType + ")");
+    }
+  }
+
   // Vm.exec("url","http://www.google.com/search?hl=en&source=hp&q=abraham+lincoln",0,false): launches a url
   // Vm.exec("totalcross.app.UIGadgets",null,0,false): launches another TotalCross' application
   // Vm.exec("viewer","file:///sdcard/G3Assets/541.jpg", 0, true);
@@ -1108,47 +1130,35 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
          else
          if (command.equalsIgnoreCase("viewer"))
          {
-            String argl = args.toLowerCase();
-            if (android.os.Build.VERSION.SDK_INT >= 8 && AndroidUtils.isImage(argl))
+            File file = ViewerFilePath.fromArgument(args);
+            String argl = args.toLowerCase(Locale.ROOT);
+
+            // Preserve the existing image viewer, including its zoom controls.
+            if (file != null && AndroidUtils.isImage(file.getName().toLowerCase(Locale.ROOT)))
             {
-               Intent intent = new Intent(this, Class.forName(totalcrossPKG+".TouchImageViewer"));
-               intent.putExtra("file",args);
+               Intent intent = new Intent(this, Class.forName(totalcrossPKG + ".TouchImageViewer"));
+               intent.putExtra("file", file.getPath());
                if (!wait)
                   startActivityForResult(intent, JUST_QUIT);
                else
                   startActivity(intent);
                return;
             }
-            if (argl.endsWith(".pdf"))
+
+            // PDFs and other local documents use the app registered for their MIME type.
+            if (file != null && !ViewerFilePath.isWebViewerFile(file.getName()))
             {
-               File pdfFile = new File(args);
-               if(pdfFile.exists()) 
-               {
-                   Uri path = getFileUri4Intent(pdfFile);
-                   Intent pdfIntent = new Intent(Intent.ACTION_VIEW);
-                   pdfIntent.setDataAndType(path, "application/pdf");
-                   pdfIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                   pdfIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                   try
-                   {
-                       startActivity(pdfIntent);
-                   }
-                   catch (ActivityNotFoundException e)
-                   {
-                      AndroidUtils.debug("THERE'S NO PDF READER TO OPEN "+args);
-                      e.printStackTrace(); 
-                   }
-               }
+               openExternalFile(file);
             }
             else
             {
                Intent intent;
-               if (argl.indexOf("youtu.be") >= 0 || argl.indexOf("youtube") >= 0)
+               if (argl.contains("youtu.be") || argl.contains("youtube"))
                   intent = new Intent(Intent.ACTION_VIEW, Uri.parse(args));
                else
                {
-                  intent = new Intent(this, Class.forName(totalcrossPKG+".WebViewer"));
-                  intent.putExtra("url",args);
+                  intent = new Intent(this, Class.forName(totalcrossPKG + ".WebViewer"));
+                  intent.putExtra("url", file == null ? args : Uri.fromFile(file).toString());
                }
                if (!wait)
                   startActivityForResult(intent, JUST_QUIT);
@@ -1157,7 +1167,7 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
                return;
             }
          }
-         else if (command.equalsIgnoreCase("share")) {
+                  else if (command.equalsIgnoreCase("share")) {
            shareFile(args);
          }
          else if (command.equalsIgnoreCase("webview") && args != null) {
@@ -1247,7 +1257,7 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
      if (ContentResolver.SCHEME_CONTENT.equals(uri.getScheme())) {
        String mimeType = getContentResolver().getType(uri);
 
-       if (mimeType != null) {
+       if (mimeType != null && !"application/octet-stream".equals(mimeType)) {
          return mimeType;
        }
      }
@@ -1256,15 +1266,16 @@ public class Loader extends AppCompatActivity implements TextToSpeech.OnInitList
          ? fallbackFileName
          : uri.toString();
 
-     String extension = MimeTypeMap.getFileExtensionFromUrl(source);
+     String extension = fallbackFileName != null
+         ? ViewerFilePath.extension(fallbackFileName)
+         : MimeTypeMap.getFileExtensionFromUrl(source);
 
      if (extension == null || extension.isEmpty()) {
        return null;
      }
 
      return MimeTypeMap.getSingleton()
-         .getMimeTypeFromExtension(
-             extension.toLowerCase(Locale.ROOT));
+         .getMimeTypeFromExtension(extension.toLowerCase(Locale.ROOT));
    }
 
    public void onConfigurationChanged(Configuration config)
