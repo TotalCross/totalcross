@@ -64,7 +64,8 @@ def package(depot, index_path, output):
             json.dumps(manifest, indent=2, sort_keys=True) + "\n"
         )
         output.parent.mkdir(parents=True, exist_ok=True)
-        with tarfile.open(str(output), "w:gz") as archive:
+        # Fast compression reduces time on the CI critical path without changing the tar.gz format.
+        with tarfile.open(str(output), "w:gz", compresslevel=1) as archive:
             archive.add(str(pathlib.Path(directory) / "TotalCrossVM"), arcname="TotalCrossVM")
     return {"revision": revision, "entries": len(entries), "bytes": output.stat().st_size, "output": str(output)}
 
