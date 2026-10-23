@@ -156,8 +156,30 @@ jobs:
       if: ${{ steps.select_build_scope.outputs.scope != 'none' }}
       run: tar --exclude=.git -czf "${RUNNER_TEMP}/source-code.tar.gz" .
 
+    - name: Upload source code
+      if: ${{ steps.select_build_scope.outputs.scope != 'none' }}
+      uses: actions/upload-artifact@v7
+      with:
+        name: source-code
+        path: ${{ runner.temp }}/source-code.tar.gz
+        retention-days: 1
+
+  prepare-native-dependencies:
+    if: ${{ needs.checkout-source.outputs.scope == 'full' }}
+    name: Prepare native dependencies
+    needs: checkout-source
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: Download source code
+      uses: actions/download-artifact@v7
+      with:
+        name: source-code
+
+    - name: Extract source code
+      run: tar -xzf source-code.tar.gz
+
     - name: Export dependency overrides
-      if: ${{ steps.select_build_scope.outputs.scope == 'full' }}
       env:
         SQLITE3_RELEASE_TAG_OVERRIDE: ${{ secrets.SQLITE3_RELEASE_TAG }}
         SQLITE3_GITHUB_REPO_OVERRIDE: ${{ secrets.SQLITE3_GITHUB_REPO }}
@@ -196,7 +218,6 @@ jobs:
         done
 
     - name: Cache depot tools
-      if: ${{ steps.select_build_scope.outputs.scope == 'full' }}
       uses: actions/cache@v5
       with:
         path: TotalCrossVM/deps/totalcross-depot-tools
@@ -204,17 +225,14 @@ jobs:
         enableCrossOsArchive: true
 
     - name: Fetch depot tools metadata
-      if: ${{ steps.select_build_scope.outputs.scope == 'full' }}
       run: TotalCrossVM/deps/fetch-depot-tools.sh
 
     - name: Fetch native dependencies
-      if: ${{ steps.select_build_scope.outputs.scope == 'full' }}
       env:
         PREPARED_NATIVE_DEPENDENCIES_INDEX: ${{ runner.temp }}/prepared-native-dependencies-index.jsonl
       run: scripts/prepare-native-dependencies.sh
 
     - name: Package prepared native dependencies
-      if: ${{ steps.select_build_scope.outputs.scope == 'full' }}
       run: |
         args=(
           --depot-dir TotalCrossVM/deps/totalcross-depot-tools
@@ -224,20 +242,11 @@ jobs:
         scripts/package-native-dependencies.py "${args[@]}"
 
     - name: Upload prepared native dependencies
-      if: ${{ steps.select_build_scope.outputs.scope == 'full' }}
       uses: actions/upload-artifact@v7
       with:
         name: prepared-native-dependencies
         path: ${{ runner.temp }}/depot-tools-native-dependencies.tar.gz
         if-no-files-found: error
-        retention-days: 1
-
-    - name: Upload source code
-      if: ${{ steps.select_build_scope.outputs.scope != 'none' }}
-      uses: actions/upload-artifact@v7
-      with:
-        name: source-code
-        path: ${{ runner.temp }}/source-code.tar.gz
         retention-days: 1
 
   generate-native-bridges:
@@ -283,7 +292,7 @@ jobs:
   build-linux:
     if: ${{ needs.checkout-source.outputs.scope == 'full' }}
     name: Build '${{ matrix.project }}'
-    needs: [checkout-source, generate-native-bridges]
+    needs: [checkout-source, prepare-native-dependencies, generate-native-bridges]
     strategy:
       fail-fast: false
       matrix:
@@ -443,7 +452,7 @@ jobs:
     name: Build `linux-arm32v7-cross`
     # Temporarily disabled; remove this condition to re-enable the cross build.
     if: ${{ false }}
-    needs: [checkout-source, generate-native-bridges]
+    needs: [checkout-source, prepare-native-dependencies, generate-native-bridges]
     runs-on: ubuntu-22.04
 
     steps:
@@ -494,7 +503,7 @@ jobs:
   build-windows:
     if: ${{ needs.checkout-source.outputs.scope == 'full' }}
     name: Build `windows`
-    needs: [checkout-source, generate-native-bridges]
+    needs: [checkout-source, prepare-native-dependencies, generate-native-bridges]
     runs-on: windows-2022
 
     steps:
@@ -575,7 +584,7 @@ jobs:
   build-windows-native-legacy:
     if: ${{ needs.checkout-source.outputs.scope == 'full' }}
     name: Build `windows-native-legacy`
-    needs: [checkout-source, generate-native-bridges]
+    needs: [checkout-source, prepare-native-dependencies, generate-native-bridges]
     runs-on: windows-2022
 
     steps:
@@ -631,7 +640,7 @@ jobs:
   build-macos-arm64:
     if: ${{ needs.checkout-source.outputs.scope == 'full' }}
     name: Build `macos-arm64`
-    needs: [checkout-source, generate-native-bridges]
+    needs: [checkout-source, prepare-native-dependencies, generate-native-bridges]
     runs-on: macos-15
 
     steps:
@@ -778,7 +787,7 @@ jobs:
   build-android:
     if: ${{ needs.checkout-source.outputs.scope == 'full' }}
     name: Build `Android`
-    needs: [checkout-source, generate-native-bridges]
+    needs: [checkout-source, prepare-native-dependencies, generate-native-bridges]
     runs-on: ubuntu-24.04
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -874,7 +883,7 @@ jobs:
   build-ios:
     if: ${{ needs.checkout-source.outputs.scope == 'full' }}
     name: Build `iOS`
-    needs: [checkout-source, generate-native-bridges]
+    needs: [checkout-source, prepare-native-dependencies, generate-native-bridges]
     runs-on: macos-15
 
     steps:
