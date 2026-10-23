@@ -52,7 +52,7 @@ android {
 
     defaultConfig {
         applicationId "totalcross.android"
-        minSdkVersion 23
+        minSdkVersion 24
         targetSdkVersion 36
         versionCode 305419896
         versionName "!1.0!"
