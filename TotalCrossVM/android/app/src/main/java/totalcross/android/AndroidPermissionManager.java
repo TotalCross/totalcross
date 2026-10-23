@@ -417,7 +417,7 @@ public final class AndroidPermissionManager {
                 }
                 Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION,
                         Uri.parse("package:" + activity.getPackageName()));
-                if (!canHandle(activity, intent) || !startSettings(activity, intent, StageType.ALL_FILES)) {
+                if (!startSettings(activity, intent, StageType.ALL_FILES)) {
                     active.stageIndex++;
                     continue;
                 }
@@ -430,7 +430,7 @@ public final class AndroidPermissionManager {
             }
             Intent intent = new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
                     Uri.parse("package:" + activity.getPackageName()));
-            if (!canHandle(activity, intent) || !startSettings(activity, intent, StageType.INSTALL)) {
+            if (!startSettings(activity, intent, StageType.INSTALL)) {
                 active.stageIndex++;
                 continue;
             }
@@ -457,14 +457,6 @@ public final class AndroidPermissionManager {
         int code = nextRequestCode++;
         if (nextRequestCode > LAST_OPERATION_REQUEST) nextRequestCode = FIRST_OPERATION_REQUEST;
         return code;
-    }
-
-    private static boolean canHandle(Activity activity, Intent intent) {
-        try {
-            return intent.resolveActivity(activity.getPackageManager()) != null;
-        } catch (RuntimeException exception) {
-            return false;
-        }
     }
 
     static boolean onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
