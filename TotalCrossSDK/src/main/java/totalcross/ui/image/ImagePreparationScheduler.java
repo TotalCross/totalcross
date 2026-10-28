@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.concurrent.Semaphore;
 
 import totalcross.ui.MainWindow;
+import totalcross.util.concurrent.Lock;
 
 /** One process-wide FIFO whose active request remains owned through UI adoption. */
 final class ImagePreparationScheduler {
@@ -37,7 +38,7 @@ final class ImagePreparationScheduler {
     SHUTDOWN
   }
 
-  private static final Object LOCK = new Object();
+  private static final Lock LOCK = new Lock();
   private static final int PENDING_LIMIT = 128;
   private static final int READY_LIMIT = 16;
   private static final ArrayList<Work> QUEUE = new ArrayList<Work>();

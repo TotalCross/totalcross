@@ -8,9 +8,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import totalcross.util.concurrent.Lock;
 
 /** Internal adapter for typed feature settings using the shared runtime configuration machinery. */
 public final class RuntimeConfigurationFeatureBridge {
+  private static final Lock DESCRIPTION_LOCK = new Lock();
   private static final Map<String, DescriptionContributor> DESCRIPTION_CONTRIBUTORS =
       new TreeMap<String, DescriptionContributor>();
 
@@ -88,12 +90,14 @@ public final class RuntimeConfigurationFeatureBridge {
   }
 
   /** Registers or replaces a diagnostic section contributed by a runtime feature. */
-  public static synchronized void registerDescriptionContributor(String sectionName,
+  public static void registerDescriptionContributor(String sectionName,
       DescriptionContributor contributor) {
-    if (sectionName == null || sectionName.length() == 0 || contributor == null) {
-      throw new IllegalArgumentException("a description section requires a name and contributor");
+    synchronized (DESCRIPTION_LOCK) {
+      if (sectionName == null || sectionName.length() == 0 || contributor == null) {
+        throw new IllegalArgumentException("a description section requires a name and contributor");
+      }
+      DESCRIPTION_CONTRIBUTORS.put(sectionName, contributor);
     }
-    DESCRIPTION_CONTRIBUTORS.put(sectionName, contributor);
   }
 
   /** Appends the registered feature sections in deterministic name order. */
@@ -108,8 +112,10 @@ public final class RuntimeConfigurationFeatureBridge {
     }
   }
 
-  private static synchronized Map<String, DescriptionContributor> descriptionContributorsSnapshot() {
-    return new TreeMap<String, DescriptionContributor>(DESCRIPTION_CONTRIBUTORS);
+  private static Map<String, DescriptionContributor> descriptionContributorsSnapshot() {
+    synchronized (DESCRIPTION_LOCK) {
+      return new TreeMap<String, DescriptionContributor>(DESCRIPTION_CONTRIBUTORS);
+    }
   }
 
   /** Internal diagnostic section provider. */
