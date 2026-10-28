@@ -8,6 +8,7 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
 import totalcross.ui.gfx.Graphics;
+import totalcross.util.concurrent.Lock;
 
 /**
  * Internal, unsupported bridge for the graphics package.
@@ -18,6 +19,7 @@ import totalcross.ui.gfx.Graphics;
 @Deprecated
 public final class ImageDrawingBridge {
   private static final ArrayList<PersistentOwnerEntry> PERSISTENT_OWNERS = new ArrayList<>();
+  private static final Lock OWNERS_LOCK = new Lock();
 
   private static final class PersistentOwnerEntry {
     final WeakReference<Object> owner;
@@ -38,6 +40,10 @@ public final class ImageDrawingBridge {
   }
 
   private ImageDrawingBridge() {
+  }
+
+  static Lock ownersLock() {
+    return OWNERS_LOCK;
   }
 
   /** @hidden */
@@ -103,15 +109,15 @@ public final class ImageDrawingBridge {
     if (image == null) {
       throw new NullPointerException("image");
     }
-    synchronized (image) {
-      retainPersistentOwnerForLockedImage(owner, image);
-    }
+    retainPersistentOwnerWithLock(owner, image);
   }
 
-  private static synchronized void retainPersistentOwnerForLockedImage(Object owner, Image image) {
-    cleanPersistentOwners();
-    if (findPersistentOwner(owner, image) == null) {
-      addPersistentOwner(owner, image);
+  private static void retainPersistentOwnerWithLock(Object owner, Image image) {
+    synchronized (OWNERS_LOCK) {
+      cleanPersistentOwners();
+      if (findPersistentOwner(owner, image) == null) {
+        addPersistentOwner(owner, image);
+      }
     }
   }
 
@@ -137,46 +143,52 @@ public final class ImageDrawingBridge {
     if (image == null) {
       throw new NullPointerException("image");
     }
-    synchronized (image) {
-      releasePersistentOwnerForLockedImage(owner, image);
+    releasePersistentOwnerWithLock(owner, image);
+  }
+
+  private static void releasePersistentOwnerWithLock(Object owner, Image image) {
+    synchronized (OWNERS_LOCK) {
+      cleanPersistentOwners();
+      PersistentOwnerEntry entry = findPersistentOwner(owner, image);
+      if (entry == null) {
+        throw new IllegalStateException("Persistent image drawing owner underflow");
+      }
+      ImagePipeline pipeline = image.pipelineForDrawingOwnership();
+      if (pipeline != null) {
+        pipeline.releasePersistentDrawingOwner();
+      }
+      PERSISTENT_OWNERS.remove(entry);
     }
   }
 
-  private static synchronized void releasePersistentOwnerForLockedImage(Object owner, Image image) {
-    cleanPersistentOwners();
-    PersistentOwnerEntry entry = findPersistentOwner(owner, image);
-    if (entry == null) {
-      throw new IllegalStateException("Persistent image drawing owner underflow");
+  static int persistentOwnerCount(Image image) {
+    synchronized (OWNERS_LOCK) {
+      cleanPersistentOwners();
+      int count = 0;
+      for (PersistentOwnerEntry entry : PERSISTENT_OWNERS) {
+        if (entry.image.get() == image) {
+          count++;
+        }
+      }
+      return count;
     }
-    ImagePipeline pipeline = image.pipelineForDrawingOwnership();
-    if (pipeline != null) {
-      pipeline.releasePersistentDrawingOwner();
-    }
-    PERSISTENT_OWNERS.remove(entry);
   }
 
-  static synchronized int persistentOwnerCount(Image image) {
-    cleanPersistentOwners();
-    int count = 0;
-    for (PersistentOwnerEntry entry : PERSISTENT_OWNERS) {
-      if (entry.image.get() == image) {
-        count++;
+  static void updatePersistentOwnerPipeline(Image image, ImagePipeline pipeline) {
+    synchronized (OWNERS_LOCK) {
+      cleanPersistentOwners();
+      for (PersistentOwnerEntry entry : PERSISTENT_OWNERS) {
+        if (entry.image.get() == image) {
+          entry.pipeline = new WeakReference<>(pipeline);
+        }
       }
     }
-    return count;
   }
 
-  static synchronized void updatePersistentOwnerPipeline(Image image, ImagePipeline pipeline) {
-    cleanPersistentOwners();
-    for (PersistentOwnerEntry entry : PERSISTENT_OWNERS) {
-      if (entry.image.get() == image) {
-        entry.pipeline = new WeakReference<>(pipeline);
-      }
+  static void cleanupPersistentOwnersForDrawing() {
+    synchronized (OWNERS_LOCK) {
+      cleanPersistentOwners();
     }
-  }
-
-  static synchronized void cleanupPersistentOwnersForDrawing() {
-    cleanPersistentOwners();
   }
 
   private static PersistentOwnerEntry findPersistentOwner(Object owner, Image image) {
