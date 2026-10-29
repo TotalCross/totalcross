@@ -18,7 +18,7 @@ endif()
 include(FetchContent)
 
 # set the project name
-project(tcvm VERSION 7.2.2)
+project(tcvm VERSION 7.3.0)
 
 find_program(TC_BUILD_IDENTITY_PYTHON NAMES python3 python)
 if(NOT TC_BUILD_IDENTITY_PYTHON)
