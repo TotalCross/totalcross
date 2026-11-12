@@ -23,7 +23,6 @@
 @interface MainViewController : UIViewController<UITextViewDelegate,UIImagePickerControllerDelegate,CLLocationManagerDelegate, UIDocumentInteractionControllerDelegate, AVCaptureMetadataOutputObjectsDelegate>
 {
    NSMutableArray* _events;
-   UIView *root_view;
    ChildView *child_view;
    int lastOrientationSentToVM;
    int lastScreenWidthSentToVM;
