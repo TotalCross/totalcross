@@ -211,26 +211,29 @@ void graphicsSetupIOS()
    static int updateCalls = 0;
    const int call = ++updateCalls;
    const BOOL suppressed = (--ignoreWhiteBackground >= 0);
-   const BOOL current = glcontext != nil && [EAGLContext currentContext] == glcontext;
-   GLint boundFramebuffer = -1;
-   GLint boundRenderbuffer = -1;
-   GLenum status = 0;
-   if (current)
-   {
-      glGetIntegerv(GL_FRAMEBUFFER_BINDING, &boundFramebuffer);
-      glGetIntegerv(GL_RENDERBUFFER_BINDING, &boundRenderbuffer);
-      status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-   }
    // Preserve the existing two-frame suppression and GL context selection.
    BOOL presented = NO;
    if (!suppressed)
       presented = [glcontext presentRenderbuffer:GL_RENDERBUFFER];
 
    if (call <= 64 || call % 100 == 0 || (!suppressed && !presented && call <= 256))
+   {
+      // GL queries are diagnostic-only; avoid adding them on every frame.
+      const BOOL current = glcontext != nil && [EAGLContext currentContext] == glcontext;
+      GLint boundFramebuffer = -1;
+      GLint boundRenderbuffer = -1;
+      GLenum status = 0;
+      if (current)
+      {
+         glGetIntegerv(GL_FRAMEBUFFER_BINDING, &boundFramebuffer);
+         glGetIntegerv(GL_RENDERBUFFER_BINDING, &boundRenderbuffer);
+         status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+      }
       tcIosGraphicsProbe("present", "call=%d suppressed=%d presented=%d current=%d context=%p fb=%d rb=%d fbStatus=0x%x bounds=%.1fx%.1f",
           call, suppressed, presented, current, glcontext,
           (int)boundFramebuffer, (int)boundRenderbuffer, (unsigned int)status,
           self.bounds.size.width, self.bounds.size.height);
+   }
 }
 
 - (void)processEvent:(NSSet *)touches withEvent:(UIEvent *)event
