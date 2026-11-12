@@ -148,21 +148,9 @@ int32 iosLowMemory;
 
 - (void)loadView
 {
-   root_view = [[UIView alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
-   root_view.backgroundColor = [UIColor blackColor];
-   root_view.autoresizesSubviews = YES;
-
-   DEVICE_CTX->_childview = child_view = [[ChildView alloc] init: self];
-   child_view.translatesAutoresizingMaskIntoConstraints = NO;
-   [root_view addSubview:child_view];
-   UILayoutGuide *safeArea = root_view.safeAreaLayoutGuide;
-   [NSLayoutConstraint activateConstraints:@[
-      [child_view.leadingAnchor constraintEqualToAnchor:safeArea.leadingAnchor],
-      [child_view.trailingAnchor constraintEqualToAnchor:safeArea.trailingAnchor],
-      [child_view.topAnchor constraintEqualToAnchor:safeArea.topAnchor],
-      [child_view.bottomAnchor constraintEqualToAnchor:safeArea.bottomAnchor]
-   ]];
-   self.view = root_view;
+   // iOS graphics regression experiment: restore the 24-Aug view hierarchy.
+   // Keep all other 7.3.0 GLES, screen lifecycle and safe-area code unchanged.
+   self.view = DEVICE_CTX->_childview = child_view = [[ChildView alloc] init: self];
    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector (keyboardWillChangeFrame:) name: UIKeyboardWillChangeFrameNotification object:nil];
    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector (keyboardDidShow:) name: UIKeyboardDidShowNotification object:nil];
    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector (keyboardDidHide:) name: UIKeyboardDidHideNotification object:nil];
@@ -706,7 +694,7 @@ int isShown;
 
 -(IBAction)closeWebView:(id)sender
 {
-   self.view = root_view;
+   self.view = child_view;
    webView = nil;
 }
 
