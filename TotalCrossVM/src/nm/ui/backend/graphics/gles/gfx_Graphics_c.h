@@ -22,6 +22,8 @@
 #endif
 
 #if defined(darwin) || (defined(TC_OS_IOS) && TC_OS_IOS)
+// Temporary diagnostics: implemented by childview.m in the iOS VM.
+void tcIosGraphicsProbe(const char *stage, const char *format, ...);
 int32 isIpad;
 #else
 bool isIpad = false;
