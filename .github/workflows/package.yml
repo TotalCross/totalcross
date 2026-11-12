@@ -8,6 +8,11 @@ name: Packages `totalcross`
 
 on:
   workflow_dispatch:
+  # One-off reproducible 7.3.0 iOS surface experiment. A push here only
+  # produces the SDK package; it never schedules AWS Device Farm devices.
+  push:
+    branches:
+      - test/ios-graphics-730-revert-safearea-view
   schedule:
     - cron: "0 1 * * 1"
 
