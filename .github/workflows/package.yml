@@ -8,6 +8,10 @@ name: Packages `totalcross`
 
 on:
   workflow_dispatch:
+  # Temporary diagnostic package, not a release or Device Farm trigger.
+  push:
+    branches:
+      - test/ios-graphics-730-native-diagnostics
   schedule:
     - cron: "0 1 * * 1"
 
