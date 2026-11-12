@@ -169,20 +169,18 @@ void screenChangeCommitted(Context currentContext, ScreenChangeFlags changes)
        (unsigned int)changes, screen.surfaceReady, (int)screen.screenW,
        (int)screen.screenH, iphone_privateIsSurfaceWillChange());
 
-   // On iOS the first UIKit layout can set surfaceWillChange before the
-   // ScreenSurface is handed to the VM. setScreenValues() then pre-populates
-   // its dimensions, so the queued screenChange can be a no-op. In that case
-   // the normal graphicsScreenChange() path would never release the latch.
-   // Resolve it only when the drawable is ready and the latch is still set.
+   // On iOS the initial UIKit layout can latch surfaceWillChange before
+   // setScreenValues() pre-populates the ScreenSurface dimensions. The queued
+   // screenChange then appears to be a no-op although the VM has not committed
+   // its initial screen configuration. Commit it through the normal path so
+   // tcSettings, GL projection, dirty screen, and SK_SCREEN_CHANGE all update.
+   // SCREEN_CHANGE_INITIAL does not recreate the native surface.
    if (changes == SCREEN_CHANGE_NONE && screen.surfaceReady &&
        iphone_privateIsSurfaceWillChange())
    {
-      tcIosGraphicsProbe("screen-change-noop-release", "size=%dx%d",
+      tcIosGraphicsProbe("screen-change-noop-release", "size=%dx%d forcingInitial=1",
           (int)screen.screenW, (int)screen.screenH);
-      markWholeScreenDirty(currentContext);
-      graphicsScreenChange(screen.screenW, screen.screenH);
-      repaintActiveWindows(mainContext);
-      return;
+      changes = (ScreenChangeFlags)(changes | SCREEN_CHANGE_INITIAL);
    }
 #endif
    if (changes == SCREEN_CHANGE_NONE || !screen.surfaceReady)
