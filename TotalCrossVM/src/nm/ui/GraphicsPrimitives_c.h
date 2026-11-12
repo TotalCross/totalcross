@@ -157,6 +157,28 @@ void screenChangeCommitted(Context currentContext, ScreenChangeFlags changes)
 {
    double contentScale;
 
+#if defined(darwin) || (defined(TC_OS_IOS) && TC_OS_IOS)
+   tcIosGraphicsProbe("screen-change-apply",
+       "changes=0x%x ready=%d size=%dx%d latch=%d",
+       (unsigned int)changes, screen.surfaceReady, (int)screen.screenW,
+       (int)screen.screenH, iphone_privateIsSurfaceWillChange());
+
+   // On iOS the first UIKit layout can set surfaceWillChange before the
+   // ScreenSurface is handed to the VM. setScreenValues() then pre-populates
+   // its dimensions, so the queued screenChange can be a no-op. In that case
+   // the normal graphicsScreenChange() path would never release the latch.
+   // Resolve it only when the drawable is ready and the latch is still set.
+   if (changes == SCREEN_CHANGE_NONE && screen.surfaceReady &&
+       iphone_privateIsSurfaceWillChange())
+   {
+      tcIosGraphicsProbe("screen-change-noop-release", "size=%dx%d",
+          (int)screen.screenW, (int)screen.screenH);
+      markWholeScreenDirty(currentContext);
+      graphicsScreenChange(screen.screenW, screen.screenH);
+      repaintActiveWindows(mainContext);
+      return;
+   }
+#endif
    if (changes == SCREEN_CHANGE_NONE || !screen.surfaceReady)
       return;
 
@@ -201,6 +223,12 @@ void screenChange(Context currentContext, int32 newWidth, int32 newHeight, int32
    configuration.surfaceReady = true;
 
    changes = screenApplyConfiguration(&screen, &configuration);
+#if defined(darwin) || (defined(TC_OS_IOS) && TC_OS_IOS)
+   tcIosGraphicsProbe("screen-change-event",
+       "requested=%dx%d applied=%dx%d changes=0x%x ready=%d latch=%d",
+       (int)newWidth, (int)newHeight, (int)screen.screenW, (int)screen.screenH,
+       (unsigned int)changes, screen.surfaceReady, iphone_privateIsSurfaceWillChange());
+#endif
    if (nothingChanged != 0)
       changes = (ScreenChangeFlags)(changes & ~SCREEN_CHANGE_RECREATE_SURFACE);
    screenConsumePendingChanges(&screen);
