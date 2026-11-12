@@ -10,6 +10,12 @@
 #include "NativeImageBacking.h"
 #include "math.h"
 
+#if defined(darwin) || (defined(TC_OS_IOS) && TC_OS_IOS)
+// Temporary diagnostic instrumentation, scoped to the iOS surface-latch test.
+void tcIosGraphicsProbe(const char *stage, const char *format, ...);
+int32 iphone_privateIsSurfaceWillChange(void);
+#endif
+
 #define TRANSITION_NONE  0
 #define TRANSITION_OPEN  1
 #define TRANSITION_CLOSE 2
