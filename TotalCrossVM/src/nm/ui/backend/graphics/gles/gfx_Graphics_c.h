@@ -22,6 +22,8 @@
 #endif
 
 #if defined(darwin) || (defined(TC_OS_IOS) && TC_OS_IOS)
+// Temporary diagnostics: implemented by childview.m in the iOS VM.
+void tcIosGraphicsProbe(const char *stage, const char *format, ...);
 int32 isIpad;
 #else
 bool isIpad = false;
@@ -33,6 +35,16 @@ static bool surfaceWillChange;
 void iphone_privateSetSurfaceWillChange(int32 willChange)
 {
    surfaceWillChange = willChange != 0;
+   static int traceCalls = 0;
+   if (++traceCalls <= 24)
+      tcIosGraphicsProbe("surface-change-flag", "call=%d new=%d", traceCalls, surfaceWillChange);
+}
+
+// Only the no-op iOS screen-change path uses this getter. Keep the latch
+// ownership in the GL backend; do not expose it to other platforms.
+int32 iphone_privateIsSurfaceWillChange(void)
+{
+   return surfaceWillChange ? 1 : 0;
 }
 #endif
 
@@ -366,6 +378,7 @@ static void setProjectionMatrix(float w, float h)
 void graphicsScreenChange(int32 w, int32 h)
 {
 #if defined(darwin) || (defined(TC_OS_IOS) && TC_OS_IOS)
+   tcIosGraphicsProbe("screen-change-committed", "size=%dx%d latchBefore=%d", w,h,surfaceWillChange);
    surfaceWillChange = false;
 #endif
 
@@ -469,6 +482,15 @@ void graphicsUpdateScreenIOS();
 void graphicsUpdateScreen(Context currentContext, ScreenSurface screenSurface)
 {
    UNUSED(currentContext);
+#if defined(darwin) || (defined(TC_OS_IOS) && TC_OS_IOS)
+   static int screenUpdates = 0;
+   const int updateCount = ++screenUpdates;
+   if (updateCount <= 48 || updateCount % 100 == 0)
+      tcIosGraphicsProbe("screen-update-guard",
+          "call=%d surfaceWillChange=%d ready=%d size=%dx%d",
+          updateCount, surfaceWillChange, screenSurface->surfaceReady,
+          (int)screenSurface->screenW, (int)screenSurface->screenH);
+#endif
    if (surfaceWillChange || !screenSurface->surfaceReady)
       return;
 #ifdef SKIA_H

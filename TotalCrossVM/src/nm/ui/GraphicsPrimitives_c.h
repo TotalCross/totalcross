@@ -10,6 +10,12 @@
 #include "NativeImageBacking.h"
 #include "math.h"
 
+#if defined(darwin) || (defined(TC_OS_IOS) && TC_OS_IOS)
+// Temporary diagnostic instrumentation, scoped to the iOS surface-latch test.
+void tcIosGraphicsProbe(const char *stage, const char *format, ...);
+int32 iphone_privateIsSurfaceWillChange(void);
+#endif
+
 #define TRANSITION_NONE  0
 #define TRANSITION_OPEN  1
 #define TRANSITION_CLOSE 2
@@ -157,6 +163,26 @@ void screenChangeCommitted(Context currentContext, ScreenChangeFlags changes)
 {
    double contentScale;
 
+#if defined(darwin) || (defined(TC_OS_IOS) && TC_OS_IOS)
+   tcIosGraphicsProbe("screen-change-apply",
+       "changes=0x%x ready=%d size=%dx%d latch=%d",
+       (unsigned int)changes, screen.surfaceReady, (int)screen.screenW,
+       (int)screen.screenH, iphone_privateIsSurfaceWillChange());
+
+   // On iOS the initial UIKit layout can latch surfaceWillChange before
+   // setScreenValues() pre-populates the ScreenSurface dimensions. The queued
+   // screenChange then appears to be a no-op although the VM has not committed
+   // its initial screen configuration. Commit it through the normal path so
+   // tcSettings, GL projection, dirty screen, and SK_SCREEN_CHANGE all update.
+   // SCREEN_CHANGE_INITIAL does not recreate the native surface.
+   if (changes == SCREEN_CHANGE_NONE && screen.surfaceReady &&
+       iphone_privateIsSurfaceWillChange())
+   {
+      tcIosGraphicsProbe("screen-change-noop-release", "size=%dx%d forcingInitial=1",
+          (int)screen.screenW, (int)screen.screenH);
+      changes = (ScreenChangeFlags)(changes | SCREEN_CHANGE_INITIAL);
+   }
+#endif
    if (changes == SCREEN_CHANGE_NONE || !screen.surfaceReady)
       return;
 
@@ -201,6 +227,12 @@ void screenChange(Context currentContext, int32 newWidth, int32 newHeight, int32
    configuration.surfaceReady = true;
 
    changes = screenApplyConfiguration(&screen, &configuration);
+#if defined(darwin) || (defined(TC_OS_IOS) && TC_OS_IOS)
+   tcIosGraphicsProbe("screen-change-event",
+       "requested=%dx%d applied=%dx%d changes=0x%x ready=%d latch=%d",
+       (int)newWidth, (int)newHeight, (int)screen.screenW, (int)screen.screenH,
+       (unsigned int)changes, screen.surfaceReady, iphone_privateIsSurfaceWillChange());
+#endif
    if (nothingChanged != 0)
       changes = (ScreenChangeFlags)(changes & ~SCREEN_CHANGE_RECREATE_SURFACE);
    screenConsumePendingChanges(&screen);

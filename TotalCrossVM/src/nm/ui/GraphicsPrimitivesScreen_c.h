@@ -58,6 +58,18 @@ static bool checkScreenPixels()
 
 void updateScreen(Context currentContext)
 {
+#if defined(darwin) || (defined(TC_OS_IOS) && TC_OS_IOS)
+   static int vmUpdates = 0;
+   int call = ++vmUpdates;
+   if (call <= 24 || call % 100 == 0)
+      tcIosGraphicsProbe("vm-screen-update",
+          "call=%d running=%d ready=%d size=%dx%d pixels=%d enabledPtr=%d enabled=%d fullDirty=%d dirty=%d,%d,%d,%d",
+          call, keepRunning, screen.surfaceReady, (int)screen.screenW, (int)screen.screenH,
+          checkScreenPixels(), controlEnableUpdateScreenPtr != null,
+          controlEnableUpdateScreenPtr != null ? *controlEnableUpdateScreenPtr : -1,
+          currentContext->fullDirty, currentContext->dirtyX1, currentContext->dirtyY1,
+          currentContext->dirtyX2, currentContext->dirtyY2);
+#endif
 #ifdef ANDROID
    if (appPaused) return;
 #endif

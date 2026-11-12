@@ -12,6 +12,7 @@ on:
   push:
     branches:
       - test/ios-graphics-730-native-diagnostics
+      - test/ios-graphics-730-surface-change-latch
   schedule:
     - cron: "0 1 * * 1"
 
