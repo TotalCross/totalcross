@@ -11,6 +11,11 @@
 #include <OpenGLES/ES2/gl.h>
 #include <OpenGLES/ES2/glext.h>
 
+// Temporary iOS 7.3.0 black-screen investigation. Native trace is appended
+// to Documents/tc-ios-native-graphics.log and duplicated to stderr.
+// Do not merge this diagnostic API into a production release.
+void tcIosGraphicsProbe(const char *stage, const char *format, ...);
+
 @interface ChildView : UIView
 {
    bool isMultitouching;

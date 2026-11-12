@@ -2,6 +2,46 @@
 #import "childview.h"
 #import "mainview.h"
 #include <math.h>
+#include <stdarg.h>
+#include <stdio.h>
+#include <string.h>
+
+// This function is intentionally confined to the diagnostic branch.
+// The persisted file is needed because iOS unified logs can redact native
+// NSLog values and Appium screenshots cannot diagnose framebuffer state.
+void tcIosGraphicsProbe(const char *stage, const char *format, ...)
+{
+   static volatile int sequence = 0;
+   char detail[640];
+   va_list args;
+   va_start(args, format);
+   vsnprintf(detail, sizeof(detail), format, args);
+   va_end(args);
+   const int seq = __sync_add_and_fetch(&sequence, 1);
+
+   @autoreleasepool
+   {
+      NSString *line = [NSString stringWithFormat:
+          @"TC_IOS_GFX seq=%d time=%.3f mainThread=%d stage=%s %s\n",
+          seq, CFAbsoluteTimeGetCurrent(), [NSThread isMainThread], stage, detail];
+      const char *record = [line UTF8String];
+      if (record != NULL)
+      {
+         fputs(record, stderr);
+         fflush(stderr);
+         NSString *dir = [NSHomeDirectory() stringByAppendingPathComponent:@"Documents"];
+         [[NSFileManager defaultManager] createDirectoryAtPath:dir
+             withIntermediateDirectories:YES attributes:nil error:NULL];
+         NSString *file = [dir stringByAppendingPathComponent:@"tc-ios-native-graphics.log"];
+         FILE *out = fopen([file fileSystemRepresentation], "a");
+         if (out != NULL)
+         {
+            fputs(record, out);
+            fclose(out);
+         }
+      }
+   }
+}
 
 @implementation ChildView
 
@@ -28,6 +68,9 @@ bool setupGL(int width, int height);
    self.opaque = YES;
    self.contentMode = UIViewContentModeScaleToFill;
    self.contentScaleFactor = [UIScreen mainScreen].scale; // support for high resolution
+   tcIosGraphicsProbe("child-init", "bounds=%.1fx%.1f scale=%.2f layer=%p",
+       self.bounds.size.width, self.bounds.size.height,
+       self.contentScaleFactor, self.layer);
    UIPinchGestureRecognizer *pinchGesture = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(handlePinch:)];
    [self addGestureRecognizer:pinchGesture];
    [pinchGesture release];
@@ -49,12 +92,21 @@ extern double screenContentScale;
    screen->pixels = (uint8*)1;
    screen->deviceFontHeight = (int32)[UIFont labelFontSize];
    screen->surfaceReady = true;
+   tcIosGraphicsProbe("set-screen", "bounds=%.1fx%.1f scale=%.2f screen=%dx%d ready=%d",
+       self.bounds.size.width, self.bounds.size.height, screenContentScale,
+       (int)screen->screenW, (int)screen->screenH, screen->surfaceReady);
    // if ((deviceFontHeight&1) == 1) deviceFontHeight++; // even size fonts are better
 }
 
 void graphicsSetupIOS()
 {
-   [EAGLContext setCurrentContext:DEVICE_CTX->_childview->glcontext];
+   static int calls = 0;
+   EAGLContext *context = DEVICE_CTX->_childview->glcontext;
+   BOOL selected = [EAGLContext setCurrentContext:context];
+   const int call = ++calls;
+   if (call <= 16 || call % 100 == 0 || !selected)
+      tcIosGraphicsProbe("graphics-setup", "call=%d selected=%d context=%p current=%p",
+          call, selected, context, [EAGLContext currentContext]);
 }
 
 - (UIDeviceOrientation)getOrientation
@@ -82,19 +134,31 @@ void graphicsSetupIOS()
 {
    CGSize fallback = [self getResolution];
    if (glcontext == nil)
+   {
+      tcIosGraphicsProbe("drawable-skip", "no-context bounds=%.1fx%.1f fallback=%.0fx%.0f",
+          self.bounds.size.width, self.bounds.size.height,
+          fallback.width, fallback.height);
       return fallback;
+   }
 
-   [EAGLContext setCurrentContext:glcontext];
+   BOOL selected = [EAGLContext setCurrentContext:glcontext];
    glBindFramebuffer(GL_FRAMEBUFFER, defaultFramebuffer); GL_CHECK_ERROR
    glBindRenderbuffer(GL_RENDERBUFFER, colorRenderbuffer); GL_CHECK_ERROR
-   [glcontext renderbufferStorage:GL_RENDERBUFFER fromDrawable:(CAEAGLLayer *)self.layer];
+   BOOL allocated = [glcontext renderbufferStorage:GL_RENDERBUFFER fromDrawable:(CAEAGLLayer *)self.layer];
 
    GLint width = 0;
    GLint height = 0;
    glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, &width); GL_CHECK_ERROR
    glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_HEIGHT, &height); GL_CHECK_ERROR
 
-   int stat = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+   GLenum stat = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+   tcIosGraphicsProbe("drawable", "selected=%d storage=%d bounds=%.1fx%.1f fallback=%.0fx%.0f layerBounds=%.1fx%.1f layerScale=%.2f renderbuffer=%dx%d fbStatus=0x%x fb=%u rb=%u",
+       selected, allocated,
+       self.bounds.size.width, self.bounds.size.height,
+       fallback.width, fallback.height,
+       self.layer.bounds.size.width, self.layer.bounds.size.height,
+       self.layer.contentsScale, (int)width, (int)height,
+       (unsigned int)stat, defaultFramebuffer, colorRenderbuffer);
    if (stat != GL_FRAMEBUFFER_COMPLETE)
       NSLog(@"Failed to make complete framebuffer object %x", stat);
 
@@ -122,13 +186,19 @@ void graphicsSetupIOS()
       [glcontext release];
    }
    glcontext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
-   [EAGLContext setCurrentContext:glcontext];
+   BOOL selected = [EAGLContext setCurrentContext:glcontext];
+   tcIosGraphicsProbe("create-context", "context=%p selected=%d bounds=%.1fx%.1f layerBounds=%.1fx%.1f scale=%.2f",
+       glcontext, selected, self.bounds.size.width, self.bounds.size.height,
+       eaglLayer.bounds.size.width, eaglLayer.bounds.size.height,
+       eaglLayer.contentsScale);
    glGenFramebuffers(1, &defaultFramebuffer); GL_CHECK_ERROR
    glGenRenderbuffers(1, &colorRenderbuffer); GL_CHECK_ERROR
    // Create default framebuffer object. The backing will be allocated for the current layer in -resizeFromLayer
    glBindFramebuffer(GL_FRAMEBUFFER, defaultFramebuffer); GL_CHECK_ERROR
    glBindRenderbuffer(GL_RENDERBUFFER, colorRenderbuffer); GL_CHECK_ERROR
    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, colorRenderbuffer); GL_CHECK_ERROR
+   tcIosGraphicsProbe("create-attachments", "fb=%u rb=%u context=%p",
+       defaultFramebuffer, colorRenderbuffer, glcontext);
 
    [self resizeGLDrawable];
    realAppH = appH;
@@ -138,12 +208,41 @@ void graphicsSetupIOS()
 - (void)updateScreen
 {
    static int ignoreWhiteBackground = 2;
-   if (--ignoreWhiteBackground < 0) // issued by the first screenChange posted by viewDidLayoutSubviews
-      [glcontext presentRenderbuffer:GL_RENDERBUFFER];
+   static int updateCalls = 0;
+   const int call = ++updateCalls;
+   const BOOL suppressed = (--ignoreWhiteBackground >= 0);
+   // Preserve the existing two-frame suppression and GL context selection.
+   BOOL presented = NO;
+   if (!suppressed)
+      presented = [glcontext presentRenderbuffer:GL_RENDERBUFFER];
+
+   if (call <= 64 || call % 100 == 0 || (!suppressed && !presented && call <= 256))
+   {
+      // GL queries are diagnostic-only; avoid adding them on every frame.
+      const BOOL current = glcontext != nil && [EAGLContext currentContext] == glcontext;
+      GLint boundFramebuffer = -1;
+      GLint boundRenderbuffer = -1;
+      GLenum status = 0;
+      if (current)
+      {
+         glGetIntegerv(GL_FRAMEBUFFER_BINDING, &boundFramebuffer);
+         glGetIntegerv(GL_RENDERBUFFER_BINDING, &boundRenderbuffer);
+         status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+      }
+      tcIosGraphicsProbe("present", "call=%d suppressed=%d presented=%d current=%d context=%p fb=%d rb=%d fbStatus=0x%x bounds=%.1fx%.1f",
+          call, suppressed, presented, current, glcontext,
+          (int)boundFramebuffer, (int)boundRenderbuffer, (unsigned int)status,
+          self.bounds.size.width, self.bounds.size.height);
+   }
 }
 
 - (void)processEvent:(NSSet *)touches withEvent:(UIEvent *)event
 {
+   static int touchCalls = 0;
+   int call = ++touchCalls;
+   if ([ touches count ] != 1 && call <= 32)
+      tcIosGraphicsProbe("touch-count", "call=%d touches=%d",
+          call, (int)[touches count]);
    if ([ touches count ] == 1)
    {
       UITouch *touch = [ touches anyObject ];
@@ -154,11 +253,17 @@ void graphicsSetupIOS()
          if (touch.phase == UITouchPhaseMoved && [(MainViewController*)controller hasEvents]) // ignore move events if the last one was not yet consumed
             return;
          CGPoint point = [touch locationInView: self];
+         int nativeX = (int)lround(point.x * screenContentScale);
+         int nativeY = (int)lround(point.y * screenContentScale);
+         if (call <= 64 || touch.phase != UITouchPhaseMoved)
+            tcIosGraphicsProbe("touch", "call=%d phase=%d local=%.1f,%.1f vm=%d,%d scale=%.2f bounds=%.1fx%.1f",
+                call, (int)touch.phase, point.x, point.y, nativeX, nativeY,
+                screenContentScale, self.bounds.size.width, self.bounds.size.height);
          [ (MainViewController*)controller addEvent:
           [[NSDictionary alloc] initWithObjectsAndKeys:
            touch.phase == UITouchPhaseBegan ? @"mouseDown" : touch.phase == UITouchPhaseMoved ? @"mouseMoved" : @"mouseUp", @"type",
-           [NSNumber numberWithInt:(int)lround(point.x * screenContentScale)], @"x",
-           [NSNumber numberWithInt:(int)lround(point.y * screenContentScale)], @"y", nil]
+           [NSNumber numberWithInt:nativeX], @"x",
+           [NSNumber numberWithInt:nativeY], @"y", nil]
           ];
       }
    }

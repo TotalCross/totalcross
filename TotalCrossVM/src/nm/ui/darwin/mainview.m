@@ -45,6 +45,9 @@ static bool wasNumeric;
 
 int32 initGLES(ScreenSurface screen)
 {
+   tcIosGraphicsProbe("init-gles-enter", "screen=%p initialReady=%d initialSize=%dx%d uiScreen=%.1fx%.1f",
+       screen, screen->surfaceReady, (int)screen->screenW, (int)screen->screenH,
+       [UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height);
    deviceCtx = screen->extension = (TScreenSurfaceEx*)malloc(sizeof(TScreenSurfaceEx));
    memset(screen->extension, 0, sizeof(TScreenSurfaceEx));
    isIpad = UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad;
@@ -56,8 +59,18 @@ int32 initGLES(ScreenSurface screen)
    window.autoresizesSubviews = YES; // IOS 8 - make didLayoutSubviews be called
    [window makeKeyAndVisible];
    [DEVICE_CTX->_mainview.view layoutIfNeeded];
+   tcIosGraphicsProbe("init-gles-layout", "window=%.1fx%.1f root=%.1fx%.1f child=%.1fx%.1f childAttached=%d",
+       window.bounds.size.width, window.bounds.size.height,
+       DEVICE_CTX->_mainview.view.bounds.size.width,
+       DEVICE_CTX->_mainview.view.bounds.size.height,
+       DEVICE_CTX->_childview.bounds.size.width,
+       DEVICE_CTX->_childview.bounds.size.height,
+       DEVICE_CTX->_childview.window != nil);
    [DEVICE_CTX->_childview setScreenValues: screen];
    [DEVICE_CTX->_childview createGLcontext];
+   tcIosGraphicsProbe("init-gles-exit", "ready=%d screen=%dx%d contentScale=%.2f",
+       screen->surfaceReady, (int)screen->screenW, (int)screen->screenH,
+       screen->contentScale);
    return true;
 }
 - (BOOL)shouldAutorotate // ios 6
@@ -97,6 +110,10 @@ int32 iosLowMemory;
 
    lastSafeAreaInsetsSentToVM = insets;
    hasLastSafeAreaInsetsSentToVM = YES;
+   tcIosGraphicsProbe("safe-area", "insets=%.1f,%.1f,%.1f,%.1f root=%.1fx%.1f child=%.1fx%.1f",
+       insets.top, insets.left, insets.bottom, insets.right,
+       self.view.bounds.size.width, self.view.bounds.size.height,
+       child_view.bounds.size.width, child_view.bounds.size.height);
    CGFloat scale = self.view.contentScaleFactor > 0 ? self.view.contentScaleFactor : [UIScreen mainScreen].scale;
    [self addEvent: [[NSDictionary alloc] initWithObjectsAndKeys:
       @"safeAreaChanged", @"type",
@@ -117,12 +134,20 @@ int32 iosLowMemory;
    int height = (int)res.height;
    bool sizeChanged = width > 0 && height > 0 && (width != lastScreenWidthSentToVM || height != lastScreenHeightSentToVM);
    bool orientationChanged = orientation != lastOrientationSentToVM;
+   static int layoutCalls = 0;
+   int layoutCall = ++layoutCalls;
+   if (layoutCall <= 32 || sizeChanged)
+      tcIosGraphicsProbe("layout", "call=%d sizeChanged=%d orientationChanged=%d child=%.1fx%.1f resolution=%dx%d previous=%dx%d",
+          layoutCall, sizeChanged, orientationChanged,
+          child_view.bounds.size.width, child_view.bounds.size.height,
+          width, height, lastScreenWidthSentToVM, lastScreenHeightSentToVM);
    if (sizeChanged)
    {
       iphone_privateSetSurfaceWillChange(true);
       res = [child_view resizeGLDrawable];
       width = (int)res.width;
       height = (int)res.height;
+      tcIosGraphicsProbe("layout-resized", "call=%d surface=%dx%d", layoutCall, width, height);
       //[self destroySIP];
       lastOrientationSentToVM = orientation;
       lastScreenWidthSentToVM = width;
@@ -163,6 +188,10 @@ int32 iosLowMemory;
       [child_view.bottomAnchor constraintEqualToAnchor:safeArea.bottomAnchor]
    ]];
    self.view = root_view;
+   tcIosGraphicsProbe("load-view", "root=%.1fx%.1f child=%.1fx%.1f childSubviews=%d",
+       root_view.bounds.size.width, root_view.bounds.size.height,
+       child_view.bounds.size.width, child_view.bounds.size.height,
+       (int)[child_view.subviews count]);
    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector (keyboardWillChangeFrame:) name: UIKeyboardWillChangeFrameNotification object:nil];
    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector (keyboardDidShow:) name: UIKeyboardDidShowNotification object:nil];
    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector (keyboardDidHide:) name: UIKeyboardDidHideNotification object:nil];
@@ -244,6 +273,9 @@ int isShown;
 {
    NSArray* events = _events;
    _events = nil;
+   static int dequeues = 0;
+   if ([events count] > 0 && ++dequeues <= 64)
+      tcIosGraphicsProbe("event-drain", "call=%d count=%d", dequeues, (int)[events count]);
    return events;
 }
 
@@ -253,6 +285,12 @@ int isShown;
 }
 - (void)addEvent:(NSDictionary*)event
 {
+   NSString *kind = [event objectForKey:@"type"];
+   if ([kind isEqualToString:@"mouseDown"] || [kind isEqualToString:@"mouseUp"] ||
+       [kind isEqualToString:@"screenChange"])
+      tcIosGraphicsProbe("event-enqueue", "type=%s x=%d y=%d queueBefore=%d",
+          [kind UTF8String], [[event objectForKey:@"x"] intValue],
+          [[event objectForKey:@"y"] intValue], (int)[_events count]);
    if(_events == nil)
       _events = [[NSMutableArray alloc] init];
    [_events addObject: event];
@@ -717,7 +755,12 @@ int isShown;
 void privateFullscreen(bool on) {}
 
 void graphicsUpdateScreenIOS()
-{                
+{
+   static int calls = 0;
+   int call = ++calls;
+   if (call <= 32 || call % 100 == 0)
+      tcIosGraphicsProbe("graphics-update", "call=%d childPresent=%d",
+          call, DEVICE_CTX->_childview != nil);
    [DEVICE_CTX->_childview updateScreen];
 }
 
