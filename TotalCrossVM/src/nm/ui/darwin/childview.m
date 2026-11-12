@@ -226,7 +226,7 @@ void graphicsSetupIOS()
    if (!suppressed)
       presented = [glcontext presentRenderbuffer:GL_RENDERBUFFER];
 
-   if (call <= 64 || call % 100 == 0 || (!suppressed && !presented))
+   if (call <= 64 || call % 100 == 0 || (!suppressed && !presented && call <= 256))
       tcIosGraphicsProbe("present", "call=%d suppressed=%d presented=%d current=%d context=%p fb=%d rb=%d fbStatus=0x%x bounds=%.1fx%.1f",
           call, suppressed, presented, current, glcontext,
           (int)boundFramebuffer, (int)boundRenderbuffer, (unsigned int)status,
