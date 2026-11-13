@@ -12,6 +12,96 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [7.3.0] - 2026-10-28
+
+For migration guidance, measured results, platform/store compatibility details, and the full release overview, see [the 7.3.0 release notes](docs/releases/7.3.0.md).
+
+### Added
+
+- **Java and converter:**
+  - support mainstream `javac` output through Java 17, including Java 8 lambdas and method references, `StringConcatFactory` concatenation, Java 11/17 class files, records, and default/static interface methods
+  - add deploy-time validation of Java/Jakarta-style standard-library calls against the TotalCross device model and generate a queryable deployed Java API manifest
+- **runtime:**
+  - add first-class `System.out` and `System.err`
+  - add monotonic `System.nanoTime()`
+  - add a native-backed non-fair subset of `java.util.concurrent.Semaphore`
+  - add typed runtime environment/configuration selectors and optional runtime diagnostics snapshots
+- **image and UI:**
+  - add lazy JPEG factories, deferred image operations, native Skia image backing, compact image storage, bounded raster variants, and explicit `ScrollContainer.prepareForDisplay(...)`
+  - add typed per-runtime image policies for storage, target-color conversion, physical variants, scroll raster reuse, and prefetch worker selection
+- **deploy:**
+  - add native macOS deployment support
+  - add versioned offline Android tool preparation
+  - add repeatable `/android_permission <permission>` declarations
+- **iOS:**
+  - implement the existing `Sound.toText(String)` API with native Speech/AVAudioEngine support
+- **developer tooling:**
+  - add an IDE-independent preview surface and headless preview runner
+
+### Changed
+
+- **UI and graphics:**
+  - use logical UI coordinates by default, with per-surface content/font scale and high-DPI-aware rendering, clipping, transforms, hit testing, and input mapping
+  - integrate safe-area confinement into Android/iOS presentation
+- **image:**
+  - make encoded sources and deferred pipelines authoritative where possible, reducing eager full-resolution materialization
+  - make Windows desktop default to compact image storage, target-color conversion, physical variant caching, and the semaphore preparation worker; automatic preparation and scroll raster reuse remain disabled by default
+- **windows:**
+  - use SDL2 + Skia software raster as the default desktop backend while retaining the native/legacy fallback and WinCE path
+  - load normal TrueType fonts directly in the Skia desktop path
+  - statically link the MSVC runtime instead of distributing `vcruntime140.dll`
+- **android:**
+  - target Android 16 / API 36 and raise the minimum supported API from 23 to 24
+  - coordinate runtime and filesystem permissions, move camera/gallery flows to content URIs, request speech/APK authorization on demand, and handle Android 14 partial media grants
+  - dispatch system Back through the modern activity callback
+  - modernize fused location requests and request one-second updates
+  - allow `Vm.exec("viewer", ...)` to open additional local document formats with native applications
+- **iOS:**
+  - configure an iOS 13 deployment target and build with the Xcode 26 / iOS 26 SDK toolchain
+  - harden IPA re-signing with executable/Mach-O identity validation, isolated workspaces, input validation, and grouped output support
+- **native dependencies:**
+  - centralize more native dependencies in the pinned `totalcross-depot-tools` model
+  - replace the main JPEG decoder path with libjpeg-turbo and migrate legacy MiniZip usage toward minizip-ng
+- **build and release:**
+  - derive native bridge metadata from deployed Java classes and validate bridge collisions/definitions before platform builds
+  - embed deterministic build identity, source provenance, and compatibility epochs in packaged artifacts
+  - prepare and validate Maven Central-compatible release bundles with explicit opt-in publication
+  - version human-oriented release notes under `docs/releases/<version>.md` separately from this concise changelog
+
+### Deprecated
+
+- **UI scaling:**
+  - deprecate the historical encoded-DP layout model; `UnitsConverter.toPixels()` is retained as a compatibility API but no longer performs the previous density conversion
+
+### Removed
+
+- **android:**
+  - remove support for API 23 devices; Android 7.0 / API 24 is now the minimum
+- **image:**
+  - remove the separate deployed `Image4D` implementation in favor of the unified `Image` model
+- **windows:**
+  - remove the packaged `vcruntime140.dll` dependency now that the MSVC runtime is linked statically
+
+### Fixed
+
+- **converter:**
+  - correct JVM `float` parameter slot mapping so following parameters are not shifted
+  - fix method-reference conversion through generic functional interfaces
+- **image and rendering:**
+  - fix programmatically generated/drawn images becoming blank on the Android/Skia path
+  - fix JPEG scaling factory dimension/metadata consistency and adaptive decode behavior
+  - restore correct final-raster reuse and copy behavior across image draw paths
+- **java compatibility:**
+  - make `Integer.toHexString(int)` match JDK lowercase, width, sign, and 32-bit semantics
+- **android:**
+  - bound Bluetooth connection/discovery/I/O/cleanup operations with cancellation and monotonic deadlines to prevent UI/shutdown hangs
+  - stabilize camera/media destination recovery and filesystem permission recovery
+  - reject invalid or oversized Bluetooth SPP client addresses
+- **iOS:**
+  - populate `Settings.iosCertDate` correctly
+- **windows deploy:**
+  - improve 32×32 8-bit application icon quality with premultiplied-alpha resampling, adaptive palettes, and error-diffusion quantization without changing the Launcher resource format
+
 ## [7.2.2] - 2026-07-01
 
 ### Bug Fixes
