@@ -34,6 +34,12 @@ void iphone_privateSetSurfaceWillChange(int32 willChange)
 {
    surfaceWillChange = willChange != 0;
 }
+
+// The pending iOS layout change is owned by the GLES backend.
+int32 iphone_privateIsSurfaceWillChange(void)
+{
+   return surfaceWillChange ? 1 : 0;
+}
 #endif
 
 int32 realAppH,appW,appH,glShiftY;
