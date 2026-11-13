@@ -16,6 +16,7 @@
 #undef Class
 
 extern int32 keepRunning;
+extern double screenContentScale;
 static bool mainThreadSuspended;
 
 bool allowMainThread()
@@ -30,6 +31,35 @@ int32 iphone_privateIsEventAvailable()
 
 void screenChange(Context currentContext, int32 newWidth, int32 newHeight, int32 hRes, int32 vRes, int32 nothingChanged); // rotate the screen
 void setEditText(Context currentContext, TCObject control, NSString *str);
+
+// ChildView supplies UIKit touch positions in physical pixels. The Java
+// Window._postEvent path performs hit-testing in logical screen coordinates,
+// so the conversion belongs at this native-to-VM boundary (as on Android).
+static int32 iosPenPhysicalToLogical(int32 value)
+{
+   double scale = screenContentScale > 0 ? screenContentScale : 1.0;
+   double logical = (double)value / scale;
+   return logical >= 0 ? (int32)(logical + 0.5) : (int32)(logical - 0.5);
+}
+
+static void postIosPenEvent(Context currentContext, TotalCrossUiEvent type, NSDictionary *event)
+{
+   int32 physicalX = [[event objectForKey:@"x"] intValue];
+   int32 physicalY = [[event objectForKey:@"y"] intValue];
+   int32 logicalX = iosPenPhysicalToLogical(physicalX);
+   int32 logicalY = iosPenPhysicalToLogical(physicalY);
+
+   // Temporary trace for verifying the iOS 7.3.0 input regression on-device.
+   static int calls = 0;
+   const int call = ++calls;
+   if (call <= 32 || call % 100 == 0)
+      tcIosGraphicsProbe("pen-coordinate-conversion",
+         "call=%d type=%d physical=%d,%d logical=%d,%d scale=%.3f",
+         call, (int)type, (int)physicalX, (int)physicalY,
+         (int)logicalX, (int)logicalY, screenContentScale);
+
+   postEvent(currentContext, type, 0, logicalX, logicalY, -1);
+}
 
 void iphone_privatePumpEvent(Context currentContext)
 {
@@ -51,17 +81,17 @@ void iphone_privatePumpEvent(Context currentContext)
       else
       if([type isEqualToString:@"mouseDown"])
       {
-         postEvent(currentContext, PENEVENT_PEN_DOWN, 0, [[event objectForKey:@"x"] intValue], [[event objectForKey:@"y"] intValue], -1);
+         postIosPenEvent(currentContext, PENEVENT_PEN_DOWN, event);
       }
       else
       if([type isEqualToString:@"mouseUp"])
       {
-         postEvent(currentContext, PENEVENT_PEN_UP, 0, [[event objectForKey:@"x"] intValue], [[event objectForKey:@"y"] intValue], -1);
+         postIosPenEvent(currentContext, PENEVENT_PEN_UP, event);
       }
       else
       if(([type isEqualToString:@"mouseDragged"]) || ([type isEqualToString:@"mouseMoved"]))
       {
-         postEvent(currentContext, PENEVENT_PEN_DRAG, 0, [[event objectForKey:@"x"] intValue], [[event objectForKey:@"y"] intValue], -1);
+         postIosPenEvent(currentContext, PENEVENT_PEN_DRAG, event);
       }
       else
       if([type isEqualToString:@"sipClosed"])
