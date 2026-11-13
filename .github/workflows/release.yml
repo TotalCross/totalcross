@@ -160,27 +160,32 @@ jobs:
           fi
           unzip -t "$zip_asset" >/dev/null
 
-      - name: Extract release notes
+      - name: Validate and stage release notes
+        id: release-notes
+        shell: bash
         run: |
-          version="${{ steps.release-version.outputs.version }}"
-          awk -v version="$version" '
-            $0 ~ "^## \\[" version "\\] - [0-9]{4}-[0-9]{2}-[0-9]{2}$" {
-              emit = 1
-              print
-              next
-            }
-            emit && /^## \[[0-9]+\.[0-9]+\.[0-9]+\] - [0-9]{4}-[0-9]{2}-[0-9]{2}$/ {
-              exit
-            }
-            emit {
-              print
-            }
-          ' CHANGELOG.md > "CHANGELOG-${{ steps.release-version.outputs.tag }}.md"
+          set -euo pipefail
 
-          if [ ! -s "CHANGELOG-${{ steps.release-version.outputs.tag }}.md" ]; then
-            echo "Could not find changelog entry for ${version}" >&2
+          version="${{ steps.release-version.outputs.version }}"
+          tag="${{ steps.release-version.outputs.tag }}"
+          source_notes="docs/releases/${version}.md"
+          staged_notes="RELEASE-NOTES-${tag}.md"
+
+          if [ ! -f "$source_notes" ]; then
+            echo "Release notes are required for ${version}: ${source_notes}" >&2
             exit 1
           fi
+          if [ ! -s "$source_notes" ]; then
+            echo "Release notes file is empty: ${source_notes}" >&2
+            exit 1
+          fi
+          if ! grep -Fxq "# TotalCross ${version}" "$source_notes"; then
+            echo "Release notes must contain the exact title: # TotalCross ${version}" >&2
+            exit 1
+          fi
+
+          cp "$source_notes" "$staged_notes"
+          echo "path=${staged_notes}" >> "$GITHUB_OUTPUT"
 
       - name: Upload prepared SDK package
         uses: actions/upload-artifact@v4
@@ -200,7 +205,7 @@ jobs:
             release-assets/jars/totalcross-sdk-${{ steps.release-version.outputs.version }}-javadoc.jar
             release-assets/maven-central/totalcross-sdk-${{ steps.release-version.outputs.version }}-maven-central.zip
             release-assets/maven-central/central-bundle-manifest.json
-            CHANGELOG-${{ steps.release-version.outputs.tag }}.md
+            RELEASE-NOTES-${{ steps.release-version.outputs.tag }}.md
 
       - name: Publish Maven Central bundle
         id: central-publication
@@ -366,7 +371,7 @@ jobs:
         run: |
           tag="${{ steps.release-version.outputs.tag }}"
           version="${{ steps.release-version.outputs.version }}"
-          notes="CHANGELOG-${tag}.md"
+          notes="RELEASE-NOTES-${tag}.md"
           zip_asset="release-assets/TotalCross-${version}.zip"
 
           gh release create "$tag" \
