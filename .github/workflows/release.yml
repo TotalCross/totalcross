@@ -69,21 +69,21 @@ jobs:
             exit 1
           fi
 
-          if ! git rev-parse --verify "${tag}^{commit}" >/dev/null 2>&1; then
-            echo "Release tag does not exist in the repository: ${tag}" >&2
-            exit 1
-          fi
-          tag_commit="$(git rev-parse "${tag}^{commit}")"
-
           # Dry runs exercise the workflow ref and may legitimately consume
           # the latest successful package produced earlier on the same branch.
           # Real releases remain pinned to the exact commit referenced by tag.
           if [ "$DRY_RUN" = "true" ]; then
+            tag_commit=""
             package_branch="$GITHUB_REF_NAME"
             package_commit=""
             expected_source_commit=""
             expected_source_ancestor="$GITHUB_SHA"
           else
+            if ! git rev-parse --verify "${tag}^{commit}" >/dev/null 2>&1; then
+              echo "Release tag does not exist in the repository: ${tag}" >&2
+              exit 1
+            fi
+            tag_commit="$(git rev-parse "${tag}^{commit}")"
             package_branch=""
             package_commit="$tag_commit"
             expected_source_commit="$tag_commit"
