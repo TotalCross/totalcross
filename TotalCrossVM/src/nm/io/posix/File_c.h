@@ -50,7 +50,7 @@ static bool fileIsAccessDenied(int error)
    return error == EACCES || error == EPERM;
 }
 
-static bool fileRequestStoragePermission(void)
+bool fileRequestStoragePermission(void)
 {
    JNIEnv* env = getJNIEnv();
    if (!env)
