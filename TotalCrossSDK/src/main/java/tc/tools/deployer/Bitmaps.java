@@ -437,11 +437,20 @@ public class Bitmaps {
   }
 
   public void saveWin32Icon(byte[] bytes, int iconOffset) throws ImageException, IOException {
-    Bmp bmp32x32x8 = IconStore.getBmp(32, 32, 8);
-    if (bmp32x32x8 != null && iconOffset != -1) {
-      copyBits(bmp32x32x8.pixels, bmp32x32x8.palette, loadPalette(bytes, iconOffset + 40, 256), 32, bytes,
-          iconOffset + 40 + 1024, 32, -32, 8, iconOffset + 32 * 32 + 40 + 1024, false, bmp32x32x8.shouldInvertY);
+    if (iconOffset == -1) {
+      return;
     }
+    // Preserve the established palette and mask behavior for explicitly supplied 8-bit BMP icons.
+    byte[] customBmp = IconStore.getImageData("32x32x8");
+    if (customBmp != null) {
+      Bmp bmp = new Bmp(customBmp);
+      copyBits(bmp.pixels, bmp.palette, loadPalette(bytes, iconOffset + 40, 256), 32, bytes,
+          iconOffset + 40 + 1024, 32, -32, 8, iconOffset + 32 * 32 + 40 + 1024, false, bmp.shouldInvertY);
+      return;
+    }
+
+    // Palette, pixels and AND mask fit the existing 32x32x8 launcher resource exactly.
+    Win32IconEncoder.write(bytes, iconOffset, IconStore.getSquareIconSource(32));
   }
 
   public void saveAndroidIcon(OutputStream zos, int res) throws Exception // icon.png
@@ -555,6 +564,16 @@ class IconStore extends Hashtable {
       throw new ImageException("splash" + img.getHeight() + "x" + img.getWidth() + " must be " + width + "x" + height);
     }
     return img;
+  }
+
+  // Used only for Win32 deploy, so the original can be resized with premultiplied alpha.
+  static Image getSquareIconSource(int size) throws ImageException, IOException {
+    IconStore store = getInstance();
+    byte[] exact = (byte[]) store.get(size + "x" + size);
+    if (exact != null) {
+      return new Image(exact);
+    }
+    return store.largestSquareIcon == null ? whiteImage(size, size) : store.largestSquareIcon;
   }
 
   public static Image getSquareIcon(int size) throws ImageException, IOException {
