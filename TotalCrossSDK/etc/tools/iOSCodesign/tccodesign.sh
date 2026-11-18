@@ -4,58 +4,116 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-only
 
-# Parse variables
-POSITIONAL=()
-while [[ $# -gt 0 ]]
-do
-key="$1"
+# Display usage before validating any options.
+usage() {
+    cat <<'EOF'
+Usage: tccodesign.sh [OPTIONS]
 
-case $key in
-    --output|-o)
-    output="$2"
-    shift # past argument
-    shift # past value
-    ;;
-    --icon)
-    sourceImage="$2"
-    shift # past argument
-    shift # past value
-    ;;
-    --ipa)
-    ipaDest="$2"
-    shift # past argument
-    shift # past value
-    ;;
-    -prov|--provision-file)
-    provisionFile="$2"
-    shift # past argument
-    shift # past value
-    ;;
-    -c|--certificate)
-    certificateName="$2"
-    shift # past argument
-    shift # past argument
-    ;;
-    -m|--method)
-    method="$2"
-    shift # past argument
-    shift # past argument
-    ;;
-    *)    # unknown option
-    POSITIONAL+=("$1") # save it in an array for later
-    shift # past argument
-    ;;
-esac
+Required:
+  --ipa FILE                    Input TotalCross IPA
+  -prov, --provision-file FILE  Provisioning profile
+  -c, --certificate NAME        Code signing certificate identity
+  -m, --method METHOD           Xcode export method
+
+Optional:
+  -o, --output DIR              Base output directory (default: build/)
+  --group NAME                  Append a group subdirectory to the output
+  --icon FILE                   Application icon (default: icone-totalcross.png)
+  -h, --help                    Show this help
+
+Output examples:
+  (no output options)           build/
+  --group client-a              build/client-a/
+  --output /exports             /exports/
+  --output /exports --group a   /exports/a/
+
+Group identifiers must start with a letter or digit, be at most 64
+characters long, and contain only letters, digits, '-' or '_'.
+EOF
+}
+
+usageError() {
+    echo "ERROR: $*" >&2
+    echo "Run 'tccodesign.sh --help' for usage." >&2
+    exit 2
+}
+
+if [[ $# -eq 0 ]]; then
+    usage
+    exit 0
+fi
+
+# Explicit help takes priority even when other options are incomplete.
+for arg in "$@"; do
+    if [[ "$arg" == "--help" || "$arg" == "-h" ]]; then
+        usage
+        exit 0
+    fi
 done
-set -- "${POSITIONAL[@]}" # restore positional parameters
+
+output=""
+group=""
+sourceImage=""
+ipaDest=""
+provisionFile=""
+certificateName=""
+method=""
+seenOptions="|"
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --output|-o)               option=output ;;
+        --group)                   option=group ;;
+        --icon)                    option=icon ;;
+        --ipa)                     option=ipa ;;
+        -prov|--provision-file)    option=provision ;;
+        -c|--certificate)         option=certificate ;;
+        -m|--method)              option=method ;;
+        *) usageError "Unknown argument: $1" ;;
+    esac
+
+    if [[ "$seenOptions" == *"|${option}|"* ]]; then
+        usageError "Repeated option: $1"
+    fi
+    if [[ $# -lt 2 || -z "$2" || "$2" == -* ]]; then
+        usageError "Option $1 requires a non-empty value."
+    fi
+    seenOptions="${seenOptions}${option}|"
+    case "${option}" in
+        output)      output="$2" ;;
+        group)       group="$2" ;;
+        icon)        sourceImage="$2" ;;
+        ipa)         ipaDest="$2" ;;
+        provision)   provisionFile="$2" ;;
+        certificate) certificateName="$2" ;;
+        method)      method="$2" ;;
+    esac
+    shift 2
+done
+
+missing=()
+[[ -n "${ipaDest}" ]] || missing+=("--ipa")
+[[ -n "${provisionFile}" ]] || missing+=("--provision-file")
+[[ -n "${certificateName}" ]] || missing+=("--certificate")
+[[ -n "${method}" ]] || missing+=("--method")
+if [[ ${#missing[@]} -gt 0 ]]; then
+    usageError "Missing required options: ${missing[*]}"
+fi
+
+if [[ -n "${group}" && ! "${group}" =~ ^[a-zA-Z0-9][a-zA-Z0-9_-]{0,63}$ ]]; then
+    usageError "Invalid group identifier: ${group}. Use up to 64 letters, digits, '-' or '_'."
+fi
 
 BASEDIR=$(dirname $0)
 workDir=$(cd $BASEDIR; pwd)
 
-#if outputArg is empty, build to build folder
-if [ -z "$output" ]
-then
+# Output is relative to the current working directory unless absolute.
+# --group appends a validated, single-level subdirectory.
+if [[ -z "${output}" ]]; then
     output="build"
+fi
+if [[ -n "${group}" ]]; then
+    output="${output%/}/${group}"
 fi
 
 # if icon is null, use default TotalCross icon
