@@ -133,9 +133,24 @@ echo ======================= LOG =========================
 
 
 
-#create temp dir
-$(mkdir -p "${workDir}/tmp")
-tempDir="$(mktemp -d ${workDir}/tmp/foo.XXXX)"
+# Keep signing resources private and isolated from other executions.
+umask 077
+tempRoot="${TMPDIR:-/tmp}"
+tempRoot="${tempRoot%/}"
+tempDir=$(mktemp -d "${tempRoot}/tccodesign.XXXXXXXX") || {
+    echo "ERROR: Unable to create temporary signing workspace." >&2
+    exit 1
+}
+
+cleanup() {
+    if [[ -n "${tempDir:-}" && -d "${tempDir}" ]]; then
+        rm -rf -- "${tempDir}"
+    fi
+}
+trap cleanup EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
+trap 'exit 129' HUP
 
 appDir=$(unzip -l "${ipaDest}" | egrep -o -m1 'Payload.*.app');
 appName=$(echo "${appDir}" | sed -e 's/Payload\/\(.*\).app/\1/')
