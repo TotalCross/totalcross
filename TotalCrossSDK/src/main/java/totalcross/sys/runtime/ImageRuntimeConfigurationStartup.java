@@ -9,50 +9,66 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import totalcross.sys.Platform;
+import totalcross.sys.RuntimeFamily;
 import totalcross.sys.Vm;
 import totalcross.ui.image.ImageCompactStorageCapabilityBridge;
 import totalcross.ui.image.ImagePrefetchWorkerMode;
 import totalcross.ui.image.ImageStorageProfile;
+import totalcross.util.concurrent.Lock;
 
 /** Internal startup binding for resolving the optional Image TCZ configuration resource. */
 public final class ImageRuntimeConfigurationStartup {
   private static final String RESOURCE_NAME = "tc.imageruntimeconfig";
 
+  private static final Lock STARTUP_LOCK = new Lock();
+
   private static boolean startupAttempted;
-  private static List<RuntimeConfigurationFeatureBridge.FeatureRule<ImageRuntimeOptions>> pendingRules;
+  private static volatile List<RuntimeConfigurationFeatureBridge.FeatureRule<ImageRuntimeOptions>> pendingRules;
   private static volatile ImageRuntimePolicy currentPolicy = ImageRuntimePolicy.defaults();
 
   private ImageRuntimeConfigurationStartup() {
   }
 
   /** Called by the native VM after runtime environment and graphics setup. */
-  public static synchronized void initializeAtStartup() {
-    if (startupAttempted) {
-      resolveIfReady();
-      return;
+  public static void initializeAtStartup() {
+    synchronized (STARTUP_LOCK) {
+      if (startupAttempted) {
+        resolveIfReady();
+        return;
+      }
+      startupAttempted = true;
+      registerDescriptionContributor();
+      byte[] bytes = Vm.getFile(RESOURCE_NAME);
+      initializeRules(bytes == null ? null : ImageRuntimeConfigurationMetadata.decode(bytes));
     }
-    startupAttempted = true;
-    registerDescriptionContributor();
-    byte[] bytes = Vm.getFile(RESOURCE_NAME);
-    initializeRules(bytes == null ? null : ImageRuntimeConfigurationMetadata.decode(bytes));
   }
 
   /** Called by the simulator after parsing Image annotations and after B sets host facts. */
-  public static synchronized void initializeForSimulator(
+  public static void initializeForSimulator(
       List<RuntimeConfigurationFeatureBridge.FeatureRule<ImageRuntimeOptions>> rules) {
-    startupAttempted = true;
-    registerDescriptionContributor();
-    initializeRules(rules);
+    synchronized (STARTUP_LOCK) {
+      startupAttempted = true;
+      registerDescriptionContributor();
+      initializeRules(rules);
+    }
   }
 
   /** Called after B finalizes the simulator's actual graphics backend. */
-  public static synchronized void finalizeSimulatorGraphicsBackend() {
-    resolveIfReady();
+  public static void finalizeSimulatorGraphicsBackend() {
+    synchronized (STARTUP_LOCK) {
+      resolveIfReady();
+    }
   }
 
   /** Returns the immutable Image policy snapshot, resolving pending simulator rules when ready. */
-  public static synchronized ImageRuntimePolicy currentPolicy() {
-    resolveIfReady();
+  public static ImageRuntimePolicy currentPolicy() {
+    // The resolved snapshot is immutable. Only startup/unfinished simulator rules need locking.
+    if (pendingRules != null) {
+      synchronized (STARTUP_LOCK) {
+        resolveIfReady();
+      }
+    }
     return currentPolicy;
   }
 
@@ -62,32 +78,33 @@ public final class ImageRuntimeConfigurationStartup {
   }
 
   /** Internal fixture for exercising opt-in raster features without public configuration. */
-  static synchronized void setRasterFeaturesForTest(boolean physicalIdentity,
+  static void setRasterFeaturesForTest(boolean physicalIdentity,
       boolean targetColorConversion, boolean physicalVariantCache) {
-    resolveIfReady();
-    currentPolicy = currentPolicy.withRasterFeaturesForTest(physicalIdentity,
-        targetColorConversion, physicalVariantCache);
+    synchronized (STARTUP_LOCK) {
+      resolveIfReady();
+      currentPolicy = currentPolicy.withRasterFeaturesForTest(physicalIdentity,
+          targetColorConversion, physicalVariantCache);
+    }
   }
 
   /** Publishes a typed policy supplied by an internal runtime integration. */
-  static synchronized void installInternalPolicy(ImageRuntimePolicy policy) {
-    if (policy == null) {
-      throw new IllegalArgumentException("an Image policy is required");
+  static void installInternalPolicy(ImageRuntimePolicy policy) {
+    synchronized (STARTUP_LOCK) {
+      if (policy == null) {
+        throw new IllegalArgumentException("an Image policy is required");
+      }
+      startupAttempted = true;
+      pendingRules = null;
+      currentPolicy = policy;
     }
-    startupAttempted = true;
-    pendingRules = null;
-    currentPolicy = policy;
   }
 
   private static void initializeRules(
       List<RuntimeConfigurationFeatureBridge.FeatureRule<ImageRuntimeOptions>> rules) {
     currentPolicy = ImageRuntimePolicy.defaults();
-    if (rules == null || rules.isEmpty()) {
-      pendingRules = null;
-      return;
-    }
-    pendingRules = Collections.unmodifiableList(
-        new ArrayList<RuntimeConfigurationFeatureBridge.FeatureRule<ImageRuntimeOptions>>(rules));
+    pendingRules = rules == null ? Collections.<RuntimeConfigurationFeatureBridge.FeatureRule<ImageRuntimeOptions>>emptyList()
+        : Collections.unmodifiableList(
+            new ArrayList<RuntimeConfigurationFeatureBridge.FeatureRule<ImageRuntimeOptions>>(rules));
     resolveIfReady();
   }
 
@@ -99,6 +116,8 @@ public final class ImageRuntimeConfigurationStartup {
     if (!environment.isGraphicsBackendFinalized()) {
       return;
     }
+    boolean windowsDesktop = environment.platform() == Platform.WINDOWS
+        && environment.runtimeFamily() == RuntimeFamily.DESKTOP;
     RuntimeConfigurationFeatureBridge.FeatureResolution<ImageStorageProfile> storage =
         RuntimeConfigurationFeatureBridge.resolveProjectedSetting(environment, pendingRules,
             new RuntimeConfigurationFeatureBridge.ValueProjector<ImageRuntimeOptions, ImageStorageProfile>() {
@@ -106,23 +125,23 @@ public final class ImageRuntimeConfigurationStartup {
               public ImageStorageProfile project(ImageRuntimeOptions value) {
                 return value.storage() == ImageStorageProfile.DEFAULT ? null : value.storage();
               }
-            }, ImageStorageProfile.STANDARD, "storage");
+            }, windowsDesktop ? ImageStorageProfile.COMPACT : ImageStorageProfile.STANDARD, "storage");
     RuntimeConfigurationFeatureBridge.FeatureResolution<Boolean> targetColorConversion =
-        resolveFeatureState(environment, pendingRules, "targetColorConversion", new FeatureStateSelector() {
+        resolveFeatureState(environment, pendingRules, "targetColorConversion", windowsDesktop, new FeatureStateSelector() {
           @Override
           public RuntimeFeatureState state(ImageRuntimeOptions options) {
             return options.targetColorConversion();
           }
         });
     RuntimeConfigurationFeatureBridge.FeatureResolution<Boolean> physicalVariantCache =
-        resolveFeatureState(environment, pendingRules, "physicalVariantCache", new FeatureStateSelector() {
+        resolveFeatureState(environment, pendingRules, "physicalVariantCache", windowsDesktop, new FeatureStateSelector() {
           @Override
           public RuntimeFeatureState state(ImageRuntimeOptions options) {
             return options.physicalVariantCache();
           }
         });
     RuntimeConfigurationFeatureBridge.FeatureResolution<Boolean> scrollRasterReuse =
-        resolveFeatureState(environment, pendingRules, "scrollRasterReuse", new FeatureStateSelector() {
+        resolveFeatureState(environment, pendingRules, "scrollRasterReuse", false, new FeatureStateSelector() {
           @Override
           public RuntimeFeatureState state(ImageRuntimeOptions options) {
             return options.scrollRasterReuse();
@@ -135,7 +154,8 @@ public final class ImageRuntimeConfigurationStartup {
               public ImagePrefetchWorkerMode project(ImageRuntimeOptions value) {
                 return value.prefetchWorker() == ImagePrefetchWorkerMode.DEFAULT ? null : value.prefetchWorker();
               }
-            }, ImagePrefetchWorkerMode.LEGACY_PER_ENTRY_THREAD, "prefetchWorker");
+            }, windowsDesktop ? ImagePrefetchWorkerMode.SEMAPHORE_PROCESS_WORKER
+                : ImagePrefetchWorkerMode.LEGACY_PER_ENTRY_THREAD, "prefetchWorker");
 
     Set<String> matchedNames = new TreeSet<String>();
     matchedNames.addAll(storage.matchedRuleNames());
@@ -157,7 +177,7 @@ public final class ImageRuntimeConfigurationStartup {
   private static RuntimeConfigurationFeatureBridge.FeatureResolution<Boolean> resolveFeatureState(
       RuntimeEnvironment environment,
       List<RuntimeConfigurationFeatureBridge.FeatureRule<ImageRuntimeOptions>> rules,
-      String settingName, final FeatureStateSelector selector) {
+      String settingName, boolean defaultEnabled, final FeatureStateSelector selector) {
     return RuntimeConfigurationFeatureBridge.resolveProjectedSetting(environment, rules,
         new RuntimeConfigurationFeatureBridge.ValueProjector<ImageRuntimeOptions, Boolean>() {
           @Override
@@ -165,7 +185,7 @@ public final class ImageRuntimeConfigurationStartup {
             RuntimeFeatureState state = selector.state(value);
             return state == RuntimeFeatureState.DEFAULT ? null : Boolean.valueOf(state == RuntimeFeatureState.ENABLED);
           }
-        }, Boolean.FALSE, settingName);
+        }, Boolean.valueOf(defaultEnabled), settingName);
   }
 
   private interface FeatureStateSelector {

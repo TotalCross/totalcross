@@ -9,6 +9,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -21,8 +23,11 @@ import totalcross.sys.Platform;
 import totalcross.sys.RuntimeFamily;
 import totalcross.sys.RuntimeDiagnostics;
 import totalcross.sys.RuntimeDiagnosticSnapshot;
+import totalcross.ui.image.Image;
+import totalcross.ui.image.ImageDrawingBridge;
 import totalcross.ui.image.ImagePrefetchWorkerMode;
 import totalcross.ui.image.ImageStorageProfile;
+import totalcross.util.concurrent.Lock;
 
 class ImageRuntimeConfigurationStartupTest {
   @AfterEach
@@ -31,6 +36,55 @@ class ImageRuntimeConfigurationStartupTest {
     ImageRuntimeConfigurationStartup.initializeForSimulator(null);
     RuntimeConfigurationStartup.finalizeSimulatorGraphicsBackend(GraphicsBackend.RASTER);
     ImageRuntimeConfigurationStartup.finalizeSimulatorGraphicsBackend();
+  }
+
+
+  @Test
+  void windowsDesktopUsesOptimizedDefaultsWithoutAnnotations() {
+    RuntimeConfigurationStartup.initializeForSimulator(null, "Windows", "amd64");
+    ImageRuntimeConfigurationStartup.initializeForSimulator(null);
+    RuntimeConfigurationStartup.finalizeSimulatorGraphicsBackend(GraphicsBackend.RASTER);
+    ImageRuntimeConfigurationStartup.finalizeSimulatorGraphicsBackend();
+
+    ImageRuntimePolicy policy = ImageRuntimeConfigurationStartup.currentPolicy();
+    assertEquals(ImageStorageProfile.COMPACT, policy.requestedStorageProfile());
+    // The JavaSE simulator has no native compact backing.
+    assertEquals(ImageStorageProfile.STANDARD, policy.effectiveStorageProfile());
+    assertTrue(policy.rasterVariants().targetColorConversion());
+    assertTrue(policy.rasterVariants().physicalVariantCache());
+    assertFalse(policy.scrollRasterReuse().enabled());
+    assertFalse(policy.imagePreparation().automaticPreparation());
+    assertEquals(ImagePrefetchWorkerMode.SEMAPHORE_PROCESS_WORKER, policy.prefetchWorker());
+    assertTrue(policy.matchedRuleNames().isEmpty());
+  }
+
+  @Test
+  void imageRuntimeDoesNotDependOnUnsupportedMethodSynchronization() {
+    for (Class<?> type : new Class<?>[] {
+        ImageRuntimeConfigurationStartup.class, RuntimeConfigurationStartup.class,
+        RuntimeConfigurationFeatureBridge.class, Image.class, ImageDrawingBridge.class
+    }) {
+      for (Method method : type.getDeclaredMethods()) {
+        assertFalse(Modifier.isSynchronized(method.getModifiers()),
+            type.getName() + "#" + method.getName() + " is not synchronized in TCVM");
+      }
+    }
+  }
+
+  @Test
+  void synchronizedBlocksUseTcvmCompatibleLocks() throws Exception {
+    assertEquals(Lock.class,
+        ImageRuntimeConfigurationStartup.class.getDeclaredField("STARTUP_LOCK").getType());
+    assertEquals(Lock.class,
+        RuntimeConfigurationStartup.class.getDeclaredField("STARTUP_LOCK").getType());
+    assertEquals(Lock.class,
+        RuntimeConfigurationFeatureBridge.class.getDeclaredField("DESCRIPTION_LOCK").getType());
+    assertEquals(Lock.class,
+        ImageDrawingBridge.class.getDeclaredField("OWNERS_LOCK").getType());
+    assertEquals(Lock.class,
+        ImageDrawingBridge.class.getDeclaredMethod("ownersLock").getReturnType());
+    assertEquals(Lock.class,
+        Class.forName("totalcross.ui.image.ImagePreparationScheduler").getDeclaredField("LOCK").getType());
   }
 
   @Test
@@ -173,8 +227,8 @@ class ImageRuntimeConfigurationStartupTest {
     ImageRuntimePolicy policy = ImageRuntimeConfigurationStartup.currentPolicy();
     assertEquals(ImageStorageProfile.COMPACT, policy.requestedStorageProfile());
     assertEquals(ImageStorageProfile.STANDARD, policy.effectiveStorageProfile());
-    assertFalse(policy.rasterVariants().targetColorConversion());
-    assertFalse(policy.rasterVariants().physicalVariantCache());
+    assertTrue(policy.rasterVariants().targetColorConversion());
+    assertTrue(policy.rasterVariants().physicalVariantCache());
     assertTrue(policy.scrollRasterReuse().enabled());
     assertEquals(ImagePrefetchWorkerMode.SEMAPHORE_PROCESS_WORKER, policy.prefetchWorker());
     assertEquals(3, policy.matchedRuleNames().size());
