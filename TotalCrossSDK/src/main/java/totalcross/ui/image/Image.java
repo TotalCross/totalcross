@@ -950,31 +950,35 @@ public class Image extends GfxSurface {
     return pipeline;
   }
 
-  private synchronized void setPipeline(ImagePipeline replacement) {
-    ImagePipeline previous = pipeline;
-    if (previous == replacement) {
-      return;
-    }
-    int ownerCount = ImageDrawingBridge.persistentOwnerCount(this);
-    for (int i = 0; i < ownerCount; i++) {
-      if (previous != null) {
-        previous.releasePersistentDrawingOwner();
+  private void setPipeline(ImagePipeline replacement) {
+    synchronized (ImageDrawingBridge.ownersLock()) {
+      ImagePipeline previous = pipeline;
+      if (previous == replacement) {
+        return;
       }
-    }
-    pipeline = replacement;
-    for (int i = 0; i < ownerCount; i++) {
-      if (replacement != null) {
-        replacement.retainPersistentDrawingOwner();
+      int ownerCount = ImageDrawingBridge.persistentOwnerCount(this);
+      for (int i = 0; i < ownerCount; i++) {
+        if (previous != null) {
+          previous.releasePersistentDrawingOwner();
+        }
       }
+      pipeline = replacement;
+      for (int i = 0; i < ownerCount; i++) {
+        if (replacement != null) {
+          replacement.retainPersistentDrawingOwner();
+        }
+      }
+      ImageDrawingBridge.updatePersistentOwnerPipeline(this, replacement);
     }
-    ImageDrawingBridge.updatePersistentOwnerPipeline(this, replacement);
   }
 
-  private synchronized void setPipelineAfterMutation(ImagePipeline replacement) {
-    ImagePipeline previous = pipeline;
-    setPipeline(replacement);
-    if (previous != null && !previous.hasPersistentDrawingOwners()) {
-      previous.clearCachedVariants();
+  private void setPipelineAfterMutation(ImagePipeline replacement) {
+    synchronized (ImageDrawingBridge.ownersLock()) {
+      ImagePipeline previous = pipeline;
+      setPipeline(replacement);
+      if (previous != null && !previous.hasPersistentDrawingOwners()) {
+        previous.clearCachedVariants();
+      }
     }
   }
 
