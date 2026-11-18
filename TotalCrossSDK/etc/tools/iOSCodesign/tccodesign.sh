@@ -100,6 +100,52 @@ unzip -jo "${ipaDest}" "${appDir}/pkg/*" -d "${tempDir}/pkg"
 #New Info.plist
 Infoplist="${tempDir}/${appName}.xcarchive/Products/Applications/${appName}.app/Info.plist"
 
+# The signing archive supplies the native executable. Reject an archive built
+# from a different VM so re-signing cannot silently replace the input binary.
+archiveApp="${tempDir}/${appName}.xcarchive/Products/Applications/${appName}.app"
+ipaExecutable=$(/usr/libexec/PlistBuddy -c "Print :CFBundleExecutable" "${tempDir}/Info.plist") || {
+    echo "ERROR: Unable to read CFBundleExecutable from the input IPA." >&2
+    exit 1
+}
+archiveExecutable=$(/usr/libexec/PlistBuddy -c "Print :CFBundleExecutable" "${Infoplist}") || {
+    echo "ERROR: Unable to read CFBundleExecutable from the signing archive." >&2
+    exit 1
+}
+
+if [[ -z "${ipaExecutable}" || "${ipaExecutable}" != "${archiveExecutable}" ]]; then
+    echo "ERROR: Executable names differ between the IPA and signing archive." >&2
+    echo "  IPA: ${ipaExecutable}" >&2
+    echo "  Archive: ${archiveExecutable}" >&2
+    exit 1
+fi
+
+archiveBinary="${archiveApp}/${archiveExecutable}"
+ipaBinary="${tempDir}/input-ipa-executable"
+if [[ ! -f "${archiveBinary}" ]]; then
+    echo "ERROR: Signing archive executable not found: ${archiveBinary}" >&2
+    exit 1
+fi
+if ! unzip -p "${ipaDest}" "${appDir}/${ipaExecutable}" > "${ipaBinary}"; then
+    echo "ERROR: Unable to extract executable from the input IPA." >&2
+    exit 1
+fi
+
+machoUuids() {
+    xcrun dwarfdump --uuid "$1" 2>/dev/null |
+        awk '$1 == "UUID:" { print $2, $3 }' | LC_ALL=C sort
+}
+
+ipaUuids=$(machoUuids "${ipaBinary}")
+archiveUuids=$(machoUuids "${archiveBinary}")
+if [[ -z "${ipaUuids}" || -z "${archiveUuids}" || "${ipaUuids}" != "${archiveUuids}" ]]; then
+    echo "ERROR: The input IPA and signing archive have different native executables." >&2
+    echo "  IPA Mach-O UUIDs: ${ipaUuids:-unavailable}" >&2
+    echo "  Archive Mach-O UUIDs: ${archiveUuids:-unavailable}" >&2
+    echo "Use the TotalCross.xcarchive from the SDK build that produced the IPA." >&2
+    exit 1
+fi
+echo "Native executable verified: ${ipaUuids}"
+
 # Copy tczs to ${tempDir}/${appName}.xcarquive/Products/Applications/*.app/
 cp "${tempDir}"/tczs/*.tcz "${tempDir}/${appName}.xcarchive/Products/Applications/${appName}.app/"
 # Copy Infoplist to ${tempDir}/${appName}.xcarquive/Products/Applications/*.app/
@@ -123,8 +169,6 @@ cp "${tempDir}"/assets/AppIcon* "${tempDir}/${appName}.xcarchive/Products/Applic
 /usr/libexec/PlistBuddy  ${verbose} -c "Delete :CFBundleIconFiles" ${Infoplist}
 /usr/libexec/PlistBuddy ${verbose} -c "Merge ${tempDir}/assets/partial.plist" ${Infoplist}
 
-/usr/libexec/PlistBuddy ${verbose} -c "Set :DTPlatformVersion 12.0" ${Infoplist}
-/usr/libexec/PlistBuddy ${verbose} -c "Set :DTSDKName iphoneos12.0" ${Infoplist} 
 
 # Modify entitlements for push notification
 cp "${workDir}/TotalCross.entitlements" "${tempDir}/TotalCross.entitlements"
