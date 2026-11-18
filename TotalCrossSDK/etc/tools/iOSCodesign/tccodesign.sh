@@ -1,4 +1,5 @@
 #!/bin/bash
+set -o pipefail
 # Copyright (C) 2020-2021 TotalCross Global Mobile Platform Ltda
 # Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
 #
@@ -30,6 +31,11 @@ Output examples:
 Group identifiers must start with a letter or digit, be at most 64
 characters long, and contain only letters, digits, '-' or '_'.
 EOF
+}
+
+fail() {
+    echo "ERROR: $*" >&2
+    exit 1
 }
 
 usageError() {
@@ -104,8 +110,8 @@ if [[ -n "${group}" && ! "${group}" =~ ^[a-zA-Z0-9][a-zA-Z0-9_-]{0,63}$ ]]; then
     usageError "Invalid group identifier: ${group}. Use up to 64 letters, digits, '-' or '_'."
 fi
 
-BASEDIR=$(dirname $0)
-workDir=$(cd $BASEDIR; pwd)
+workDir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P) || fail "Cannot resolve script directory."
+BASEDIR="${workDir}"
 
 # Output is relative to the current working directory unless absolute.
 # --group appends a validated, single-level subdirectory.
@@ -121,6 +127,19 @@ if [ -z "$sourceImage" ]
 then
     sourceImage="${BASEDIR}/icone-totalcross.png"
 fi
+
+# Validate before creating output directories or temporary files.
+[[ -f "${ipaDest}" && -r "${ipaDest}" ]] || usageError "Input IPA not readable: ${ipaDest}"
+[[ -f "${provisionFile}" && -r "${provisionFile}" ]] || usageError "Provisioning profile not readable: ${provisionFile}"
+[[ -f "${sourceImage}" && -r "${sourceImage}" ]] || usageError "Icon not readable: ${sourceImage}"
+[[ -d "${BASEDIR}/TotalCross.xcarchive/Products/Applications/TotalCross.app" ]] || fail "Missing TotalCross.xcarchive application."
+for requiredFile in "ExportOptions.plist" "TotalCross.entitlements" "xcassetsGenerator.sh"; do
+    [[ -f "${workDir}/${requiredFile}" ]] || fail "Missing signing support file: ${requiredFile}"
+done
+[[ -x /usr/libexec/PlistBuddy && -x /usr/bin/codesign ]] || fail "Required macOS signing tools are unavailable."
+for requiredCommand in unzip mktemp xcrun xcodebuild security plutil convert; do
+    command -v "${requiredCommand}" >/dev/null 2>&1 || fail "Required command is unavailable: ${requiredCommand}"
+done
 
 echo ====================== INFO =========================
 echo 'source image: '$sourceImage
@@ -152,23 +171,65 @@ trap 'exit 130' INT
 trap 'exit 143' TERM
 trap 'exit 129' HUP
 
-appDir=$(unzip -l "${ipaDest}" | egrep -o -m1 'Payload.*.app');
-appName=$(echo "${appDir}" | sed -e 's/Payload\/\(.*\).app/\1/')
+# Identify exactly one root application from ZIP entry paths.
+# Do not parse the human-readable 'unzip -l' listing as a filename.
+zipEntries=$(unzip -Z -1 "${ipaDest}") || fail "Cannot read IPA archive."
+appInfo=""
+hasGoogleService=false
+hasPkg=false
+while IFS= read -r zipEntry; do
+    if [[ "${zipEntry}" =~ ^Payload/[^/]+[.]app/Info[.]plist$ ]]; then
+        [[ -z "${appInfo}" ]] || fail "IPA contains multiple applications."
+        appInfo="${zipEntry}"
+    fi
+done <<< "${zipEntries}"
+[[ -n "${appInfo}" ]] || fail "IPA does not contain Payload/<app>.app/Info.plist."
+appDir="${appInfo%/Info.plist}"
+appName="${appDir#Payload/}"
+appName="${appName%.app}"
 
-cp -R "${BASEDIR}/TotalCross.xcarchive/" "${tempDir}/${appName}.xcarchive/"
+# Reject ambiguous path/glob characters in the app bundle name.
+if [[ -z "${appName}" || "${appName}" == "." || "${appName}" == ".." ||
+      "${appName}" == *'['* || "${appName}" == *']'* ||
+      "${appName}" == *'*'* || "${appName}" == *'?'* ||
+      "${appName}" == *'\\'* || "${appName}" =~ [[:cntrl:]] ]]; then
+    fail "Unsafe app bundle directory name in IPA."
+fi
+while IFS= read -r zipEntry; do
+    if [[ "${zipEntry}" == "${appDir}/GoogleService-Info.plist" ]]; then
+        hasGoogleService=true
+    fi
+    if [[ "${zipEntry}" == "${appDir}/pkg/"* && "${zipEntry}" != "${appDir}/pkg/" ]]; then
+        hasPkg=true
+    fi
+done <<< "${zipEntries}"
 
+archiveDir="${tempDir}/${appName}.xcarchive"
+cp -R "${BASEDIR}/TotalCross.xcarchive/" "${archiveDir}/" || fail "Cannot copy signing archive."
+if [[ "${appName}" != "TotalCross" ]]; then
+    mv "${archiveDir}/Products/Applications/TotalCross.app" \
+       "${archiveDir}/Products/Applications/${appName}.app" || fail "Cannot prepare application bundle."
+fi
 
+# Extract mandatory IPA resources without following paths from the archive.
+unzip -p "${ipaDest}" "${appInfo}" > "${tempDir}/Info.plist" || fail "Cannot extract IPA Info.plist."
+mkdir -p "${tempDir}/tczs" || fail "Cannot create TCZ staging directory."
+unzip -oqj "${ipaDest}" "${appDir}/*.tcz" -d "${tempDir}/tczs" || fail "Cannot extract application TCZ files."
+tczFiles=("${tempDir}"/tczs/*.tcz)
+[[ -f "${tczFiles[0]}" ]] || fail "IPA has no application TCZ files."
+for tczFile in "${tczFiles[@]}"; do
+    [[ -f "${tczFile}" && ! -L "${tczFile}" ]] || fail "Unsafe TCZ resource in IPA."
+done
 
-mv "${tempDir}/${appName}.xcarchive/Products/Applications/TotalCross.app" "${tempDir}/${appName}.xcarchive/Products/Applications/${appName}.app"
-
-# Extract plist and tczs from ipa
-unzip -jo "${ipaDest}" "${appDir}/Info.plist" -d "${tempDir}"
-# Extract GoogleService-Info and convert to binary format
-unzip -jo "${ipaDest}" "${appDir}/GoogleService-Info.plist" -d "${tempDir}"
-# Extract all tczs
-unzip -jo "${ipaDest}" "${appDir}/*.tcz" -d "${tempDir}/tczs"
-# Extract files in pkg folder
-unzip -jo "${ipaDest}" "${appDir}/pkg/*" -d "${tempDir}/pkg"
+# Some applications do not use Firebase or bundle files in pkg/.
+if [[ "${hasGoogleService}" == true ]]; then
+    unzip -p "${ipaDest}" "${appDir}/GoogleService-Info.plist" > "${tempDir}/GoogleService-Info.plist" || fail "Cannot extract Firebase configuration."
+fi
+if [[ "${hasPkg}" == true ]]; then
+    mkdir -p "${tempDir}/pkg" || fail "Cannot create pkg staging directory."
+    unzip -oqj "${ipaDest}" "${appDir}/pkg/*" -d "${tempDir}/pkg" || fail "Cannot extract pkg resources."
+    [[ -z "$(find "${tempDir}/pkg" -type l -print -quit)" ]] || fail "Unsafe symlink in IPA pkg resources."
+fi
 
 #New Info.plist
 Infoplist="${tempDir}/${appName}.xcarchive/Products/Applications/${appName}.app/Info.plist"
@@ -219,87 +280,93 @@ if [[ -z "${ipaUuids}" || -z "${archiveUuids}" || "${ipaUuids}" != "${archiveUui
 fi
 echo "Native executable verified: ${ipaUuids}"
 
-# Copy tczs to ${tempDir}/${appName}.xcarquive/Products/Applications/*.app/
-cp "${tempDir}"/tczs/*.tcz "${tempDir}/${appName}.xcarchive/Products/Applications/${appName}.app/"
-# Copy Infoplist to ${tempDir}/${appName}.xcarquive/Products/Applications/*.app/
-cp "${tempDir}/Info.plist" ${Infoplist}
-# Copy GoogleService-Info
-cp "${tempDir}/GoogleService-Info.plist" "${tempDir}/${appName}.xcarchive/Products/Applications/${appName}.app/"
-# Copy files in pkg folder
-cp -R "${tempDir}/pkg" "${tempDir}/${appName}.xcarchive/Products/Applications/${appName}.app/pkg"
+# Copy required application resources and optional configuration files.
+cp "${tczFiles[@]}" "${archiveApp}/" || fail "Cannot copy TCZ files."
+cp "${tempDir}/Info.plist" "${Infoplist}" || fail "Cannot copy IPA Info.plist."
+if [[ "${hasGoogleService}" == true ]]; then
+    cp "${tempDir}/GoogleService-Info.plist" "${archiveApp}/" || fail "Cannot copy Firebase configuration."
+fi
+if [[ "${hasPkg}" == true ]]; then
+    cp -R "${tempDir}/pkg" "${archiveApp}/pkg" || fail "Cannot copy pkg resources."
+fi
 
 
 # Build assets.car
-bash "${BASEDIR}/xcassetsGenerator.sh" "${sourceImage}" "${tempDir}"
-mkdir -p "${tempDir}/assets"
-xcrun actool "${tempDir}/Assets.xcassets" --compile "${tempDir}/assets" --platform iphoneos --minimum-deployment-target 13.0 --app-icon AppIcon --output-partial-info-plist "${tempDir}/assets/partial.plist"
+bash "${BASEDIR}/xcassetsGenerator.sh" "${sourceImage}" "${tempDir}" || fail "Cannot generate app icon assets."
+mkdir -p "${tempDir}/assets" || fail "Cannot prepare asset compilation directory."
+xcrun actool "${tempDir}/Assets.xcassets" --compile "${tempDir}/assets" --platform iphoneos --minimum-deployment-target 13.0 --app-icon AppIcon --output-partial-info-plist "${tempDir}/assets/partial.plist" || fail "Asset catalog compilation failed."
 
 # Build assets.car
-cp "${tempDir}"/assets/Assets.car "${tempDir}/${appName}.xcarchive/Products/Applications/${appName}.app/Assets.car"
-cp "${tempDir}"/assets/AppIcon* "${tempDir}/${appName}.xcarchive/Products/Applications/${appName}.app/"
+cp "${tempDir}"/assets/Assets.car "${archiveApp}/Assets.car" || fail "Cannot copy compiled assets."
+cp "${tempDir}"/assets/AppIcon* "${archiveApp}/" || fail "Cannot copy app icon assets."
 
 # Copy CFBundleIcons and *ipad to Info.plist
-/usr/libexec/PlistBuddy  ${verbose} -c "Delete :CFBundleIconFiles" ${Infoplist}
-/usr/libexec/PlistBuddy ${verbose} -c "Merge ${tempDir}/assets/partial.plist" ${Infoplist}
+/usr/libexec/PlistBuddy -c "Delete :CFBundleIconFiles" "${Infoplist}" >/dev/null 2>&1 || true
+/usr/libexec/PlistBuddy -c "Merge ${tempDir}/assets/partial.plist" "${Infoplist}" || fail "Cannot merge app icon metadata."
 
 
 # Modify entitlements for push notification
-cp "${workDir}/TotalCross.entitlements" "${tempDir}/TotalCross.entitlements"
+cp "${workDir}/TotalCross.entitlements" "${tempDir}/TotalCross.entitlements" || fail "Cannot copy entitlements."
 
- if [ $method != "development" ]
- then
-     plutil -replace aps-environment -string production "${tempDir}/TotalCross.entitlements"
- fi
+if [[ "${method}" != "development" ]]; then
+    plutil -replace aps-environment -string production "${tempDir}/TotalCross.entitlements" || fail "Cannot set push environment."
+fi
 
 #Signing 
-rm -rf "${tempDir}/${appName}.xcarchive/Products/Applications/${appName}.app/_CodeSignature"
-cp "${provisionFile}" "${tempDir}/${appName}.xcarchive/Products/Applications/${appName}.app/embedded.mobileprovision"
+rm -rf "${archiveApp}/_CodeSignature" || fail "Cannot remove old signature."
+cp "${provisionFile}" "${archiveApp}/embedded.mobileprovision" || fail "Cannot embed provisioning profile."
 
 #Check if mobileprovision contains aps-environment in its entitlements
-apsType=$(/usr/libexec/PlistBuddy -c 'Print :Entitlements:aps-environment' /dev/stdin <<< $(security cms -D -i "${provisionFile}"))
+profilePlist="${tempDir}/provision.plist"
+security cms -D -i "${provisionFile}" > "${profilePlist}" || fail "Cannot decode provisioning profile."
+apsType=$(/usr/libexec/PlistBuddy -c 'Print :Entitlements:aps-environment' "${profilePlist}" 2>/dev/null) || apsType=""
 if [ "${apsType}" = "development" ] || [ "${apsType}" = "production" ] # mobile provision contains aps-envenrionment in its Entitlements
 then
-/usr/bin/codesign -f -s "${certificateName}" --entitlements "${tempDir}/TotalCross.entitlements" "${tempDir}/${appName}.xcarchive/Products/Applications/${appName}.app"
+/usr/bin/codesign -f -s "${certificateName}" --entitlements "${tempDir}/TotalCross.entitlements" "${archiveApp}" || fail "Code signing failed."
 else
-/usr/libexec/PlistBuddy ${verbose} -c "Delete :UIBackgroundModes" ${Infoplist}
-/usr/bin/codesign -f -s "${certificateName}" "${tempDir}/${appName}.xcarchive/Products/Applications/${appName}.app"
+/usr/libexec/PlistBuddy -c "Delete :UIBackgroundModes" "${Infoplist}" >/dev/null 2>&1 || true
+/usr/bin/codesign -f -s "${certificateName}" "${archiveApp}" || fail "Code signing failed."
 fi
 
 #Build ExportOptions.plist
-cp "${workDir}/ExportOptions.plist" "${tempDir}/"
-bundleID=$(/usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" "${tempDir}/Info.plist")
-provName=$(/usr/libexec/PlistBuddy -c 'Print :Name' /dev/stdin <<< $(security cms -D -i "${provisionFile}"))
-provUUID=$(/usr/libexec/PlistBuddy -c 'Print :UUID' /dev/stdin <<< $(security cms -D -i "${provisionFile}"))
-teamID=$(/usr/libexec/PlistBuddy -c 'Print :Entitlements:com.apple.developer.team-identifier' /dev/stdin <<< $(security cms -D -i "${provisionFile}"))
+cp "${workDir}/ExportOptions.plist" "${tempDir}/" || fail "Cannot copy export options."
+bundleID=$(/usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" "${tempDir}/Info.plist") || fail "IPA has no bundle identifier."
+provName=$(/usr/libexec/PlistBuddy -c 'Print :Name' "${profilePlist}") || fail "Provisioning profile has no name."
+provUUID=$(/usr/libexec/PlistBuddy -c 'Print :UUID' "${profilePlist}") || fail "Provisioning profile has no UUID."
+teamID=$(/usr/libexec/PlistBuddy -c 'Print :Entitlements:com.apple.developer.team-identifier' "${profilePlist}") || fail "Provisioning profile has no team ID."
 
 # Add mobileprovision to local provision files
-cp "${provisionFile}" ~/"Library/MobileDevice/Provisioning Profiles/${provUUID}.mobileprovision"
+profilesDir="${HOME}/Library/MobileDevice/Provisioning Profiles"
+mkdir -p "${profilesDir}" || fail "Cannot create provisioning profile directory."
+cp "${provisionFile}" "${profilesDir}/${provUUID}.mobileprovision" || fail "Cannot install provisioning profile."
 echo    ====================== MOBILEPROVISION =========================
 echo "      name: ${provName}"
 echo "      bundleID: ${bundleID}"
 echo "      teamID: ${teamID}"
 echo    ================================================================
 
-/usr/libexec/PlistBuddy ${verbose} -c "Add :provisioningProfiles:${bundleID} string '${provName}'" "${tempDir}/ExportOptions.plist"
-/usr/libexec/PlistBuddy ${verbose} -c "Delete :provisioningProfiles:com.totalcross.sdk" "${tempDir}/ExportOptions.plist"
-/usr/libexec/PlistBuddy ${verbose} -c "Set teamID ${teamID}" "${tempDir}/ExportOptions.plist"
+/usr/libexec/PlistBuddy -c "Add :provisioningProfiles:${bundleID} string '${provName}'" "${tempDir}/ExportOptions.plist" || fail "Unable to update export or archive metadata."
+/usr/libexec/PlistBuddy -c "Delete :provisioningProfiles:com.totalcross.sdk" "${tempDir}/ExportOptions.plist" >/dev/null 2>&1 || true
+/usr/libexec/PlistBuddy -c "Set teamID ${teamID}" "${tempDir}/ExportOptions.plist" || fail "Unable to update export or archive metadata."
 signingCertificate=$(echo "${certificateName}" | sed -e 's/\(.*\)\:.*/\1/')
 echo $signingCertificate
-/usr/libexec/PlistBuddy ${verbose} -c "Set :signingCertificate '${signingCertificate}'" "${tempDir}/ExportOptions.plist"
-/usr/libexec/PlistBuddy ${verbose} -c "Set :method '${method}'" "${tempDir}/ExportOptions.plist"
+/usr/libexec/PlistBuddy -c "Set :signingCertificate '${signingCertificate}'" "${tempDir}/ExportOptions.plist" || fail "Unable to update export or archive metadata."
+/usr/libexec/PlistBuddy -c "Set :method '${method}'" "${tempDir}/ExportOptions.plist" || fail "Unable to update export or archive metadata."
 
 #Modifying Info.plist into root of App.xcarchive
-versionString=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "${tempDir}/Info.plist")
-version=$(/usr/libexec/PlistBuddy -c "Print :CFBundleVersion" "${tempDir}/Info.plist")
+versionString=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "${tempDir}/Info.plist") || fail "IPA has no version string."
+version=$(/usr/libexec/PlistBuddy -c "Print :CFBundleVersion" "${tempDir}/Info.plist") || fail "IPA has no build version."
 
 
-/usr/libexec/PlistBuddy ${verbose} -c "Set :ApplicationProperties:SigningIdentity '${certificateName}'" "${tempDir}/${appName}.xcarchive/Info.plist"
-/usr/libexec/PlistBuddy ${verbose} -c "Set :ApplicationProperties:ApplicationPath 'Applications/${appName}.app'" "${tempDir}/${appName}.xcarchive/Info.plist"
-/usr/libexec/PlistBuddy ${verbose} -c "Set :ApplicationProperties:CFBundleIdentifier '${bundleID}'" "${tempDir}/${appName}.xcarchive/Info.plist"
-/usr/libexec/PlistBuddy ${verbose} -c "Set :ApplicationProperties:Team '${teamID}'" "${tempDir}/${appName}.xcarchive/Info.plist"
-/usr/libexec/PlistBuddy ${verbose} -c "Set :ApplicationProperties:CFBundleShortVersionString '${versionString}'" "${tempDir}/${appName}.xcarchive/Info.plist"
-/usr/libexec/PlistBuddy ${verbose} -c "Set :ApplicationProperties:CFBundleVersion '${version}'" "${tempDir}/${appName}.xcarchive/Info.plist"
-/usr/libexec/PlistBuddy ${verbose} -c "Set :Name '${appName}'" "${tempDir}/${appName}.xcarchive/Info.plist"
-/usr/libexec/PlistBuddy ${verbose} -c "Set :SchemeName '${appName}'" "${tempDir}/${appName}.xcarchive/Info.plist"
+/usr/libexec/PlistBuddy -c "Set :ApplicationProperties:SigningIdentity '${certificateName}'" "${tempDir}/${appName}.xcarchive/Info.plist" || fail "Unable to update export or archive metadata."
+/usr/libexec/PlistBuddy -c "Set :ApplicationProperties:ApplicationPath 'Applications/${appName}.app'" "${tempDir}/${appName}.xcarchive/Info.plist" || fail "Unable to update export or archive metadata."
+/usr/libexec/PlistBuddy -c "Set :ApplicationProperties:CFBundleIdentifier '${bundleID}'" "${tempDir}/${appName}.xcarchive/Info.plist" || fail "Unable to update export or archive metadata."
+/usr/libexec/PlistBuddy -c "Set :ApplicationProperties:Team '${teamID}'" "${tempDir}/${appName}.xcarchive/Info.plist" || fail "Unable to update export or archive metadata."
+/usr/libexec/PlistBuddy -c "Set :ApplicationProperties:CFBundleShortVersionString '${versionString}'" "${tempDir}/${appName}.xcarchive/Info.plist" || fail "Unable to update export or archive metadata."
+/usr/libexec/PlistBuddy -c "Set :ApplicationProperties:CFBundleVersion '${version}'" "${tempDir}/${appName}.xcarchive/Info.plist" || fail "Unable to update export or archive metadata."
+/usr/libexec/PlistBuddy -c "Set :Name '${appName}'" "${tempDir}/${appName}.xcarchive/Info.plist" || fail "Unable to update export or archive metadata."
+/usr/libexec/PlistBuddy -c "Set :SchemeName '${appName}'" "${tempDir}/${appName}.xcarchive/Info.plist" || fail "Unable to update export or archive metadata."
 
-xcodebuild -exportArchive -archivePath "${tempDir}/${appName}.xcarchive" -exportPath "${output}" -exportOptionsPlist "${tempDir}/ExportOptions.plist"
+mkdir -p "${output}" || fail "Cannot create output directory: ${output}"
+xcodebuild -exportArchive -archivePath "${archiveDir}" -exportPath "${output}" -exportOptionsPlist "${tempDir}/ExportOptions.plist" || fail "IPA export failed."
+echo "Signed IPA exported to: ${output}"
