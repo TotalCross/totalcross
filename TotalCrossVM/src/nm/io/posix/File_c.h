@@ -45,6 +45,11 @@ bool getSDCardPath(char* buf, int idx)
 #endif
 
 #if defined(ANDROID)
+static bool fileIsAccessDenied(int error)
+{
+   return error == EACCES || error == EPERM;
+}
+
 static bool fileRequestStoragePermission(void)
 {
    JNIEnv* env = getJNIEnv();
@@ -72,7 +77,7 @@ static bool fileRequestStoragePermission(void)
    do {                                                        \
       (result) = (operation);                                   \
       if ((failed) && !(attempted) &&                           \
-          (errno == EACCES || errno == EPERM))                  \
+          fileIsAccessDenied(errno))                  \
       {                                                         \
          int savedErrno = errno;                                \
          (attempted) = true;                                    \
@@ -138,7 +143,7 @@ Err fileCreate(NATIVE_FILE* fref, TCHARP path, int32 mode, int32* slot)
                         statResult != 0, permissionRecoveryAttempted);
 
 #if defined(ANDROID)
-      if (statResult != 0 && (errno == EACCES || errno == EPERM))
+      if (statResult != 0 && fileIsAccessDenied(errno))
          return errno;
 #endif
    }
@@ -230,7 +235,7 @@ Err fileCreateDir(TCHARP path, int32 slot)
 
    savedError = errno;
 #if defined(ANDROID)
-   if (savedError == EACCES || savedError == EPERM)
+   if (fileIsAccessDenied(savedError))
       return savedError;
 #endif
 
@@ -250,7 +255,7 @@ Err fileCreateDir(TCHARP path, int32 slot)
          {
             prefixError = errno;
 #if defined(ANDROID)
-            if (prefixError != EACCES && prefixError != EPERM)
+            if (!fileIsAccessDenied(prefixError))
 #endif
             {
                FILE_RETRY_ACCESS(result, mkdir(path, S_IRWXU | S_IRWXG | S_IRWXO),
@@ -428,7 +433,7 @@ Err fileGetSize(NATIVE_FILE fref, TCHARP szPath, int32* size)
          return NO_ERROR;
       }
 #if defined(ANDROID)
-      if (errno == EACCES || errno == EPERM)
+      if (fileIsAccessDenied(errno))
          return errno;
 #endif
    }
@@ -489,7 +494,7 @@ static Err fileIsEmpty(NATIVE_FILE* fref, TCHARP path, int32 slot, int32* isEmpt
    if (statResult)
 #if defined(ANDROID)
    {
-      if (errno == EACCES || errno == EPERM)
+      if (fileIsAccessDenied(errno))
          return errno;
       return NO_ERROR;
    }
@@ -509,7 +514,7 @@ static Err fileIsEmpty(NATIVE_FILE* fref, TCHARP path, int32 slot, int32* isEmpt
       if (!dir)
       {
 #if defined(ANDROID)
-         if (errno == EACCES || errno == EPERM)
+         if (fileIsAccessDenied(errno))
             return errno;
 #endif
       }
