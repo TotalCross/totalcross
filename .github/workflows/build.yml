@@ -1055,6 +1055,7 @@ jobs:
           -destination 'generic/platform=iOS' \
           -archivePath build/TotalCross.xcarchive \
           -resultBundlePath build/logs/TotalCross.xcresult \
+          __DIAGNOSE_INVALID_DEPLOYMENT_TARGET_AS_ERROR=NO \
           "${signing_args[@]}" \
           archive \
           2>&1 | tee build/logs/xcodebuild-raw.log | xcbeautify
