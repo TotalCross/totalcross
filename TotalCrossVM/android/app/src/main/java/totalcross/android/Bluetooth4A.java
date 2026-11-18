@@ -6,15 +6,18 @@
 
 package totalcross.android;
 
-import android.os.*;
+import android.os.Looper;
+import android.os.Message;
 
-import totalcross.*;
-import totalcross.android.compat.*;
+import totalcross.Launcher4A;
+import totalcross.android.compat.BluetoothRequest;
+import totalcross.android.compat.Level5;
 
 // may be running in tcvm android's thread (static methods in Launcher4A)
 
 public class Bluetooth4A
 {
+   private static final long REQUEST_WAIT_SLICE_MS = 20L;
    private static BluetoothRequest callLoaderAndWait(int callType, String param, byte[] array, int ofs, int len)
    {
       BluetoothRequest request = new BluetoothRequest(callType, param, array, ofs, len);
@@ -45,7 +48,7 @@ public class Bluetooth4A
          }
          try
          {
-            request.await(20);
+            request.await(REQUEST_WAIT_SLICE_MS);
          }
          catch (InterruptedException interrupted)
          {
