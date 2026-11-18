@@ -116,7 +116,7 @@ public class Deployer4Android {
   }
 
   /** Edits decoded aapt.pb.XmlNode text without disturbing unrelated manifest nodes. */
-  private static final class ManifestPermissionEditor {
+  static final class ManifestPermissionEditor {
     private static final String ANDROID_NAMESPACE = "http://schemas.android.com/apk/res/android";
     private static final Set<String> OPTIONAL_PERMISSIONS = new HashSet<>();
 
