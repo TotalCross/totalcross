@@ -385,11 +385,21 @@ int32 graphicsStartup(ScreenSurface screenSurface, int16 appTczAttr)
    if (screenSurface->fontScale <= 0)
       screenSurface->fontScale = 1;
 
+#if !TC_GLES_ANDROID
+   // iOS creates the window and sets the surface dimensions in initGLES.
+   if (!initGLES(screenSurface))
+      return false;
+#endif
+
    if (!screenSurface->surfaceReady || screenSurface->screenW <= 0 || screenSurface->screenH <= 0)
       return false;
 
    screenSurface->pitch = screenSurface->screenW * screenSurface->bpp / 8;
+#if TC_GLES_ANDROID
    return initGLES(screenSurface);
+#else
+   return true;
+#endif
 }
 
 int32 graphicsCreateScreenSurface(ScreenSurface screenSurface)
