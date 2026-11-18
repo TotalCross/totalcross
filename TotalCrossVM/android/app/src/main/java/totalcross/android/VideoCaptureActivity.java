@@ -19,6 +19,7 @@ import android.os.Looper;
 import android.os.SystemClock;
 import android.system.ErrnoException;
 import android.system.Os;
+import android.system.OsConstants;
 import android.util.Size;
 import android.view.MotionEvent;
 import android.view.OrientationEventListener;
@@ -630,9 +631,7 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
         try {
             File destinationFile = new File(lastSavedVideoPath).getAbsoluteFile();
             File parent = destinationFile.getParentFile();
-            if (parent == null || (!parent.exists() && !parent.mkdirs()) || !parent.isDirectory()) {
-                throw new IOException("Unable to create the video output directory.");
-            }
+            ensureOutputDirectory(parent);
             File stagingFile = File.createTempFile(".totalcross-video-", ".mp4", parent);
             session = new RecordingSession(++nextRecordingSessionId, gesture,
                     destinationFile, stagingFile);
@@ -652,6 +651,29 @@ public class VideoCaptureActivity extends AdjustedInsetsActivity {
         } catch (IOException | RuntimeException failure) {
             if (session != null) discardFailedRecordingStart(session);
             failRecordingStart(failure);
+        }
+    }
+
+    private static void ensureOutputDirectory(File directory) throws IOException {
+        if (directory == null) {
+            throw new IOException("Unable to create the video output directory.");
+        }
+        android.system.StructStat stat;
+        try {
+            stat = Os.stat(directory.getAbsolutePath());
+        } catch (ErrnoException failure) {
+            if (failure.errno != OsConstants.ENOENT) {
+                throw new IOException("Unable to access the video output directory.", failure);
+            }
+            if (directory.mkdirs()) return;
+            try {
+                stat = Os.stat(directory.getAbsolutePath());
+            } catch (ErrnoException retryFailure) {
+                throw new IOException("Unable to create the video output directory.", retryFailure);
+            }
+        }
+        if ((stat.st_mode & OsConstants.S_IFMT) != OsConstants.S_IFDIR) {
+            throw new IOException("The video output path is not a directory.");
         }
     }
 
