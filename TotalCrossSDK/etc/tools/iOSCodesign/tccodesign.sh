@@ -1,4 +1,8 @@
 #!/bin/bash
+# Copyright (C) 2020-2021 TotalCross Global Mobile Platform Ltda
+# Copyright (C) 2022-2026 Amalgam Solucoes em TI Ltda
+#
+# SPDX-License-Identifier: LGPL-2.1-only
 
 # Parse variables
 POSITIONAL=()
@@ -109,7 +113,7 @@ cp -R "${tempDir}/pkg" "${tempDir}/${appName}.xcarchive/Products/Applications/${
 # Build assets.car
 bash "${BASEDIR}/xcassetsGenerator.sh" "${sourceImage}" "${tempDir}"
 mkdir -p "${tempDir}/assets"
-xcrun actool "${tempDir}/Assets.xcassets" --compile "${tempDir}/assets" --platform iphoneos --minimum-deployment-target 8.0 --app-icon AppIcon --output-partial-info-plist "${tempDir}/assets/partial.plist"
+xcrun actool "${tempDir}/Assets.xcassets" --compile "${tempDir}/assets" --platform iphoneos --minimum-deployment-target 13.0 --app-icon AppIcon --output-partial-info-plist "${tempDir}/assets/partial.plist"
 
 # Build assets.car
 cp "${tempDir}"/assets/Assets.car "${tempDir}/${appName}.xcarchive/Products/Applications/${appName}.app/Assets.car"
