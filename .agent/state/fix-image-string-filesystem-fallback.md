@@ -145,7 +145,8 @@ the Android, Windows x64, and Linux x64 GitHub Actions results.
   gives Android 900 seconds after run `44609764897` timed out at the action's
   600-second default. Commit `121bec382` (`fix(ci): allow slow android emulator
   startup`) is pushed, and run `44613588440` is active on that revision. The
-  sixth run's Android emulator step remains active.
+  sixth run's Android emulator step had not yet concluded at this checkpoint;
+  it later timed out at 600 seconds before app launch.
 - Run `44613588440` passed Windows. Linux now starts the VM without the
   `__realpath_chk` abort, but the app exits during the TCZ image parity checks
   with `IllegalStateException:Could_not_materialize_encoded_image`; libpng emits
@@ -172,6 +173,10 @@ the Android, Windows x64, and Linux x64 GitHub Actions results.
   (`fix(ci): trace byte-first image decode`). Manual Merge Flow run
   `44617483756` is active on that commit. Run `44615780340` still has Android
   job `135885942718` in progress.
+- The Android job log for run `44613588440` shows the emulator exited
+  immediately: software CPU emulation with `-accel off` now requires
+  `ANDROID_I_WANT_MY_TCG=yes`. The action's boot loop retried until 900 seconds.
+  Add that environment variable to the emulator action so Android can boot.
 - Committed the production fix (`550f2648c`), deployed regression harness
   (`fb7f49589`), cross-platform jobs (`4df085322`), and manual trigger routing
   (`069edff77`). The execution record is in `39ff4c8aa` and this checkpoint.
@@ -194,10 +199,10 @@ the Android, Windows x64, and Linux x64 GitHub Actions results.
 
 ## Next concrete action
 
-Collect Android result from run `44615780340`, then inspect whether the
-byte-first Linux case in run `44617483756` passes before changing native decode
-behavior. Keep the plan open until Android API 35, Windows x64, and Linux x64
-deployed functional checks pass.
+Dispatch and collect the Android workflow with TCG explicitly enabled, and
+inspect whether the byte-first Linux case in run `44617483756` passes before
+changing native decode behavior. Keep the plan open until Android API 35,
+Windows x64, and Linux x64 deployed functional checks pass.
 
 ## Preservation boundary
 
@@ -212,10 +217,10 @@ dispatch; PR creation, merge, rebase, and force-push remain unauthorized.
   `.agent/evidence/fix-image-string-filesystem-fallback.jsonl`.
 - Corrected JavaSE and deployed macOS arm64 checks passed.
 - Corrected deployed macOS arm64 AddressSanitizer smoke passed.
-- Windows x64 functional validation passed repeatedly, including run
-  `44613588440`. The Linux `realpath` startup abort is fixed and verified in
-  CI; Linux app decode still fails during TCZ image parity and awaits focused
-  diagnostics. Android API 35 jobs have timed out before app launch at 600 and
-  900 seconds; run `44615780340` uses the same 900-second allowance and remains
-  in progress. iOS is out of scope.
+- Windows x64 functional validation passed repeatedly, including runs
+  `44613588440` and `44615780340`. The Linux `realpath` startup abort is fixed
+  and verified in CI; Linux app decode still fails during TCZ image parity and
+  awaits byte-first diagnostics. Android API 35 jobs have timed out before app
+  launch at 600 and 900 seconds. The in-progress run `44617483756` also uses
+  the old emulator environment. iOS is out of scope.
 - iOS build and functional validation are out of scope.
