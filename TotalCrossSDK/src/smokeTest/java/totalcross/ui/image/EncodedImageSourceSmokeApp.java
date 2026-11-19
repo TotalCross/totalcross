@@ -10,8 +10,12 @@ import totalcross.io.FileNotFoundException;
 import totalcross.io.IllegalArgumentIOException;
 import totalcross.ui.MainWindow;
 
-/** Deployed macOS smoke for native encoded-source capture and metadata. */
+/** Deployed smoke for native encoded-source capture and metadata. */
 public class EncodedImageSourceSmokeApp extends MainWindow {
+  static {
+    totalcross.sys.Settings.applicationId = "imgsmoke";
+  }
+
   @Override
   public void initUI() {
     if (totalcross.sys.Settings.onJavaSE) {
