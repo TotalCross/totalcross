@@ -168,6 +168,10 @@ the Android, Windows x64, and Linux x64 GitHub Actions results.
   input-data/decoder behavior from TCZ path-capture behavior. The updated
   `jarEncodedImageSourceSmoke` and copyright/diff checks passed; build log:
   `/tmp/image-string-smoke-byte-first-build.log`.
+- The byte-first diagnostics were committed and pushed as `f25870798`
+  (`fix(ci): trace byte-first image decode`). Manual Merge Flow run
+  `44617483756` is active on that commit. Run `44615780340` still has Android
+  job `135885942718` in progress.
 - Committed the production fix (`550f2648c`), deployed regression harness
   (`fb7f49589`), cross-platform jobs (`4df085322`), and manual trigger routing
   (`069edff77`). The execution record is in `39ff4c8aa` and this checkpoint.
@@ -190,10 +194,10 @@ the Android, Windows x64, and Linux x64 GitHub Actions results.
 
 ## Next concrete action
 
-Collect Android result from run `44615780340`. Push and dispatch the
-byte-first diagnostic smoke, then determine whether Linux `Image(byte[])` also
-fails before changing native decode behavior. Keep the plan open until Android
-API 35, Windows x64, and Linux x64 deployed functional checks pass.
+Collect Android result from run `44615780340`, then inspect whether the
+byte-first Linux case in run `44617483756` passes before changing native decode
+behavior. Keep the plan open until Android API 35, Windows x64, and Linux x64
+deployed functional checks pass.
 
 ## Preservation boundary
 
