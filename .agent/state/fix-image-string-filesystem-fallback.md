@@ -128,7 +128,22 @@ the Android, Windows x64, and Linux x64 GitHub Actions results.
   `14571039635` has the first backtrace. Commit `78ee90d79` now breaks on
   `__realpath_chk`, prints its input path and output capacity, and captures a
   full backtrace. The commit was pushed and dispatched as run `44611514188`
-  while Android in run `44609764897` remained active.
+  while Android in run `44609764897` remained active. In that run, Windows
+  passed; Linux GDB captured `realpath` input `./libtcvm.so` and output capacity
+  `1024` before SIGABRT in `startVM`. Android run `44609764897` later timed out
+  waiting 600 seconds for the emulator and never started the smoke app. Run
+  `44611514188` passed Windows, reproduced the Linux failure, and is still
+  running its Android job.
+- glibc `__realpath_chk` requires a destination at least `PATH_MAX` bytes;
+  `MAX_PATHNAME` is 1024 on Linux while the runner's `PATH_MAX` is 4096. Replaced
+  the fixed stack output with `realpath(path, NULL)` and freed the allocated
+  result after copying. The focused CMake build of `tcvm` and `Launcher` passed,
+  as did `runEncodedImageSourceSmokeMacOS` with those fresh native artifacts.
+  Copyright-header validation passed. Committed and pushed the native fix in
+  `153f9fae5` (`fix(vm): allocate resolved paths safely`). The workflow now
+  gives Android 900 seconds after run `44609764897` timed out at the action's
+  600-second default; the syntax-checked timeout change is pending its CI commit.
+  Run `44611514188` still has its Android emulator step active.
 - Committed the production fix (`550f2648c`), deployed regression harness
   (`fb7f49589`), cross-platform jobs (`4df085322`), and manual trigger routing
   (`069edff77`). The execution record is in `39ff4c8aa` and this checkpoint.
@@ -146,14 +161,14 @@ the Android, Windows x64, and Linux x64 GitHub Actions results.
 - `TotalCrossSDK/src/test/java/totalcross/ui/image/`
 - `TotalCrossVM/src/nm/ui/image_Image.c`
 - `TotalCrossSDK/build.gradle` and any focused smoke fixture/build task
-- `.github/workflows/` only if no existing CI smoke fits
+- `TotalCrossVM/src/init/posix/startup_c.h`
+- `.github/workflows/` for the existing CI smoke lanes
 
 ## Next concrete action
 
-Inspect the Android result in run `44609764897` and the Android, Windows, and
-Linux results in run `44611514188`. Use the Linux path/buffer trace and Android
-logs to resolve remaining failures. Keep the plan open until Android, Windows,
-and Linux all pass.
+Commit and push the validated Android timeout update, then manually dispatch
+run seven. Reconcile the Android job in `44611514188` as it completes; keep the
+plan open until Android, Windows, and Linux all pass on the post-fix run.
 
 ## Preservation boundary
 

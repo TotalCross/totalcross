@@ -75,9 +75,17 @@ unreadable must fail without trying a same-name filesystem file.
   `__realpath_chk`; the backtrace does not yet show the path or buffer capacity.
   Android remains active. Commit `78ee90d79` adds a GDB breakpoint for those
   values plus a full backtrace; it was pushed and dispatched as run
-  `44611514188`. Both runs are pending Android results. See the evidence index.
-- [ ] Reconcile the next Android, Windows x64, and Linux x64 functional results
-  and artifacts with the acceptance criteria.
+  `44611514188`. In run `44609764897`, Windows passed, Linux aborted in
+  startup, and Android timed out waiting for its emulator at the action default
+  of 600 seconds before launching the app. In run `44611514188`, Windows passed
+  and GDB captured `realpath(./libtcvm.so, ..., 1024)` before the same abort;
+  Android remains active. The fix uses `realpath(path, NULL)` and frees its
+  allocated result. Commit `153f9fae5` (`fix(vm): allocate resolved paths
+  safely`) is pushed; its CMake and local deployed macOS checks passed. The
+  workflow change giving Android 900 seconds to boot is syntax-checked and
+  pending its focused commit. See the evidence index.
+- [ ] Reconcile Android API 35, Windows x64, and Linux x64 results from the
+  next post-fix run and artifacts with the acceptance criteria.
 
 ## Current Architecture and Scope
 
