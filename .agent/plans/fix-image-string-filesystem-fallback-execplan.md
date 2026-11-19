@@ -41,10 +41,9 @@ unreadable must fail without trying a same-name filesystem file.
 - [x] Implement the Java/native contract and converter regressions; targeted
   converter/image tests, bridge generation, JavaSE, and deployed macOS arm64
   validations passed.
-- [x] Add the compact correctness coverage and a manually dispatchable
-  workflow reusing `build.yml`; it runs only the Android, Windows x64, and
-  Linux x64 functional lanes. Remote runs remain pending because no branch push
-  is authorized.
+- [x] Add compact correctness coverage and an opt-in input on the existing
+  manually dispatchable Merge Flow, reusing `build.yml` for only the Android,
+  Windows x64, and Linux x64 functional lanes.
 - [x] Commit the fix, regression app, and workflow in three focused local
   commits; validate commit messages, headers, workflow YAML, shell blocks, and
   the staged diffs.
@@ -159,9 +158,15 @@ authorization unless an already-authorized trigger exists.
 - The normal Windows build in `build.yml` targets Win32. When the new smoke
   input is enabled, that same canonical build job switches to x64, and the
   functional job requires a 64-bit Visual Studio project before running it.
-- Ruby parsed both changed workflow YAML files. No cross-platform Action has
-  run yet; the manual workflow must be dispatched from an authorized remote
-  branch before those results can be reported.
+- GitHub requires a `workflow_dispatch` file to exist on the default branch.
+  The feature-only dispatcher was removed and the smoke input was added to the
+  existing Merge Flow so it can run against this branch without a PR.
+- A local macOS ARM64 AddressSanitizer build and deployed smoke passed with no
+  sanitizer report. SDK JAR, smoke TCZ, ASan dylib, and Launcher share build ID
+  `50e78dce…`; logs and exact identity output are in the evidence index.
+- Ruby parsed the changed workflow YAML and `bash -n` accepted all 55 Bash
+  workflow blocks. No cross-platform Action has run yet; the authorized branch
+  push and manual Merge Flow dispatch are the next steps.
 
 ## Decision Log
 
@@ -179,8 +184,8 @@ Required: pre-fix deployed reproduction or explicit unavailable-evidence
 record; bridge generation and converter test; targeted JavaSE tests; corrected
 native macOS build and real deployed PNG/JPEG parity; path-length and TCZ
 non-fallback behavior; local commits; and Android, Windows, and Linux CI
-functional results. The CI workflow is prepared, but its runs cannot start
-until the branch is pushed and manually dispatched.
+functional results. The user has authorized the branch push and manual
+dispatch; those three CI results remain pending.
 The exact Gradle test selector and existing smoke tasks must be established
 from project configuration before invocation. Use `.agent/guides/macos-native-runtime-validation.md`
 and the build-provenance guide for local deployed identity. iOS coverage is
@@ -210,10 +215,10 @@ was reproduced on macOS arm64, then the corrected SDK and native VM passed the
 expanded JavaSE and deployed macOS suites. Three local commits contain the
 production change, deployed regression harness, and opt-in Actions workflow.
 
-The attached plan requires authorization before pushing or dispatching remote
-workflows. Android API 35, Windows x64, and Linux x64 CI therefore remain the
-only unfinished acceptance items; no Actions result is claimed. iOS remains out
-of scope as requested.
+The user authorized pushing the feature branch and dispatching the existing
+Merge Flow with the smoke input. Android API 35, Windows x64, and Linux x64 CI
+remain the only unfinished acceptance items; no Actions result is claimed yet.
+iOS remains out of scope as requested.
 
 ## Revision Note
 

@@ -9,9 +9,9 @@ SPDX-License-Identifier: LGPL-2.1-only
 ## Active slice
 
 Local implementation, regression coverage, workflow preparation, validation,
-and commits are complete. The remaining gate is Android, Windows x64, and Linux
-x64 GitHub Actions after the user authorizes pushing this branch and dispatching
-the manual workflow.
+and commits are complete. The user authorized pushing this branch and manually
+dispatching the existing Merge Flow with the smoke input. The remaining gate is
+the Android, Windows x64, and Linux x64 GitHub Actions results.
 
 ## Last checkpoint
 
@@ -53,20 +53,29 @@ the manual workflow.
   missing/invalid files, absolute paths, safe 255/256/300-character paths,
   repeated native bag release, and runtime-only fixture checks. macOS reports
   the `device/` alias unsupported because its app sandbox is read-only there.
+- A macOS ARM64 ASan build (`-fsanitize=address`) and the deployed smoke both
+  passed. The smoke emitted `overallPass=true` without an AddressSanitizer
+  report; SDK JAR, TCZ, dylib, and Launcher identity passed with build ID
+  `50e78dce74ec094634ecca35ef65c62e5d87b6a3c58b8159977deb115e4f14e9` and
+  tree `ae0595a4d09b64b4c93569451df33b795cecdb80`.
 - The local SDK JAR, deployed TCZ, native dylib, and Launcher passed
   `scripts/provenance/artifact-identity.py` with build ID
   `213b5a927ee5baeef0dc0f6ff05960b9aabeb9baae9abe19c79c1e41e2504449` and
   source tree `cbc6792d5e1dfedb88ab1c6415e3e166d4b8e961`.
 - Ruby YAML parsing and focused copyright-header validation passed.
-- Added `.github/workflows/image-string-path-smoke.yml` and an opt-in input to
-  `build.yml`. The manual workflow skips macOS/iOS and non-x64 Linux, runs
-  Windows x64, Android API 35 emulator, and Linux x64 deployed functional
-  smokes, checks SDK/VM build provenance, and uploads result logs. It has not
-  been dispatched because remote publication is not authorized.
-- Committed the work in three focused local commits:
-  `550f2648c` (production fix), `fb7f49589` (deployed regression harness), and
-  `4df085322` (manual cross-platform workflow). Each commit passed the
-  repository message validator; its staged diff was reviewed and checked.
+- Added the opt-in smoke input to `build.yml` and the existing manually
+  dispatchable `merge.yml`. The smoke run skips macOS/iOS and non-x64 Linux,
+  runs Windows x64, Android API 35 emulator, and Linux x64 deployed functional
+  checks, verifies SDK/VM provenance, and uploads result logs. The user
+  authorized pushing the feature branch and dispatching this flow.
+- GitHub requires a manual-dispatch workflow to exist on the default branch;
+  use the existing Merge Flow, whose default-branch trigger is already active,
+  to dispatch the feature branch with `image-string-smoke=true`.
+- Committed the production fix (`550f2648c`), deployed regression harness
+  (`fb7f49589`), cross-platform jobs (`4df085322`), and manual trigger routing
+  (`069edff77`). The execution record is in `39ff4c8aa` and this checkpoint.
+  Each commit passed the repository message validator; its staged diff was
+  reviewed and checked.
 - Final workflow validation parsed both YAML files and checked syntax for all
   55 Bash `run` blocks. The two workflow copyright headers passed validation.
 - Evidence: `.agent/evidence/fix-image-string-filesystem-fallback.jsonl`
@@ -83,23 +92,23 @@ the manual workflow.
 
 ## Next concrete action
 
-Obtain explicit user authorization to push `fix/image-string-filesystem-fallback`
-and dispatch `.github/workflows/image-string-path-smoke.yml`; then inspect all
-three platform run results and update the acceptance record. Until that
-authorization arrives, keep the branch local and report remote CI as pending.
+Push `fix/image-string-filesystem-fallback`, then dispatch `Merge flow` on that
+branch with `image-string-smoke=true`. Inspect the Android, Windows, and Linux
+run results and artifacts and update the acceptance record.
 
 ## Preservation boundary
 
 The original checkout at `/Users/flsobral/repos/totalcross-github` contains
 unrelated untracked files. Work only in this worktree; never stage or clean
-those files. No remote push, PR, merge, rebase, or force-push is authorized by
-the plan.
+those files. The user authorized a feature-branch push and manual workflow
+dispatch; PR creation, merge, rebase, and force-push remain unauthorized.
 
 ## Validation and deferrals
 
 - Pre-fix macOS arm64 deployed regression passed as an expected failure; see
   `.agent/evidence/fix-image-string-filesystem-fallback.jsonl`.
 - Corrected JavaSE and deployed macOS arm64 checks passed.
+- Corrected deployed macOS arm64 AddressSanitizer smoke passed.
 - Android, Windows, and Linux functional validation belongs in GitHub Actions;
-  the manual workflow is prepared but has not run.
+  the manual Merge Flow input is prepared but has not run yet.
 - iOS build and functional validation are out of scope.
