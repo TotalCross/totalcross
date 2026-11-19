@@ -70,7 +70,8 @@ unreadable must fail without trying a same-name filesystem file.
   Android workflow now writes a shell script during deploy and invokes it with
   one action-script line, and verifies that deploy produced an APK before
   booting the emulator. YAML, Android shell syntax, headers, and diff checks
-  pass. See the evidence index.
+  passed. Commit `5afd73e06` was pushed and dispatched as run `44609764897`;
+  its Android, Windows, and Linux results are pending. See the evidence index.
 - [ ] Reconcile the next Android, Windows x64, and Linux x64 functional results
   and artifacts with the acceptance criteria.
 

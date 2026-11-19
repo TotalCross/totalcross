@@ -120,8 +120,9 @@ the Android, Windows x64, and Linux x64 GitHub Actions results.
   Android POSIX script syntax, copyright headers, diff checks, and commit
   message validation passed. The new Android runner script is created during
   deploy and invoked as one action-script line, keeping variables in one shell.
-  Validate, commit, push, and dispatch this correction with the Linux
-  diagnostics.
+  Committed the single-shell Android harness and APK preflight in `5afd73e06`
+  (`fix(ci): keep android smoke in one shell`), pushed it, and dispatched run
+  `44609764897` with the Linux diagnostics. Results are pending.
 - Committed the production fix (`550f2648c`), deployed regression harness
   (`fb7f49589`), cross-platform jobs (`4df085322`), and manual trigger routing
   (`069edff77`). The execution record is in `39ff4c8aa` and this checkpoint.
@@ -143,9 +144,9 @@ the Android, Windows x64, and Linux x64 GitHub Actions results.
 
 ## Next concrete action
 
-Validate and commit the Android single-shell harness fix, push it, and dispatch
-the next run with Linux diagnostics. Inspect the Android and Linux artifacts;
-keep the plan open until Android, Windows, and Linux all pass.
+Inspect run `44609764897` and its Android, Windows, and Linux artifacts. Use
+the Linux backtrace and Android logs to resolve any remaining failures. Keep
+the plan open until Android, Windows, and Linux all pass.
 
 ## Preservation boundary
 
