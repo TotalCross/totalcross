@@ -176,7 +176,11 @@ the Android, Windows x64, and Linux x64 GitHub Actions results.
 - The Android job log for run `44613588440` shows the emulator exited
   immediately: software CPU emulation with `-accel off` now requires
   `ANDROID_I_WANT_MY_TCG=yes`. The action's boot loop retried until 900 seconds.
-  Add that environment variable to the emulator action so Android can boot.
+  Added that environment variable to the emulator action in
+  `b89d2db8f` (`fix(ci): enable Android TCG software emulation`). Workflow YAML
+  parsing, header validation, and diff checks passed. Pushed and manually
+  dispatched run `44618392682`; its checkout is active. Official emulator
+  command-line docs confirm the required TCG opt-in.
 - Committed the production fix (`550f2648c`), deployed regression harness
   (`fb7f49589`), cross-platform jobs (`4df085322`), and manual trigger routing
   (`069edff77`). The execution record is in `39ff4c8aa` and this checkpoint.
@@ -199,10 +203,10 @@ the Android, Windows x64, and Linux x64 GitHub Actions results.
 
 ## Next concrete action
 
-Dispatch and collect the Android workflow with TCG explicitly enabled, and
-inspect whether the byte-first Linux case in run `44617483756` passes before
-changing native decode behavior. Keep the plan open until Android API 35,
-Windows x64, and Linux x64 deployed functional checks pass.
+Collect run `44617483756`'s byte-first Linux result and run `44618392682`'s
+Android API 35 result with TCG enabled. Determine the native path decode fix
+from the Linux result. Keep the plan open until Android API 35, Windows x64,
+and Linux x64 deployed functional checks pass.
 
 ## Preservation boundary
 
@@ -221,6 +225,7 @@ dispatch; PR creation, merge, rebase, and force-push remain unauthorized.
   `44613588440` and `44615780340`. The Linux `realpath` startup abort is fixed
   and verified in CI; Linux app decode still fails during TCZ image parity and
   awaits byte-first diagnostics. Android API 35 jobs have timed out before app
-  launch at 600 and 900 seconds. The in-progress run `44617483756` also uses
-  the old emulator environment. iOS is out of scope.
+  launch at 600 and 900 seconds because `ANDROID_I_WANT_MY_TCG` was missing.
+  Run `44617483756` uses the old emulator environment; `44618392682` is the
+  first run with TCG explicitly enabled. iOS is out of scope.
 - iOS build and functional validation are out of scope.
