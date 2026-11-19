@@ -73,8 +73,9 @@ unreadable must fail without trying a same-name filesystem file.
   passed. Commit `5afd73e06` was pushed and dispatched as run `44609764897`;
   Windows passed. Linux aborts before the app in `startVM` at glibc
   `__realpath_chk`; the backtrace does not yet show the path or buffer capacity.
-  Android remains active. A focused GDB breakpoint will capture both values on
-  the next run. See the evidence index.
+  Android remains active. Commit `78ee90d79` adds a GDB breakpoint for those
+  values plus a full backtrace; it was pushed and dispatched as run
+  `44611514188`. Both runs are pending Android results. See the evidence index.
 - [ ] Reconcile the next Android, Windows x64, and Linux x64 functional results
   and artifacts with the acceptance criteria.
 

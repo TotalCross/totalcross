@@ -125,8 +125,10 @@ the Android, Windows x64, and Linux x64 GitHub Actions results.
   `44609764897` with the Linux diagnostics. Windows passed. Linux aborted
   before app startup: GDB shows `__realpath_chk` called from `startVM` before
   `executeProgram`, and the Android emulator job remains active. Artifact
-  `14571039635` has the first backtrace. The next diagnostic will print the
-  realpath input and output capacity, then capture a full backtrace.
+  `14571039635` has the first backtrace. Commit `78ee90d79` now breaks on
+  `__realpath_chk`, prints its input path and output capacity, and captures a
+  full backtrace. The commit was pushed and dispatched as run `44611514188`
+  while Android in run `44609764897` remained active.
 - Committed the production fix (`550f2648c`), deployed regression harness
   (`fb7f49589`), cross-platform jobs (`4df085322`), and manual trigger routing
   (`069edff77`). The execution record is in `39ff4c8aa` and this checkpoint.
@@ -148,9 +150,10 @@ the Android, Windows x64, and Linux x64 GitHub Actions results.
 
 ## Next concrete action
 
-Inspect run `44609764897` and its Android, Windows, and Linux artifacts. Use
-the Linux backtrace and Android logs to resolve any remaining failures. Keep
-the plan open until Android, Windows, and Linux all pass.
+Inspect the Android result in run `44609764897` and the Android, Windows, and
+Linux results in run `44611514188`. Use the Linux path/buffer trace and Android
+logs to resolve remaining failures. Keep the plan open until Android, Windows,
+and Linux all pass.
 
 ## Preservation boundary
 
