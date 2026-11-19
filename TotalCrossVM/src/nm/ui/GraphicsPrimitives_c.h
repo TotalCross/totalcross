@@ -10,6 +10,10 @@
 #include "NativeImageBacking.h"
 #include "math.h"
 
+#if defined(darwin) || (defined(TC_OS_IOS) && TC_OS_IOS)
+int32 iphone_privateIsSurfaceWillChange(void);
+#endif
+
 #define TRANSITION_NONE  0
 #define TRANSITION_OPEN  1
 #define TRANSITION_CLOSE 2
@@ -157,6 +161,16 @@ void screenChangeCommitted(Context currentContext, ScreenChangeFlags changes)
 {
    double contentScale;
 
+#if defined(darwin) || (defined(TC_OS_IOS) && TC_OS_IOS)
+   // The initial iOS layout can mark the drawable as changing before
+   // setScreenValues() pre-populates its dimensions. The queued screenChange
+   // then compares equal to the current surface and would never clear the
+   // surfaceWillChange latch. Commit the initial configuration normally so
+   // tcSettings, GL projection, screen-change event and repaint stay in sync.
+   if (changes == SCREEN_CHANGE_NONE && screen.surfaceReady &&
+       iphone_privateIsSurfaceWillChange())
+      changes = (ScreenChangeFlags)(changes | SCREEN_CHANGE_INITIAL);
+#endif
    if (changes == SCREEN_CHANGE_NONE || !screen.surfaceReady)
       return;
 
