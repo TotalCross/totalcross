@@ -184,6 +184,11 @@ the Android, Windows x64, and Linux x64 GitHub Actions results.
   macOS smoke passed. Summaries are in
   `TotalCrossSDK/agent-logs/20261119-183224-test-agent.log` and
   `TotalCrossSDK/agent-logs/20261119-183349-runEncodedImageSourceSmokeMacOS-agent.log`.
+- Committed and pushed the canonical decode retry as `231dd329b`
+  (`fix(sdk): retry canonical decode after direct failure`). Manual Merge Flow
+  run `44620259847` is active on this revision. Android run `44618392682` is
+  the first run with the TCG environment opt-in and its emulator job remains
+  active.
 - The Android job log for run `44613588440` shows the emulator exited
   immediately: software CPU emulation with `-accel off` now requires
   `ANDROID_I_WANT_MY_TCG=yes`. The action's boot loop retried until 900 seconds.
@@ -214,10 +219,10 @@ the Android, Windows x64, and Linux x64 GitHub Actions results.
 
 ## Next concrete action
 
-Push and dispatch the canonical-decoder fallback. Collect run `44618392682`'s
-Android API 35 result with TCG enabled and determine whether the Linux fallback
-resolves the decode failure. Keep the plan open until Android API 35, Windows
-x64, and Linux x64 deployed functional checks pass.
+Collect run `44620259847`'s Linux result to determine whether the canonical
+decode fallback resolves the failure, and run `44618392682`'s Android API 35
+result with TCG enabled. Keep the plan open until Android API 35, Windows x64,
+and Linux x64 deployed functional checks pass.
 
 ## Preservation boundary
 
@@ -235,8 +240,8 @@ dispatch; PR creation, merge, rebase, and force-push remain unauthorized.
 - Windows x64 functional validation passed repeatedly, including runs
   `44613588440` and `44615780340`. The Linux `realpath` startup abort is fixed
   and verified in CI; Linux native-bag decode failed from `Image(byte[])` and
-  awaits validation of the direct-decoder fallback. Android API 35 jobs timed
-  out at 600 and 900 seconds because `ANDROID_I_WANT_MY_TCG` was missing.
-  Run `44617483756` uses the old emulator environment; `44618392682` is the
-  first run with TCG explicitly enabled. iOS is out of scope.
+  run `44620259847` is validating a canonical-decoder fallback. Android API 35
+  jobs timed out at 600 and 900 seconds because `ANDROID_I_WANT_MY_TCG` was
+  missing. Run `44618392682` is the first with TCG explicitly enabled and still
+  active. iOS is out of scope.
 - iOS build and functional validation are out of scope.
