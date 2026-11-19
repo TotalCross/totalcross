@@ -71,7 +71,10 @@ unreadable must fail without trying a same-name filesystem file.
   one action-script line, and verifies that deploy produced an APK before
   booting the emulator. YAML, Android shell syntax, headers, and diff checks
   passed. Commit `5afd73e06` was pushed and dispatched as run `44609764897`;
-  its Android, Windows, and Linux results are pending. See the evidence index.
+  Windows passed. Linux aborts before the app in `startVM` at glibc
+  `__realpath_chk`; the backtrace does not yet show the path or buffer capacity.
+  Android remains active. A focused GDB breakpoint will capture both values on
+  the next run. See the evidence index.
 - [ ] Reconcile the next Android, Windows x64, and Linux x64 functional results
   and artifacts with the acceptance criteria.
 

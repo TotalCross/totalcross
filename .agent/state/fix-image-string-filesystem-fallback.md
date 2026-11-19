@@ -122,7 +122,11 @@ the Android, Windows x64, and Linux x64 GitHub Actions results.
   deploy and invoked as one action-script line, keeping variables in one shell.
   Committed the single-shell Android harness and APK preflight in `5afd73e06`
   (`fix(ci): keep android smoke in one shell`), pushed it, and dispatched run
-  `44609764897` with the Linux diagnostics. Results are pending.
+  `44609764897` with the Linux diagnostics. Windows passed. Linux aborted
+  before app startup: GDB shows `__realpath_chk` called from `startVM` before
+  `executeProgram`, and the Android emulator job remains active. Artifact
+  `14571039635` has the first backtrace. The next diagnostic will print the
+  realpath input and output capacity, then capture a full backtrace.
 - Committed the production fix (`550f2648c`), deployed regression harness
   (`fb7f49589`), cross-platform jobs (`4df085322`), and manual trigger routing
   (`069edff77`). The execution record is in `39ff4c8aa` and this checkpoint.

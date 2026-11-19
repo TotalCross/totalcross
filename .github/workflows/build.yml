@@ -1223,9 +1223,21 @@ jobs:
         if ! command -v gdb >/dev/null 2>&1; then
           sudo apt-get install -qq --no-install-recommends --yes gdb
         fi
+        cat > "${smoke_dir}/diagnostic.gdb" <<'GDB'
+        set pagination off
+        set breakpoint pending on
+        break __realpath_chk
+        commands
+          silent
+          printf "realpath path=%s output_capacity=%lu\n", (char*)$rdi, (unsigned long)$rdx
+          continue
+        end
+        run
+        bt full 30
+        GDB
         set +e
         timeout 120s xvfb-run -a gdb --batch --quiet --return-child-result \
-          -ex 'set pagination off' -ex run -ex 'bt 30' \
+          -x "${smoke_dir}/diagnostic.gdb" \
           --args ./EncodedImageSourceSmokeApp > "${smoke_dir}/diagnostic.log" 2>&1
         gdb_status=$?
         set -e
