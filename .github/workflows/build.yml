@@ -1192,19 +1192,19 @@ jobs:
         build_id="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["build"]["id"])' build-provenance.json)"
         cd "${smoke_dir}"
         java -cp "${sdk}/totalcross-sdk.jar:${sdk}/libs/*" tc.Deploy EncodedImageSourceSmokeApp.jar -linux > deploy.log 2>&1
-        export LD_LIBRARY_PATH="${smoke_dir}/install/linux${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}"
+        cd "${smoke_dir}/install/linux"
         set +e
-        timeout 120s xvfb-run -a "${smoke_dir}/install/linux/EncodedImageSourceSmokeApp" > smoke.log 2>&1
+        timeout 120s xvfb-run -a ./EncodedImageSourceSmokeApp > "${smoke_dir}/smoke.log" 2>&1
         smoke_status=$?
         set -e
-        result_line="$(grep 'fixture=EncodedImageSourceSmokeApp' smoke.log | tail -1 || true)"
+        result_line="$(grep 'fixture=EncodedImageSourceSmokeApp' "${smoke_dir}/smoke.log" | tail -1 || true)"
         printf '%s\n' "${result_line}"
         {
           printf 'sourceCommit=%s\nharnessCommit=%s\n' '${{ github.sha }}' '${{ github.sha }}'
           printf 'sourceTree=%s\nbuildId=%s\n' "${source_tree}" "${build_id}"
           printf 'platform=linux-x64\nexitCode=%s\n' "${smoke_status}"
           printf '%s\n' "${result_line}"
-        } > smoke-result.txt
+        } > "${smoke_dir}/smoke-result.txt"
         test "${smoke_status}" -eq 0
         printf '%s' "${result_line}" | grep -q 'overallPass=true'
         printf '%s' "${result_line}" | grep -q 'runtimeFixturesNotPackaged=true'
@@ -1285,15 +1285,19 @@ jobs:
         try {
           java -cp $classPath tc.Deploy EncodedImageSourceSmokeApp.jar -win32 *> (Join-Path $smokeDir 'deploy.log')
           if ($LASTEXITCODE -ne 0) { throw "Windows smoke deployment failed: $LASTEXITCODE" }
-          $app = Join-Path $smokeDir 'install/win32/EncodedImageSourceSmokeApp.exe'
-          & $app *> (Join-Path $smokeDir 'smoke.log')
-          $smokeStatus = $LASTEXITCODE
-          $resultLine = Select-String -Path (Join-Path $smokeDir 'smoke.log') -Pattern 'fixture=EncodedImageSourceSmokeApp' | Select-Object -Last 1
-          if (-not $resultLine) { throw 'Windows smoke result line is missing' }
-          $resultLine.Line | Add-Content (Join-Path $smokeDir 'smoke-result.txt')
-          "platform=windows-x64" | Add-Content (Join-Path $smokeDir 'smoke-result.txt')
-          "exitCode=$smokeStatus" | Add-Content (Join-Path $smokeDir 'smoke-result.txt')
-          if ($smokeStatus -ne 0 -or $resultLine.Line -notmatch 'overallPass=true' -or $resultLine.Line -notmatch 'runtimeFixturesNotPackaged=true') { throw "Windows smoke failed: exitCode=$smokeStatus" }
+          Push-Location (Join-Path $smokeDir 'install/win32')
+          try {
+            & .\EncodedImageSourceSmokeApp.exe *> (Join-Path $smokeDir 'smoke.log')
+            $smokeStatus = $LASTEXITCODE
+            $resultLine = Select-String -Path (Join-Path $smokeDir 'smoke.log') -Pattern 'fixture=EncodedImageSourceSmokeApp' | Select-Object -Last 1
+            if (-not $resultLine) { throw 'Windows smoke result line is missing' }
+            $resultLine.Line | Add-Content (Join-Path $smokeDir 'smoke-result.txt')
+            "platform=windows-x64" | Add-Content (Join-Path $smokeDir 'smoke-result.txt')
+            "exitCode=$smokeStatus" | Add-Content (Join-Path $smokeDir 'smoke-result.txt')
+            if ($smokeStatus -ne 0 -or $resultLine.Line -notmatch 'overallPass=true' -or $resultLine.Line -notmatch 'runtimeFixturesNotPackaged=true') { throw "Windows smoke failed: exitCode=$smokeStatus" }
+          } finally {
+            Pop-Location
+          }
         } finally {
           Pop-Location
         }
@@ -1341,6 +1345,8 @@ jobs:
 
     - name: Set up Android SDK
       uses: android-actions/setup-android@v3
+      with:
+        packages: ''
 
     - name: Deploy Android smoke APK
       env:
