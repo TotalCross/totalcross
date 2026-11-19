@@ -149,13 +149,25 @@ the Android, Windows x64, and Linux x64 GitHub Actions results.
 - Run `44613588440` passed Windows. Linux now starts the VM without the
   `__realpath_chk` abort, but the app exits during the TCZ image parity checks
   with `IllegalStateException:Could_not_materialize_encoded_image`; libpng emits
-  an ADLER32 warning immediately before exit. The run's Linux artifacts are in
-  `/tmp/image-string-linux-run-44613588440/`. Android job `135877939298` is
-  still booting/running under the 900-second timeout. Added smoke-only phase
-  markers around TCZ path/byte decoding and inclusion of nested exception
-  causes. `jarEncodedImageSourceSmoke` passed with these diagnostic changes;
-  diff check passed. Diagnostic packaging log:
+  an ADLER32 warning immediately before exit. Android job `135877939298` timed
+  out before app launch after 900 seconds; its artifact has only `deploy.log`.
+  The run's Linux artifacts are in `/tmp/image-string-linux-run-44613588440/`.
+  Added smoke-only phase markers around TCZ path/byte decoding and inclusion of
+  nested exception causes. `jarEncodedImageSourceSmoke` passed with these
+  diagnostics; diagnostic packaging log:
   `/tmp/image-string-smoke-diagnostics-build.log`.
+- Committed and pushed the diagnostic harness/state/evidence as
+  `211d5d20c` (`fix(ci): trace TCZ image decode failures`). Manual Merge Flow
+  run `44615780340` passed Windows but Linux failed during
+  `tcz-parity-pixels-path-start=image-abi/tiny.png`; `Image(path)` creation
+  succeeded, then `getPixels()` failed with
+  `Image$DeterministicImageDecodeException:Could_not_decode_encoded_image` and
+  an ADLER32 warning. Artifacts are in
+  `/tmp/image-string-linux-run-44615780340/`. Android job `135885942718` is
+  active. The smoke now decodes the matching `Image(byte[])` first to separate
+  input-data/decoder behavior from TCZ path-capture behavior. The updated
+  `jarEncodedImageSourceSmoke` and copyright/diff checks passed; build log:
+  `/tmp/image-string-smoke-byte-first-build.log`.
 - Committed the production fix (`550f2648c`), deployed regression harness
   (`fb7f49589`), cross-platform jobs (`4df085322`), and manual trigger routing
   (`069edff77`). The execution record is in `39ff4c8aa` and this checkpoint.
@@ -178,10 +190,10 @@ the Android, Windows x64, and Linux x64 GitHub Actions results.
 
 ## Next concrete action
 
-Collect Android result from run `44613588440`. Push the smoke diagnostics and
-dispatch another manual run, then use its Linux phase and cause chain to locate
-the TCZ decode failure. Keep the plan open until Android API 35, Windows x64,
-and Linux x64 deployed functional checks pass.
+Collect Android result from run `44615780340`. Push and dispatch the
+byte-first diagnostic smoke, then determine whether Linux `Image(byte[])` also
+fails before changing native decode behavior. Keep the plan open until Android
+API 35, Windows x64, and Linux x64 deployed functional checks pass.
 
 ## Preservation boundary
 
@@ -199,6 +211,7 @@ dispatch; PR creation, merge, rebase, and force-push remain unauthorized.
 - Windows x64 functional validation passed repeatedly, including run
   `44613588440`. The Linux `realpath` startup abort is fixed and verified in
   CI; Linux app decode still fails during TCZ image parity and awaits focused
-  diagnostics. Earlier Android API 35 jobs timed out before app launch, and the
-  900-second post-fix check is in progress. iOS is out of scope.
+  diagnostics. Android API 35 jobs have timed out before app launch at 600 and
+  900 seconds; run `44615780340` uses the same 900-second allowance and remains
+  in progress. iOS is out of scope.
 - iOS build and functional validation are out of scope.

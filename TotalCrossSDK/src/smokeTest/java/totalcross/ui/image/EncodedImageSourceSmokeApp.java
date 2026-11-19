@@ -297,11 +297,12 @@ public class EncodedImageSourceSmokeApp extends MainWindow {
           || fromPath.getPixelHeight() != fromBytes.getPixelHeight()) {
         return false;
       }
+      smokePhase("tcz-parity-pixels-bytes-start=" + path);
+      int[] bytePixels = fromBytes.getPixels();
+      smokePhase("tcz-parity-pixels-bytes-created=" + path);
       smokePhase("tcz-parity-pixels-path-start=" + path);
       int[] pathPixels = fromPath.getPixels();
       smokePhase("tcz-parity-pixels-path-created=" + path);
-      int[] bytePixels = fromBytes.getPixels();
-      smokePhase("tcz-parity-pixels-bytes-created=" + path);
       boolean samePixels = pathPixels.length == bytePixels.length;
       for (int i = 0; samePixels && i < pathPixels.length; i++) {
         samePixels = pathPixels[i] == bytePixels[i];
