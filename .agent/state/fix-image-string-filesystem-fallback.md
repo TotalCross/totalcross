@@ -110,11 +110,13 @@ the Android, Windows x64, and Linux x64 GitHub Actions results.
 - In run `44606045633`, Windows passed again, while Linux aborted with exit
   134 and `*** buffer overflow detected ***`; the `Vm.debug` phase markers
   were absent from stderr. The Android 15 emulator smoke is still running.
-- The current uncommitted diagnostic switches phase markers to flushed
+- The diagnostic switches phase markers to flushed
   `System.err` output and adds a failure-only GDB backtrace step plus artifact.
-  Workflow YAML, the new Bash diagnostic block, Android POSIX script syntax,
-  copyright headers, and `git diff --check` passed. After the active Android
-  step finishes, commit and push these diagnostics, then dispatch the next run.
+  These changes were committed and pushed in `85e812d57` (`fix(ci): trace
+  linux image smoke failure`). Workflow YAML, the new Bash diagnostic block,
+  Android POSIX script syntax, copyright headers, diff checks, and commit
+  message validation passed. After the active Android step finishes, dispatch
+  the next run with the diagnostics.
 - Committed the production fix (`550f2648c`), deployed regression harness
   (`fb7f49589`), cross-platform jobs (`4df085322`), and manual trigger routing
   (`069edff77`). The execution record is in `39ff4c8aa` and this checkpoint.
@@ -137,9 +139,8 @@ the Android, Windows x64, and Linux x64 GitHub Actions results.
 ## Next concrete action
 
 Wait for the Android job in run `44606045633`, then inspect its result and the
-Linux smoke evidence. Push the stderr markers/GDB capture and dispatch another
-run to localize the Linux abort. Keep the plan open until Android, Windows, and
-Linux all pass.
+Linux smoke evidence. Dispatch another run with commit `85e812d57` to localize
+the Linux abort. Keep the plan open until Android, Windows, and Linux all pass.
 
 ## Preservation boundary
 

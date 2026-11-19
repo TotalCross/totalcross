@@ -64,10 +64,10 @@ unreadable must fail without trying a same-name filesystem file.
   workflow syntax checks passed. Pushed and dispatched run `44606045633`.
   Windows passed; Linux still aborts with glibc's buffer-overflow report
   (exit 134), and its `Vm.debug` phase markers were not visible. The Android
-  emulator smoke is still running. The current uncommitted diagnostic writes
-  phases directly to stderr and captures a GDB backtrace after a Linux failure;
-  YAML, focused shell syntax, copyright headers, and `git diff --check` pass.
-  See the evidence index.
+  emulator smoke is still running. Commit `85e812d57` now writes phases
+  directly to stderr and captures a GDB backtrace after a Linux failure. YAML,
+  focused shell syntax, copyright headers, diff checks, and the commit message
+  validator passed; the commit was pushed. See the evidence index.
 - [ ] Reconcile the next Android, Windows x64, and Linux x64 functional results
   and artifacts with the acceptance criteria.
 
