@@ -63,11 +63,14 @@ unreadable must fail without trying a same-name filesystem file.
   script to POSIX `set -eu` in commit `8705970bd`. The smoke app package and
   workflow syntax checks passed. Pushed and dispatched run `44606045633`.
   Windows passed; Linux still aborts with glibc's buffer-overflow report
-  (exit 134), and its `Vm.debug` phase markers were not visible. The Android
-  emulator smoke is still running. Commit `85e812d57` now writes phases
-  directly to stderr and captures a GDB backtrace after a Linux failure. YAML,
-  focused shell syntax, copyright headers, diff checks, and the commit message
-  validator passed; the commit was pushed. See the evidence index.
+  (exit 134), and its `Vm.debug` phase markers were not visible. Android booted,
+  but `adb install` received an empty path because the emulator action runs each
+  script line in a separate shell. Commit `85e812d57` now writes phases
+  directly to stderr and captures a GDB backtrace after a Linux failure. The
+  Android workflow now writes a shell script during deploy and invokes it with
+  one action-script line, and verifies that deploy produced an APK before
+  booting the emulator. YAML, Android shell syntax, headers, and diff checks
+  pass. See the evidence index.
 - [ ] Reconcile the next Android, Windows x64, and Linux x64 functional results
   and artifacts with the acceptance criteria.
 
@@ -184,9 +187,11 @@ authorization unless an already-authorized trigger exists.
 - A local macOS ARM64 AddressSanitizer build and deployed smoke passed with no
   sanitizer report. SDK JAR, smoke TCZ, ASan dylib, and Launcher share build ID
   `50e78dce…`; logs and exact identity output are in the evidence index.
-- The authorized Merge Flow has run four times. Windows passed in run
-  `44602636798` and again in `44606045633`; Linux's exit-134 abort remains
-  under diagnosis, and Android's fourth-run smoke is still in progress.
+- The authorized Merge Flow has run four times. Windows passed in runs
+  `44602636798` and `44606045633`; Linux's exit-134 abort remains under
+  diagnosis. Android reached the smoke script in run `44606045633`, where an
+  empty APK variable prevented the app from running; a single-shell harness
+  correction is in progress.
 
 ## Decision Log
 
@@ -205,8 +210,9 @@ record; bridge generation and converter test; targeted JavaSE tests; corrected
 native macOS build and real deployed PNG/JPEG parity; path-length and TCZ
 non-fallback behavior; local commits; and Android, Windows, and Linux CI
 functional results. The user authorized the branch push and manual dispatch.
-The current run passed Windows, Linux still aborts, and Android remains active;
-capture the latter result and Linux backtrace before deciding the next fix.
+Windows passed, Linux still aborts, and Android did not reach the app because
+the action split the smoke script into separate shells. Re-run with the
+single-shell Android harness and Linux diagnostics.
 The exact Gradle test selector and existing smoke tasks must be established
 from project configuration before invocation. Use `.agent/guides/macos-native-runtime-validation.md`
 and the build-provenance guide for local deployed identity. iOS coverage is

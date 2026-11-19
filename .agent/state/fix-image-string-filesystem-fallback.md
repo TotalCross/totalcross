@@ -109,14 +109,19 @@ the Android, Windows x64, and Linux x64 GitHub Actions results.
   headers, and diff checks passed. Pushed it and dispatched run `44606045633`.
 - In run `44606045633`, Windows passed again, while Linux aborted with exit
   134 and `*** buffer overflow detected ***`; the `Vm.debug` phase markers
-  were absent from stderr. The Android 15 emulator smoke is still running.
+  were absent from stderr. Android booted in 587 seconds, then failed before
+  launching the app because `adb install` received an empty APK path. The
+  action's script parser splits the multiline input into independent shell
+  processes, so variables set on one line do not survive to the next.
 - The diagnostic switches phase markers to flushed
   `System.err` output and adds a failure-only GDB backtrace step plus artifact.
   These changes were committed and pushed in `85e812d57` (`fix(ci): trace
   linux image smoke failure`). Workflow YAML, the new Bash diagnostic block,
   Android POSIX script syntax, copyright headers, diff checks, and commit
-  message validation passed. After the active Android step finishes, dispatch
-  the next run with the diagnostics.
+  message validation passed. The new Android runner script is created during
+  deploy and invoked as one action-script line, keeping variables in one shell.
+  Validate, commit, push, and dispatch this correction with the Linux
+  diagnostics.
 - Committed the production fix (`550f2648c`), deployed regression harness
   (`fb7f49589`), cross-platform jobs (`4df085322`), and manual trigger routing
   (`069edff77`). The execution record is in `39ff4c8aa` and this checkpoint.
@@ -138,9 +143,9 @@ the Android, Windows x64, and Linux x64 GitHub Actions results.
 
 ## Next concrete action
 
-Wait for the Android job in run `44606045633`, then inspect its result and the
-Linux smoke evidence. Dispatch another run with commit `85e812d57` to localize
-the Linux abort. Keep the plan open until Android, Windows, and Linux all pass.
+Validate and commit the Android single-shell harness fix, push it, and dispatch
+the next run with Linux diagnostics. Inspect the Android and Linux artifacts;
+keep the plan open until Android, Windows, and Linux all pass.
 
 ## Preservation boundary
 
@@ -156,6 +161,7 @@ dispatch; PR creation, merge, rebase, and force-push remain unauthorized.
 - Corrected JavaSE and deployed macOS arm64 checks passed.
 - Corrected deployed macOS arm64 AddressSanitizer smoke passed.
 - Windows x64 functional validation passed twice. Linux x64 still aborts during
-  the deployed smoke; the latest run has GDB diagnostics pending. Android API
-  35 is active in the fourth run. iOS remains out of scope.
+  the deployed smoke; GDB diagnostics are pending in the next run. Android API
+  35 has not reached the app yet because the harness passed an empty APK path.
+  iOS remains out of scope.
 - iOS build and functional validation are out of scope.
