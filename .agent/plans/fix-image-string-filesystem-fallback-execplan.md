@@ -47,8 +47,28 @@ unreadable must fail without trying a same-name filesystem file.
 - [x] Commit the fix, regression app, and workflow in three focused local
   commits; validate commit messages, headers, workflow YAML, shell blocks, and
   the staged diffs.
-- [ ] Run the Android, Windows x64, and Linux x64 functional CI lanes after an
-  authorized branch push and manual workflow dispatch; reconcile their logs
+- [x] Push the feature branch and manually dispatch Merge Flow with the smoke
+  input after user authorization. The first run exposed three harness issues:
+  Linux and Windows launchers need the deployed folder as their working
+  directory, and the Android setup action must not request the removed SDK
+  Manager `tools` package. The second run exposed three more: Linux needs its
+  EGL/GLES runtime libraries installed; Android app IDs must come from the
+  smoke class's static initializer; and Windows' GUI launcher exposes the
+  result through its process exit code rather than stdout. Corrections are in
+  commit `2aa3c08b8`; the focused smoke-app packaging task and workflow syntax
+  checks passed. In run `44602636798`, Windows passed with exit code 0; Linux
+  aborted with a glibc buffer-overflow report after loading the VM; Android's
+  emulator booted, but the action ran a Bash-only `pipefail` setting through
+  `/usr/bin/sh`. Added flushed Linux phase markers and changed the Android
+  script to POSIX `set -eu` in commit `8705970bd`. The smoke app package and
+  workflow syntax checks passed. Pushed and dispatched run `44606045633`.
+  Windows passed; Linux still aborts with glibc's buffer-overflow report
+  (exit 134), and its `Vm.debug` phase markers were not visible. The Android
+  emulator smoke is still running. The current uncommitted diagnostic writes
+  phases directly to stderr and captures a GDB backtrace after a Linux failure;
+  YAML, focused shell syntax, copyright headers, and `git diff --check` pass.
+  See the evidence index.
+- [ ] Reconcile the next Android, Windows x64, and Linux x64 functional results
   and artifacts with the acceptance criteria.
 
 ## Current Architecture and Scope
@@ -164,9 +184,9 @@ authorization unless an already-authorized trigger exists.
 - A local macOS ARM64 AddressSanitizer build and deployed smoke passed with no
   sanitizer report. SDK JAR, smoke TCZ, ASan dylib, and Launcher share build ID
   `50e78dce…`; logs and exact identity output are in the evidence index.
-- Ruby parsed the changed workflow YAML and `bash -n` accepted all 55 Bash
-  workflow blocks. No cross-platform Action has run yet; the authorized branch
-  push and manual Merge Flow dispatch are the next steps.
+- The authorized Merge Flow has run four times. Windows passed in run
+  `44602636798` and again in `44606045633`; Linux's exit-134 abort remains
+  under diagnosis, and Android's fourth-run smoke is still in progress.
 
 ## Decision Log
 
@@ -184,8 +204,9 @@ Required: pre-fix deployed reproduction or explicit unavailable-evidence
 record; bridge generation and converter test; targeted JavaSE tests; corrected
 native macOS build and real deployed PNG/JPEG parity; path-length and TCZ
 non-fallback behavior; local commits; and Android, Windows, and Linux CI
-functional results. The user has authorized the branch push and manual
-dispatch; those three CI results remain pending.
+functional results. The user authorized the branch push and manual dispatch.
+The current run passed Windows, Linux still aborts, and Android remains active;
+capture the latter result and Linux backtrace before deciding the next fix.
 The exact Gradle test selector and existing smoke tasks must be established
 from project configuration before invocation. Use `.agent/guides/macos-native-runtime-validation.md`
 and the build-provenance guide for local deployed identity. iOS coverage is
@@ -216,9 +237,8 @@ expanded JavaSE and deployed macOS suites. Three local commits contain the
 production change, deployed regression harness, and opt-in Actions workflow.
 
 The user authorized pushing the feature branch and dispatching the existing
-Merge Flow with the smoke input. Android API 35, Windows x64, and Linux x64 CI
-remain the only unfinished acceptance items; no Actions result is claimed yet.
-iOS remains out of scope as requested.
+Merge Flow with the smoke input. Windows has passed; Android API 35 and Linux
+x64 still need successful functional results. iOS remains out of scope.
 
 ## Revision Note
 

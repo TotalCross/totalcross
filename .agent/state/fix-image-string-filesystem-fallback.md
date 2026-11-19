@@ -71,6 +71,50 @@ the Android, Windows x64, and Linux x64 GitHub Actions results.
 - GitHub requires a manual-dispatch workflow to exist on the default branch;
   use the existing Merge Flow, whose default-branch trigger is already active,
   to dispatch the feature branch with `image-string-smoke=true`.
+- The first authorized Merge Flow run (`44599193944`, commit `d0bf6ab31`) built
+  the SDK, Linux VM, Android VM, and Windows VM, but all three smoke lanes
+  exposed harness setup problems. Linux and Windows launchers resolve their VM
+  library from the current working directory, so launch from each deployed
+  folder. `setup-android` also tried to install the removed SDK Manager
+  `tools` package; the canonical Android build's `packages: ''` setting avoids
+  that request.
+- Corrected the deployed working directories and Android SDK setup in
+  `11eced133` (`fix(ci): run smoke apps from deployed folders`), pushed it, and
+  manually dispatched run `44600571238` on that commit. All three smoke lanes
+  reached the app stage but exposed further harness issues: the Linux runner
+  lacks runtime `libEGL.so.1`/`libGLESv2.so.2`; Android rejects a command-line
+  application ID for applications; and the Windows GUI-subsystem launcher
+  does not expose stdout for the fixture result (confirmed from the PE
+  subsystem metadata). The smoke returns its assertion result as its process
+  exit code. The current correction installs EGL/GLES, assigns the Android ID
+  in the smoke class initializer, and records/checks the Windows exit code.
+- `jarEncodedImageSourceSmoke` passed with the Android app ID initializer.
+  Current workflow YAML and 50 Bash blocks parsed and passed `bash -n`; the
+  changed smoke source/workflow headers and `git diff --check` passed. A local
+  PowerShell parser is unavailable; the updated Windows block was reviewed and
+  its execution status will be verified by the next remote run.
+- Committed these corrections in `2aa3c08b8` (`fix(ci): prepare platform
+  smoke environments`), pushed it, and dispatched run `44602636798` on that
+  commit. Windows passed with process exit code 0. Linux still aborts with
+  `*** buffer overflow detected ***` (exit 134) after loading the VM. The
+  Android emulator booted in 566 seconds, but the smoke script failed because
+  the action executed it through `/usr/bin/sh`, which rejects `pipefail`.
+- Added flushed smoke phase markers for the Linux abort diagnosis and changed
+  the Android runner script from Bash-only `set -euo pipefail` to POSIX
+  `set -eu`. The Linux markers and Android shell fix are pending the next
+  workflow run.
+- Committed the diagnostics and Android shell fix in `8705970bd` (`fix(ci):
+  trace linux smoke and use posix android shell`). The app packaging,
+  workflow YAML, all 50 Bash blocks, POSIX Android script syntax, copyright
+  headers, and diff checks passed. Pushed it and dispatched run `44606045633`.
+- In run `44606045633`, Windows passed again, while Linux aborted with exit
+  134 and `*** buffer overflow detected ***`; the `Vm.debug` phase markers
+  were absent from stderr. The Android 15 emulator smoke is still running.
+- The current uncommitted diagnostic switches phase markers to flushed
+  `System.err` output and adds a failure-only GDB backtrace step plus artifact.
+  Workflow YAML, the new Bash diagnostic block, Android POSIX script syntax,
+  copyright headers, and `git diff --check` passed. After the active Android
+  step finishes, commit and push these diagnostics, then dispatch the next run.
 - Committed the production fix (`550f2648c`), deployed regression harness
   (`fb7f49589`), cross-platform jobs (`4df085322`), and manual trigger routing
   (`069edff77`). The execution record is in `39ff4c8aa` and this checkpoint.
@@ -92,9 +136,10 @@ the Android, Windows x64, and Linux x64 GitHub Actions results.
 
 ## Next concrete action
 
-Push `fix/image-string-filesystem-fallback`, then dispatch `Merge flow` on that
-branch with `image-string-smoke=true`. Inspect the Android, Windows, and Linux
-run results and artifacts and update the acceptance record.
+Wait for the Android job in run `44606045633`, then inspect its result and the
+Linux smoke evidence. Push the stderr markers/GDB capture and dispatch another
+run to localize the Linux abort. Keep the plan open until Android, Windows, and
+Linux all pass.
 
 ## Preservation boundary
 
@@ -109,6 +154,7 @@ dispatch; PR creation, merge, rebase, and force-push remain unauthorized.
   `.agent/evidence/fix-image-string-filesystem-fallback.jsonl`.
 - Corrected JavaSE and deployed macOS arm64 checks passed.
 - Corrected deployed macOS arm64 AddressSanitizer smoke passed.
-- Android, Windows, and Linux functional validation belongs in GitHub Actions;
-  the manual Merge Flow input is prepared but has not run yet.
+- Windows x64 functional validation passed twice. Linux x64 still aborts during
+  the deployed smoke; the latest run has GDB diagnostics pending. Android API
+  35 is active in the fourth run. iOS remains out of scope.
 - iOS build and functional validation are out of scope.

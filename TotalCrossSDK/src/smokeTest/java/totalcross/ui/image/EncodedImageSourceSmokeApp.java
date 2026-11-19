@@ -411,7 +411,8 @@ public class EncodedImageSourceSmokeApp extends MainWindow {
   }
 
   private static void smokePhase(String phase) {
-    totalcross.sys.Vm.debug("EncodedImageSourceSmoke phase=" + phase);
+    System.err.println("EncodedImageSourceSmoke phase=" + phase);
+    System.err.flush();
   }
 
   private static String repeatedPath(int length) {

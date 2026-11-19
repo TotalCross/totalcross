@@ -1214,6 +1214,23 @@ jobs:
         printf '%s' "${result_line}" | grep -q 'overallPass=true'
         printf '%s' "${result_line}" | grep -q 'runtimeFixturesNotPackaged=true'
 
+    - name: Capture Linux smoke backtrace
+      if: failure()
+      run: |
+        set -euo pipefail
+        smoke_dir="${RUNNER_TEMP}/image-string-linux"
+        cd "${smoke_dir}/install/linux"
+        if ! command -v gdb >/dev/null 2>&1; then
+          sudo apt-get install -qq --no-install-recommends --yes gdb
+        fi
+        set +e
+        timeout 120s xvfb-run -a gdb --batch --quiet --return-child-result \
+          -ex 'set pagination off' -ex run -ex 'bt 30' \
+          --args ./EncodedImageSourceSmokeApp > "${smoke_dir}/diagnostic.log" 2>&1
+        gdb_status=$?
+        set -e
+        printf 'gdbExitCode=%s\n' "${gdb_status}" >> "${smoke_dir}/diagnostic.log"
+
     - name: Upload Linux smoke evidence
       if: always()
       uses: actions/upload-artifact@v7
@@ -1223,6 +1240,7 @@ jobs:
           ${{ runner.temp }}/image-string-linux/deploy.log
           ${{ runner.temp }}/image-string-linux/smoke.log
           ${{ runner.temp }}/image-string-linux/smoke-result.txt
+          ${{ runner.temp }}/image-string-linux/diagnostic.log
         if-no-files-found: warn
         retention-days: 30
 
