@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Copyright (C) 2026 Amalgam Solucoes em TI Ltda
+#
+# SPDX-License-Identifier: LGPL-2.1-only
 """Compile and exercise the *real* SQLite Android recovery C functions.
 
 Runs with the host C compiler, without the TotalCross VM or an Android device.
