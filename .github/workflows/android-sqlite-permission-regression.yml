@@ -1,0 +1,37 @@
+# Copyright (C) 2026 Amalgam Solucoes em TI Ltda
+#
+# SPDX-License-Identifier: LGPL-2.1-only
+
+name: Android SQLite permission recovery contract
+
+on:
+  pull_request:
+    paths:
+      - 'TotalCrossVM/src/nm/db/NativeDB.c'
+      - 'TotalCrossVM/src/nm/io/File.h'
+      - 'TotalCrossVM/src/nm/io/posix/File_c.h'
+      - 'TotalCrossVM/android/app/src/main/java/totalcross/android/AndroidPermissionManager.java'
+      - 'TotalCrossVM/src/tests/sqlite/test_android_permission_recovery.py'
+      - '.github/workflows/android-sqlite-permission-regression.yml'
+  push:
+    branches:
+      - fix/android-sqlite-file-permission-recovery
+    paths:
+      - 'TotalCrossVM/src/nm/db/NativeDB.c'
+      - 'TotalCrossVM/src/nm/io/File.h'
+      - 'TotalCrossVM/src/nm/io/posix/File_c.h'
+      - 'TotalCrossVM/android/app/src/main/java/totalcross/android/AndroidPermissionManager.java'
+      - 'TotalCrossVM/src/tests/sqlite/test_android_permission_recovery.py'
+      - '.github/workflows/android-sqlite-permission-regression.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  native-contract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile actual native SQLite recovery C and exercise simulated failures
+        run: python3 TotalCrossVM/src/tests/sqlite/test_android_permission_recovery.py -v
