@@ -1402,7 +1402,7 @@ jobs:
         profile: pixel_6
         emulator-options: -no-window -no-audio -no-boot-anim
         script: |
-          set -euo pipefail
+          set -eu
           work="${RUNNER_TEMP}/image-string-android"
           apk="${work}/install/android/EncodedImageSourceSmokeApp.apk"
           adb logcat -c

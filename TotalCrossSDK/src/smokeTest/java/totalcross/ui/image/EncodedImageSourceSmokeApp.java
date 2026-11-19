@@ -56,12 +56,14 @@ public class EncodedImageSourceSmokeApp extends MainWindow {
     boolean pathLengthBoundary = false;
     String error = "";
 
+    smokePhase("start");
     try {
       discardRuntimeFile("runtime-image-string-fallback.png");
       discardRuntimeFile("runtime-image-string-fallback.jpg");
       runtimeFixturesNotPackaged = totalcross.sys.Vm.getFile("runtime-image-string-fallback.png") == null
           && totalcross.sys.Vm.getFile("runtime-image-string-fallback.jpg") == null;
       require(runtimeFixturesNotPackaged, "runtime filesystem fixtures are absent from TCZ");
+      smokePhase("runtime-fixtures-checked");
 
       byte[] framedPng = png(300, 40, "FC=3", new byte[] { 1, 2, 3 });
       EncodedImageSource bytes = EncodedImageSource.fromBytes(framedPng);
@@ -104,6 +106,7 @@ public class EncodedImageSourceSmokeApp extends MainWindow {
       tczEmptyNoFallback = packagedInvalidDoesNotFallback("image-abi/empty.png", true);
       require(tczInvalidNoFallback && tczEmptyNoFallback,
           "invalid/empty TCZ entries do not fall back to same-name files");
+      smokePhase("tcz-images-checked");
 
       byte[] badCrc = framedPng.clone();
       badCrc[badCrc.length - 5] ^= 1;
@@ -125,24 +128,31 @@ public class EncodedImageSourceSmokeApp extends MainWindow {
           && jpegSource.getIntrinsicWidth() == 2 && jpegSource.getIntrinsicHeight() == 1
           && rejects(shortJpeg);
       require(jpegValidation, "JPEG header/marker validation");
+      smokePhase("encoded-source-validation-complete");
 
       FilesystemResult pngResult = filesystemRoundTrip("runtime-image-string-fallback.png", false);
+      smokePhase("filesystem-png-result=" + pngResult.parity + ",error=" + pngResult.error);
       filesystemPngFile = pngResult.fileLoaded;
       filesystemPngPath = pngResult.pathLoaded;
       filesystemPngPathImageException = pngResult.pathImageException;
       filesystemPngError = pngResult.error;
       filesystemPng = pngResult.parity;
       FilesystemResult jpegResult = filesystemRoundTrip("runtime-image-string-fallback.jpg", true);
+      smokePhase("filesystem-jpeg-result=" + jpegResult.parity + ",error=" + jpegResult.error);
       filesystemJpegFile = jpegResult.fileLoaded;
       filesystemJpegPath = jpegResult.pathLoaded;
       filesystemJpegPathImageException = jpegResult.pathImageException;
       filesystemJpegError = jpegResult.error;
       filesystemJpeg = jpegResult.parity;
       missingFile = missingImageUsesFileError();
+      smokePhase("missing-file-checked=" + missingFile);
       invalidFilesystemFile = invalidFilesystemImageFails();
+      smokePhase("invalid-file-checked=" + invalidFilesystemFile);
       absoluteFilesystemPath = filesystemRoundTrip(
           totalcross.sys.Settings.appPath + "runtime-image-string-fallback-absolute.png", false).parity;
+      smokePhase("absolute-path-checked=" + absoluteFilesystemPath);
       deviceFilesystemPathSupported = supportsDevicePath();
+      smokePhase("device-path-supported=" + deviceFilesystemPathSupported);
       if (deviceFilesystemPathSupported) {
         FilesystemResult deviceResult = filesystemRoundTrip("device/runtime-image-string-fallback-device.png", false);
         deviceFilesystemPath = deviceResult.parity;
@@ -152,6 +162,7 @@ public class EncodedImageSourceSmokeApp extends MainWindow {
         deviceFilesystemPath = true;
       }
       pathLengthBoundary = pathLengthBoundaryIsSafe();
+      smokePhase("path-length-checked=" + pathLengthBoundary);
       require(filesystemPngFile && filesystemPngPath && filesystemPng
           && filesystemJpegFile && filesystemJpegPath && filesystemJpeg,
           "filesystem PNG/JPEG Image(String)/Image(File) parity");
@@ -354,9 +365,13 @@ public class EncodedImageSourceSmokeApp extends MainWindow {
   }
 
   private static boolean pathLengthBoundaryIsSafe() throws Exception {
-    return pathHasFileError(repeatedPath(255), FileNotFoundException.class)
-        && pathHasFileError(repeatedPath(256), IllegalArgumentIOException.class)
-        && pathHasFileError(repeatedPath(300), IllegalArgumentIOException.class);
+    boolean length255 = pathHasFileError(repeatedPath(255), FileNotFoundException.class);
+    smokePhase("path-255-result=" + length255);
+    boolean length256 = pathHasFileError(repeatedPath(256), IllegalArgumentIOException.class);
+    smokePhase("path-256-result=" + length256);
+    boolean length300 = pathHasFileError(repeatedPath(300), IllegalArgumentIOException.class);
+    smokePhase("path-300-result=" + length300);
+    return length255 && length256 && length300;
   }
 
   private static boolean supportsDevicePath() {
@@ -382,12 +397,21 @@ public class EncodedImageSourceSmokeApp extends MainWindow {
   }
 
   private static boolean pathHasFileError(String path, Class expected) throws Exception {
+    smokePhase("path-error-start-length=" + path.length());
     try {
       new Image(path);
+      smokePhase("path-error-unexpected-success-length=" + path.length());
       return false;
     } catch (Throwable failure) {
-      return expected.isInstance(failure);
+      boolean matches = expected.isInstance(failure);
+      smokePhase("path-error-done-length=" + path.length() + ",type=" + failure.getClass().getName()
+          + ",expected=" + matches);
+      return matches;
     }
+  }
+
+  private static void smokePhase(String phase) {
+    totalcross.sys.Vm.debug("EncodedImageSourceSmoke phase=" + phase);
   }
 
   private static String repeatedPath(int length) {
@@ -455,6 +479,7 @@ public class EncodedImageSourceSmokeApp extends MainWindow {
 
   private static FilesystemResult filesystemRoundTrip(String path, boolean jpeg) throws Exception {
     FilesystemResult result = new FilesystemResult();
+    smokePhase("filesystem-start=" + (jpeg ? "jpeg" : "png"));
     String phase = "construct-image";
     Image generated = null;
     Image fromFile = null;
@@ -477,6 +502,7 @@ public class EncodedImageSourceSmokeApp extends MainWindow {
           generated.createPng(output);
         }
       }
+      smokePhase("filesystem-written=" + (jpeg ? "jpeg" : "png"));
       phase = "read-Image-File";
       try (File input = new File(path, File.READ_ONLY)) {
         fromFile = new Image(input);
@@ -485,6 +511,7 @@ public class EncodedImageSourceSmokeApp extends MainWindow {
       int[] filePixels = fromFile.getPixels();
       result.fileLoaded = fromFile.getPixelWidth() > 0 && fromFile.getPixelHeight() > 0
           && filePixels.length > 0;
+      smokePhase("filesystem-file-decoded=" + (jpeg ? "jpeg" : "png"));
       phase = "read-Image-String";
       try {
         fromPath = new Image(path);
@@ -493,6 +520,7 @@ public class EncodedImageSourceSmokeApp extends MainWindow {
         return result;
       }
       result.pathLoaded = true;
+      smokePhase("filesystem-path-loaded=" + (jpeg ? "jpeg" : "png"));
       phase = "compare-dimensions";
       if (fromFile.getPixelWidth() != fromPath.getPixelWidth()
           || fromFile.getPixelHeight() != fromPath.getPixelHeight()) {
@@ -510,6 +538,7 @@ public class EncodedImageSourceSmokeApp extends MainWindow {
         }
       }
       result.parity = true;
+      smokePhase("filesystem-parity=" + (jpeg ? "jpeg" : "png"));
       return result;
     } catch (Throwable failure) {
       result.error = phase + ":" + failure.getClass().getName() + ":" + failure.getMessage();
