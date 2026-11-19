@@ -1883,6 +1883,10 @@ public class Image extends GfxSurface {
             directDecodeAttempted = true;
             try {
               directDecode = decoded.decodeEncodedSourceDirect(source);
+            } catch (DeterministicImageDecodeException directFailure) {
+              // A direct native decode is an optimization. Retry with the canonical
+              // decoder before classifying the encoded source as invalid.
+              directDecode = false;
             } catch (TransientImageMaterializationException transientFailure) {
               directDecode = false;
             } catch (OutOfMemoryError allocationFailure) {

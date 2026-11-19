@@ -173,6 +173,17 @@ the Android, Windows x64, and Linux x64 GitHub Actions results.
   (`fix(ci): trace byte-first image decode`). Manual Merge Flow run
   `44617483756` is active on that commit. Run `44615780340` still has Android
   job `135885942718` in progress.
+- Run `44617483756` passed Windows. Linux then failed at
+  `tcz-parity-pixels-bytes-start=image-abi/tiny.png`, before `Image(path)` was
+  decoded, with the same deterministic decode error and ADLER32 warning. This
+  places the problem in the common native-bag/direct decode path, not solely
+  TCZ path capture. Artifact: `/tmp/image-string-linux-run-44617483756/`.
+  Added fallback to canonical non-direct decode after a deterministic direct
+  decode failure. Focused `ImageLazyMaterializationTest` and
+  `jarEncodedImageSourceSmoke` passed (4 tasks executed, 6 up-to-date); deployed
+  macOS smoke passed. Summaries are in
+  `TotalCrossSDK/agent-logs/20261119-183224-test-agent.log` and
+  `TotalCrossSDK/agent-logs/20261119-183349-runEncodedImageSourceSmokeMacOS-agent.log`.
 - The Android job log for run `44613588440` shows the emulator exited
   immediately: software CPU emulation with `-accel off` now requires
   `ANDROID_I_WANT_MY_TCG=yes`. The action's boot loop retried until 900 seconds.
@@ -203,10 +214,10 @@ the Android, Windows x64, and Linux x64 GitHub Actions results.
 
 ## Next concrete action
 
-Collect run `44617483756`'s byte-first Linux result and run `44618392682`'s
-Android API 35 result with TCG enabled. Determine the native path decode fix
-from the Linux result. Keep the plan open until Android API 35, Windows x64,
-and Linux x64 deployed functional checks pass.
+Push and dispatch the canonical-decoder fallback. Collect run `44618392682`'s
+Android API 35 result with TCG enabled and determine whether the Linux fallback
+resolves the decode failure. Keep the plan open until Android API 35, Windows
+x64, and Linux x64 deployed functional checks pass.
 
 ## Preservation boundary
 
@@ -223,9 +234,9 @@ dispatch; PR creation, merge, rebase, and force-push remain unauthorized.
 - Corrected deployed macOS arm64 AddressSanitizer smoke passed.
 - Windows x64 functional validation passed repeatedly, including runs
   `44613588440` and `44615780340`. The Linux `realpath` startup abort is fixed
-  and verified in CI; Linux app decode still fails during TCZ image parity and
-  awaits byte-first diagnostics. Android API 35 jobs have timed out before app
-  launch at 600 and 900 seconds because `ANDROID_I_WANT_MY_TCG` was missing.
+  and verified in CI; Linux native-bag decode failed from `Image(byte[])` and
+  awaits validation of the direct-decoder fallback. Android API 35 jobs timed
+  out at 600 and 900 seconds because `ANDROID_I_WANT_MY_TCG` was missing.
   Run `44617483756` uses the old emulator environment; `44618392682` is the
   first run with TCG explicitly enabled. iOS is out of scope.
 - iOS build and functional validation are out of scope.
