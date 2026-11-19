@@ -25,6 +25,9 @@ override	totalcross/ui/image/NativeImageBacking#createFromArgbPixelsNative([III)
 # already derivable from Java.
 bridge	tnsSSLCM_startHandshake
 
+# Preserve the bridge used by SDK TCZs built before Image.createJpgNative was renamed.
+bridge	tuiI_createJpgNative_si
+
 # Retain historical native entry points used by already-deployed TCZ bytecode.
 # Each symbol still has a concrete C definition; these declarations either no
 # longer exist in the current Java sources or now have Java implementations.

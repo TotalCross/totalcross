@@ -705,6 +705,12 @@ TC_API void tuiI_createJpgImpl_si(NMParams p) // totalcross/ui/image/Image priva
    image2jpeg(p->currentContext, p->obj[0], stream, quality);
 }
 //////////////////////////////////////////////////////////////////////////
+// Legacy SDK TCZs call createJpgNative; keep its ABI and share the current implementation.
+TC_API void tuiI_createJpgNative_si(NMParams p)
+{
+   tuiI_createJpgImpl_si(p);
+}
+//////////////////////////////////////////////////////////////////////////
 TC_API void tuiI_applyFadeNative_i(NMParams p) // totalcross/ui/image/Image private void applyFadeNative(int fadeValue);
 {
    TCObject thisObj = p->obj[0];

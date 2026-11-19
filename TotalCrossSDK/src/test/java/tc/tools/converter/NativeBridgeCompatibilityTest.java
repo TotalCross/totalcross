@@ -45,7 +45,7 @@ class NativeBridgeCompatibilityTest {
     NativeBridgeCompatibility compatibility = NativeBridgeCompatibility.read(
         Path.of("..", "TotalCrossVM", "src", "nm", "native-bridge-compat.txt"));
     Set<String> required = Set.of(
-        "jlS_getBytes",
+        "jlS_getBytes", "tuiI_createJpgNative_si",
         "rU_getConfigInfo", "rU_getDeviceInfo", "rU_getProductInfo",
         "tnCM_open", "tpSMS_receive", "tpSMS_send_ss",
         "tpcbIPOIC_GetAllAppointments", "tpcbIPOIC_GetAllContacts", "tpcbIPOIC_GetAllTasks",
