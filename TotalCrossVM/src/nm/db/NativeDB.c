@@ -22,6 +22,47 @@
 #include "tcvm.h"
 #include "sqlite3.h"
 
+#if defined(ANDROID)
+#include <errno.h>
+#include <string.h>
+#include "../io/File.h"
+
+/*
+ * Permission dialogs are only meaningful for paths on shared/external storage.
+ * Do not interrupt private app databases or SQLite in-memory/URI databases.
+ */
+static bool sqliteIsAndroidSharedStoragePath(const char *path)
+{
+    return path != NULL
+        && (strncmp(path, "/sdcard/", 8) == 0
+            || strncmp(path, "/storage/", 9) == 0
+            || strncmp(path, "/mnt/sdcard/", 12) == 0);
+}
+
+/*
+ * SQLITE_CANTOPEN and SQLITE_READONLY alone are ambiguous (missing directory,
+ * corrupt DB, wrong flags, etc.). Inspect the VFS system errno instead.
+ * Only EACCES/EPERM on shared storage can trigger one authorization attempt.
+ */
+static bool sqliteOpenNeedsAndroidStoragePermission(
+    const char *path, sqlite3 *db, int32 sqliteResult)
+{
+    int primaryCode = sqliteResult & 0xff;
+    int systemError;
+
+    if (!sqliteIsAndroidSharedStoragePath(path) || db == NULL)
+        return false;
+
+    if (primaryCode != SQLITE_CANTOPEN
+        && primaryCode != SQLITE_PERM
+        && primaryCode != SQLITE_READONLY)
+        return false;
+
+    systemError = sqlite3_system_errno(db);
+    return systemError == EACCES || systemError == EPERM;
+}
+#endif
+
 //TC_API void tdsNDB_exec_s(NMParams p) // totalcross/db/sqlite/NativeDB native void exec(String sql) throws SQLException;
 
 // NativeDB extends DB
@@ -239,30 +280,67 @@ static void freeSafeString(CharP buf)
 
 TC_API void tdsNDB__open_si(NMParams p) // totalcross/db/sqlite/NativeDB protected native void _open(String file, int openFlags) throws SQLException;
 {
-   TRACE("tdsNDB__open_si")
+    TRACE("tdsNDB__open_si")
     int32 ret;
     int32 flags = p->i32[0];
     TCObject this_ = p->obj[0];
     TCObject file = p->obj[1];
     sqlite3 *db = gethandle(p->currentContext, this_);
-    CharP str;
+    CharP path;
 
-    if (db)
+    if (db != NULL)
     {
+        // Never close a live handle when an already-open connection is reused.
         throwexmsg(p->currentContext, this_, "DB already open");
-        sqlite3_close(db);
         return;
     }
 
-    str = newSafeString(file, null);
-    ret = sqlite3_open_v2(str, &db, flags, NULL);
-    if (ret) 
+    path = newSafeString(file, null);
+    ret = sqlite3_open_v2(path, &db, flags, NULL);
+
+#if defined(ANDROID)
+    if (ret != SQLITE_OK
+        && sqliteOpenNeedsAndroidStoragePermission(path, db, ret))
     {
+        // Do not hold the TotalCross per-connection SQLite mutex while asking
+        // for Android authorization. An unsuccessful sqlite3_open_v2() has
+        // not initialized that mutex or installed an active DB handle.
+        //
+        // AndroidPermissionManager returns true only when permissions changed.
+        // Retrying once still checks the real filesystem authorization.
+        if (fileRequestStoragePermission())
+        {
+            // SQLite may supply a handle after a failed open. Close it before
+            // the single retry; never reuse a failed sqlite3*.
+            if (db != NULL)
+                sqlite3_close(db);
+            db = NULL;
+            ret = sqlite3_open_v2(path, &db, flags, NULL);
+        }
+    }
+#endif
+
+    // Also free the path on error; the previous implementation leaked it.
+    freeSafeString(path);
+
+    if (ret != SQLITE_OK)
+    {
+        // DB.throwex(int) calls NativeDB.errmsg(), so temporarily publish
+        // the failed-open handle before constructing the SQLException.
+        // gethandle() has already allocated the zero-initialized sqlitebag;
+        // validMutex is false until initSqlite3Mutex() below.
+        if (db != NULL)
+            sethandle(p->currentContext, this_, db);
+
         throw_errorcode(p->currentContext, this_, ret);
-        sqlite3_close(db);
+
+        if (db != NULL)
+            sqlite3_close(db);
+
+        // Release the native bag and reset the Java-visible pointer.
+        sethandle(p->currentContext, this_, NULL);
         return;
     }
-    freeSafeString(str);
 
     sethandle(p->currentContext, this_, db);
     initSqlite3Mutex(this_);
