@@ -142,8 +142,9 @@ the Android, Windows x64, and Linux x64 GitHub Actions results.
   Copyright-header validation passed. Committed and pushed the native fix in
   `153f9fae5` (`fix(vm): allocate resolved paths safely`). The workflow now
   gives Android 900 seconds after run `44609764897` timed out at the action's
-  600-second default; the syntax-checked timeout change is pending its CI commit.
-  Run `44611514188` still has its Android emulator step active.
+  600-second default. Commit `121bec382` (`fix(ci): allow slow android emulator
+  startup`) is pushed, and run `44613588440` is active on that revision. The
+  sixth run's Android emulator step remains active.
 - Committed the production fix (`550f2648c`), deployed regression harness
   (`fb7f49589`), cross-platform jobs (`4df085322`), and manual trigger routing
   (`069edff77`). The execution record is in `39ff4c8aa` and this checkpoint.
@@ -166,9 +167,9 @@ the Android, Windows x64, and Linux x64 GitHub Actions results.
 
 ## Next concrete action
 
-Commit and push the validated Android timeout update, then manually dispatch
-run seven. Reconcile the Android job in `44611514188` as it completes; keep the
-plan open until Android, Windows, and Linux all pass on the post-fix run.
+Inspect Android API 35 and Linux x64 artifacts from run `44613588440`, and
+reconcile the Android result from `44611514188` when it completes. Keep the plan
+open until Android, Windows, and Linux all pass on the post-fix run.
 
 ## Preservation boundary
 
@@ -183,8 +184,9 @@ dispatch; PR creation, merge, rebase, and force-push remain unauthorized.
   `.agent/evidence/fix-image-string-filesystem-fallback.jsonl`.
 - Corrected JavaSE and deployed macOS arm64 checks passed.
 - Corrected deployed macOS arm64 AddressSanitizer smoke passed.
-- Windows x64 functional validation passed twice. Linux x64 still aborts during
-  the deployed smoke; GDB diagnostics are pending in the next run. Android API
-  35 has not reached the app yet because the harness passed an empty APK path.
-  iOS remains out of scope.
+- Windows x64 functional validation passed repeatedly, including runs
+  `44609764897` and `44611514188`. The Linux `realpath` startup abort is fixed
+  locally and awaits run `44613588440`; Android run `44609764897` timed out
+  before app launch, and the sixth/seventh emulator checks are active. iOS is
+  out of scope.
 - iOS build and functional validation are out of scope.

@@ -82,8 +82,9 @@ unreadable must fail without trying a same-name filesystem file.
   Android remains active. The fix uses `realpath(path, NULL)` and frees its
   allocated result. Commit `153f9fae5` (`fix(vm): allocate resolved paths
   safely`) is pushed; its CMake and local deployed macOS checks passed. The
-  workflow change giving Android 900 seconds to boot is syntax-checked and
-  pending its focused commit. See the evidence index.
+  Android 900-second boot allowance is committed and pushed in `121bec382`;
+  run `44613588440` is active on that revision. Run `44611514188` still has its
+  Android emulator step active. See the evidence index.
 - [ ] Reconcile Android API 35, Windows x64, and Linux x64 results from the
   next post-fix run and artifacts with the acceptance criteria.
 
