@@ -385,7 +385,9 @@ public final class AndroidPermissionManager {
             }
         } else {
             addIfDeclared(candidates, declared, Manifest.permission.READ_EXTERNAL_STORAGE);
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            // Android 10/Q still needs WRITE_EXTERNAL_STORAGE for legacy shared-storage writes.
+            // Runtime permission requests must match permissions declared by the app.
+            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q) {
                 addIfDeclared(candidates, declared, Manifest.permission.WRITE_EXTERNAL_STORAGE);
             }
         }
