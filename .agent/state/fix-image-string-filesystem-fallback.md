@@ -130,10 +130,11 @@ the Android, Windows x64, and Linux x64 GitHub Actions results.
   full backtrace. The commit was pushed and dispatched as run `44611514188`
   while Android in run `44609764897` remained active. In that run, Windows
   passed; Linux GDB captured `realpath` input `./libtcvm.so` and output capacity
-  `1024` before SIGABRT in `startVM`. Android run `44609764897` later timed out
-  waiting 600 seconds for the emulator and never started the smoke app. Run
-  `44611514188` passed Windows, reproduced the Linux failure, and is still
-  running its Android job.
+  `1024` before SIGABRT in `startVM`. Android runs `44609764897` and
+  `44611514188` both timed out waiting for the emulator at the action's 600-
+  second default, before launching the app. Run `44611514188` passed Windows and
+  reproduced the pre-fix Linux failure. Run `44613588440` is now building with
+  the realpath fix and a 900-second Android boot timeout.
 - glibc `__realpath_chk` requires a destination at least `PATH_MAX` bytes;
   `MAX_PATHNAME` is 1024 on Linux while the runner's `PATH_MAX` is 4096. Replaced
   the fixed stack output with `realpath(path, NULL)` and freed the allocated
@@ -167,9 +168,9 @@ the Android, Windows x64, and Linux x64 GitHub Actions results.
 
 ## Next concrete action
 
-Inspect Android API 35 and Linux x64 artifacts from run `44613588440`, and
-reconcile the Android result from `44611514188` when it completes. Keep the plan
-open until Android, Windows, and Linux all pass on the post-fix run.
+Monitor run `44613588440`, then inspect Android API 35, Windows x64, and Linux
+x64 results and artifacts. Keep the plan open until all three post-fix functional
+checks pass.
 
 ## Preservation boundary
 
@@ -186,7 +187,7 @@ dispatch; PR creation, merge, rebase, and force-push remain unauthorized.
 - Corrected deployed macOS arm64 AddressSanitizer smoke passed.
 - Windows x64 functional validation passed repeatedly, including runs
   `44609764897` and `44611514188`. The Linux `realpath` startup abort is fixed
-  locally and awaits run `44613588440`; Android run `44609764897` timed out
-  before app launch, and the sixth/seventh emulator checks are active. iOS is
-  out of scope.
+  locally and awaits run `44613588440`; two earlier Android API 35 jobs timed
+  out before app launch, and the 900-second post-fix check is in progress. iOS
+  is out of scope.
 - iOS build and functional validation are out of scope.
