@@ -146,6 +146,16 @@ the Android, Windows x64, and Linux x64 GitHub Actions results.
   600-second default. Commit `121bec382` (`fix(ci): allow slow android emulator
   startup`) is pushed, and run `44613588440` is active on that revision. The
   sixth run's Android emulator step remains active.
+- Run `44613588440` passed Windows. Linux now starts the VM without the
+  `__realpath_chk` abort, but the app exits during the TCZ image parity checks
+  with `IllegalStateException:Could_not_materialize_encoded_image`; libpng emits
+  an ADLER32 warning immediately before exit. The run's Linux artifacts are in
+  `/tmp/image-string-linux-run-44613588440/`. Android job `135877939298` is
+  still booting/running under the 900-second timeout. Added smoke-only phase
+  markers around TCZ path/byte decoding and inclusion of nested exception
+  causes. `jarEncodedImageSourceSmoke` passed with these diagnostic changes;
+  diff check passed. Diagnostic packaging log:
+  `/tmp/image-string-smoke-diagnostics-build.log`.
 - Committed the production fix (`550f2648c`), deployed regression harness
   (`fb7f49589`), cross-platform jobs (`4df085322`), and manual trigger routing
   (`069edff77`). The execution record is in `39ff4c8aa` and this checkpoint.
@@ -168,9 +178,10 @@ the Android, Windows x64, and Linux x64 GitHub Actions results.
 
 ## Next concrete action
 
-Monitor run `44613588440`, then inspect Android API 35, Windows x64, and Linux
-x64 results and artifacts. Keep the plan open until all three post-fix functional
-checks pass.
+Collect Android result from run `44613588440`. Push the smoke diagnostics and
+dispatch another manual run, then use its Linux phase and cause chain to locate
+the TCZ decode failure. Keep the plan open until Android API 35, Windows x64,
+and Linux x64 deployed functional checks pass.
 
 ## Preservation boundary
 
@@ -185,9 +196,9 @@ dispatch; PR creation, merge, rebase, and force-push remain unauthorized.
   `.agent/evidence/fix-image-string-filesystem-fallback.jsonl`.
 - Corrected JavaSE and deployed macOS arm64 checks passed.
 - Corrected deployed macOS arm64 AddressSanitizer smoke passed.
-- Windows x64 functional validation passed repeatedly, including runs
-  `44609764897` and `44611514188`. The Linux `realpath` startup abort is fixed
-  locally and awaits run `44613588440`; two earlier Android API 35 jobs timed
-  out before app launch, and the 900-second post-fix check is in progress. iOS
-  is out of scope.
+- Windows x64 functional validation passed repeatedly, including run
+  `44613588440`. The Linux `realpath` startup abort is fixed and verified in
+  CI; Linux app decode still fails during TCZ image parity and awaits focused
+  diagnostics. Earlier Android API 35 jobs timed out before app launch, and the
+  900-second post-fix check is in progress. iOS is out of scope.
 - iOS build and functional validation are out of scope.

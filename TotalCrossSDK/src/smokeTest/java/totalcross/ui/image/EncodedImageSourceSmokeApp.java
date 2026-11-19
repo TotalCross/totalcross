@@ -97,8 +97,11 @@ public class EncodedImageSourceSmokeApp extends MainWindow {
           && path.getIntrinsicWidth() == 36 && path.getIntrinsicHeight() == 36;
       require(pathCapture, "TCZ path capture metadata/backing");
 
+      smokePhase("tcz-only-png-start");
       tczOnlyPng = tczImageParity("image-abi/tiny.png");
+      smokePhase("tcz-only-png-result=" + tczOnlyPng);
       tczOnlyJpeg = tczImageParity("image-abi/lena512.jpg");
+      smokePhase("tcz-only-jpeg-result=" + tczOnlyJpeg);
       require(tczOnlyPng && tczOnlyJpeg, "TCZ-only PNG/JPEG native-bag parity");
       tczPrecedence = tczPrecedenceOverPhysicalFile();
       require(tczPrecedence, "TCZ entry precedence over same-name filesystem image");
@@ -175,7 +178,7 @@ public class EncodedImageSourceSmokeApp extends MainWindow {
       lifetime = lifetimeCheck(framedPng);
       require(lifetime, "idempotent native bag release");
     } catch (Throwable failure) {
-      error = failure.getClass().getName() + ":" + String.valueOf(failure.getMessage()).replace(' ', '_');
+      error = failureChain(failure).replace(' ', '_');
     }
 
     boolean overallPass = byteCapture && streamCapture && pathCapture && pngValidation
@@ -270,10 +273,12 @@ public class EncodedImageSourceSmokeApp extends MainWindow {
   }
 
   private static boolean tczImageParity(String path) throws Exception {
+    smokePhase("tcz-parity-read-start=" + path);
     byte[] encoded = totalcross.sys.Vm.getFile(path);
     if (encoded == null) {
       return false;
     }
+    smokePhase("tcz-parity-read-length=" + path + ",bytes=" + encoded.length);
     try (File physical = new File(path)) {
       if (physical.exists()) {
         return false;
@@ -283,15 +288,45 @@ public class EncodedImageSourceSmokeApp extends MainWindow {
     Image fromPath = null;
     Image fromBytes = null;
     try {
+      smokePhase("tcz-parity-path-image-start=" + path);
       fromPath = new Image(path);
+      smokePhase("tcz-parity-path-image-created=" + path);
       fromBytes = new Image(encoded);
-      return source.hasNativeBackingForSmoke() && !source.hasJavaBackingForSmoke()
-          && sameDecodedImage(fromPath, fromBytes);
+      smokePhase("tcz-parity-bytes-image-created=" + path);
+      if (fromPath.getPixelWidth() != fromBytes.getPixelWidth()
+          || fromPath.getPixelHeight() != fromBytes.getPixelHeight()) {
+        return false;
+      }
+      smokePhase("tcz-parity-pixels-path-start=" + path);
+      int[] pathPixels = fromPath.getPixels();
+      smokePhase("tcz-parity-pixels-path-created=" + path);
+      int[] bytePixels = fromBytes.getPixels();
+      smokePhase("tcz-parity-pixels-bytes-created=" + path);
+      boolean samePixels = pathPixels.length == bytePixels.length;
+      for (int i = 0; samePixels && i < pathPixels.length; i++) {
+        samePixels = pathPixels[i] == bytePixels[i];
+      }
+      return source.hasNativeBackingForSmoke() && !source.hasJavaBackingForSmoke() && samePixels;
     } finally {
       source.releaseForSmoke();
       releaseEncodedSource(fromPath);
       releaseEncodedSource(fromBytes);
     }
+  }
+
+  private static String failureChain(Throwable failure) {
+    StringBuffer message = new StringBuffer();
+    while (failure != null) {
+      if (message.length() > 0) {
+        message.append("->");
+      }
+      message.append(failure.getClass().getName()).append(':');
+      if (failure.getMessage() != null) {
+        message.append(failure.getMessage().replace(' ', '_'));
+      }
+      failure = failure.getCause();
+    }
+    return message.toString();
   }
 
   private static boolean tczPrecedenceOverPhysicalFile() throws Exception {
