@@ -1,0 +1,15 @@
+# Copyright (C) 2026 Amalgam Solucoes em TI Ltda
+#
+# SPDX-License-Identifier: LGPL-2.1-only
+
+name: Image(String) filesystem smoke
+on:
+  workflow_dispatch:
+
+jobs:
+  build-and-smoke:
+    uses: ./.github/workflows/build.yml
+    with:
+      selective: false
+      image-string-smoke: true
+    secrets: inherit
