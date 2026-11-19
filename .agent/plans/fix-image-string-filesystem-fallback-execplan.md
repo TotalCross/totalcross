@@ -86,8 +86,17 @@ unreadable must fail without trying a same-name filesystem file.
   run `44613588440` is active on that revision. Run `44611514188` failed its
   Android boot at the 600-second default before app launch. See the evidence
   index.
+- [x] (2026-11-19) At the user's request, stop the long-running activity and
+  record a resumable handoff. The latest checksum smoke did not reach runtime:
+  all three platform deploys reject `Long.toHexString(long)` as unavailable to
+  device code. The TCG-enabled Android workflow booted near the 900-second
+  limit but produced no fixture result. One older Android job was cancelled;
+  no workflow remains active. See
+  `.agent/state/fix-image-string-filesystem-fallback-handoff.md` for the full
+  run chronology, artifact locations, current scope questions, and next steps.
 - [ ] Reconcile Android API 35, Windows x64, and Linux x64 results from the
-  next post-fix run and artifacts with the acceptance criteria.
+  next post-fix run and artifacts with the acceptance criteria. This acceptance
+  gate remains open while the task is paused.
 
 ## Current Architecture and Scope
 

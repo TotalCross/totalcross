@@ -8,10 +8,12 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Active slice
 
-Local implementation, regression coverage, workflow preparation, validation,
-and commits are complete. The user authorized pushing this branch and manually
-dispatching the existing Merge Flow with the smoke input. The remaining gate is
-the Android, Windows x64, and Linux x64 GitHub Actions results.
+**Paused at the user's request (2026-11-19).** Local implementation,
+regression coverage, workflow preparation, validation, and commits are
+complete; cross-platform acceptance is not. Read
+`.agent/state/fix-image-string-filesystem-fallback-handoff.md` first for the
+current result, full test/correction chronology, completed workflow statuses,
+and exact next action. No workflow is still running.
 
 ## Last checkpoint
 
@@ -233,10 +235,11 @@ the Android, Windows x64, and Linux x64 GitHub Actions results.
 
 ## Next concrete action
 
-Compare run `44621855184`'s Linux `Vm.getFile` checksum with the source fixture,
-and collect the Android TCG-enabled result from `44618392682`. Use those results
-to choose the next native decode correction. Keep the plan open until Android
-API 35, Windows x64, and Linux x64 deployed functional checks pass.
+Fix the smoke app's unsupported `Long.toHexString(long)` use identified in
+run `44621855184`; its deploy failed on Linux, Android, and Windows before the
+checksum could be measured. Then investigate why the TCG-enabled Android 15 run
+`44618392682` booted at 898,991 ms but emitted no fixture result. Continue from
+the detailed steps in `.agent/state/fix-image-string-filesystem-fallback-handoff.md`.
 
 ## Preservation boundary
 
@@ -251,11 +254,15 @@ dispatch; PR creation, merge, rebase, and force-push remain unauthorized.
   `.agent/evidence/fix-image-string-filesystem-fallback.jsonl`.
 - Corrected JavaSE and deployed macOS arm64 checks passed.
 - Corrected deployed macOS arm64 AddressSanitizer smoke passed.
-- Windows x64 functional validation passed repeatedly, including runs
-  `44613588440` and `44615780340`. The Linux `realpath` startup abort is fixed
-  and verified in CI; Linux native-bag decode still fails after direct and
-  canonical decoding. A checksum diagnostic is prepared. Android API 35 jobs
-  timed out at 600 and 900 seconds when `ANDROID_I_WANT_MY_TCG` was missing.
-  Run `44618392682` enables TCG and remains active more than 900 seconds after
-  the emulator step started. iOS is out of scope.
+- Windows x64 functional validation passed repeatedly on earlier revisions,
+  including runs `44613588440` and `44615780340`. The latest run
+  `44621855184` failed deployment on all three platform lanes because its new
+  checksum diagnostic calls unsupported `Long.toHexString(long)`. Linux's
+  `realpath` startup abort is fixed and verified in CI; its PNG decode still
+  fails with ADLER32 mismatch, and the checksum comparison remains unobserved.
+- Android runs without TCG opt-in timed out before launch. Run `44618392682`
+  enabled TCG and booted API 35 after 898,991 ms; APK deployment succeeded, but
+  no smoke assertion line was emitted and the workflow failed. Run
+  `44620259847` was cancelled at the user's request while Android was active.
+  All workflows are now finished. iOS is out of scope.
 - iOS build and functional validation are out of scope.
