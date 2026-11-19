@@ -189,6 +189,14 @@ the Android, Windows x64, and Linux x64 GitHub Actions results.
   run `44620259847` is active on this revision. Android run `44618392682` is
   the first run with the TCG environment opt-in and its emulator job remains
   active.
+- Run `44620259847` passed Windows; Linux still failed on the byte-backed PNG.
+  Both direct and canonical decode emitted `ADLER32 checksum mismatch`, so the
+  fallback did not solve the issue. Linux artifact:
+  `/tmp/image-string-linux-run-44620259847/`. Added FNV-1a logging for the
+  `Vm.getFile` byte array before native capture; focused test and smoke
+  packaging passed (`TotalCrossSDK/agent-logs/20261119-184100-test-agent.log`).
+  The source fixture is 136 bytes with FNV-1a `cdf05a32`. The TCG-enabled
+  Android job `135894837011` remains active after the 900-second boot limit.
 - The Android job log for run `44613588440` shows the emulator exited
   immediately: software CPU emulation with `-accel off` now requires
   `ANDROID_I_WANT_MY_TCG=yes`. The action's boot loop retried until 900 seconds.
@@ -219,10 +227,10 @@ the Android, Windows x64, and Linux x64 GitHub Actions results.
 
 ## Next concrete action
 
-Collect run `44620259847`'s Linux result to determine whether the canonical
-decode fallback resolves the failure, and run `44618392682`'s Android API 35
-result with TCG enabled. Keep the plan open until Android API 35, Windows x64,
-and Linux x64 deployed functional checks pass.
+Push the FNV diagnostic and dispatch another smoke run. Compare the Linux
+`Vm.getFile` checksum with the source fixture, and collect the final Android
+TCG-enabled result from `44618392682`. Keep the plan open until Android API 35,
+Windows x64, and Linux x64 deployed functional checks pass.
 
 ## Preservation boundary
 
@@ -239,9 +247,9 @@ dispatch; PR creation, merge, rebase, and force-push remain unauthorized.
 - Corrected deployed macOS arm64 AddressSanitizer smoke passed.
 - Windows x64 functional validation passed repeatedly, including runs
   `44613588440` and `44615780340`. The Linux `realpath` startup abort is fixed
-  and verified in CI; Linux native-bag decode failed from `Image(byte[])` and
-  run `44620259847` is validating a canonical-decoder fallback. Android API 35
-  jobs timed out at 600 and 900 seconds because `ANDROID_I_WANT_MY_TCG` was
-  missing. Run `44618392682` is the first with TCG explicitly enabled and still
-  active. iOS is out of scope.
+  and verified in CI; Linux native-bag decode still fails after direct and
+  canonical decoding. A checksum diagnostic is prepared. Android API 35 jobs
+  timed out at 600 and 900 seconds when `ANDROID_I_WANT_MY_TCG` was missing.
+  Run `44618392682` enables TCG and remains active past 900 seconds. iOS is out
+  of scope.
 - iOS build and functional validation are out of scope.

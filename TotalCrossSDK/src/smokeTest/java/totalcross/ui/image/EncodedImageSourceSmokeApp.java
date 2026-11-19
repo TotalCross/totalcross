@@ -278,7 +278,8 @@ public class EncodedImageSourceSmokeApp extends MainWindow {
     if (encoded == null) {
       return false;
     }
-    smokePhase("tcz-parity-read-length=" + path + ",bytes=" + encoded.length);
+    smokePhase("tcz-parity-read-length=" + path + ",bytes=" + encoded.length
+        + ",fnv1a=" + Long.toHexString(fnv1a(encoded)));
     try (File physical = new File(path)) {
       if (physical.exists()) {
         return false;
@@ -328,6 +329,14 @@ public class EncodedImageSourceSmokeApp extends MainWindow {
       failure = failure.getCause();
     }
     return message.toString();
+  }
+
+  private static long fnv1a(byte[] bytes) {
+    long hash = 0x811c9dc5L;
+    for (int i = 0; i < bytes.length; i++) {
+      hash = ((hash ^ (bytes[i] & 0xff)) * 0x01000193L) & 0xffffffffL;
+    }
+    return hash;
   }
 
   private static boolean tczPrecedenceOverPhysicalFile() throws Exception {
