@@ -81,4 +81,10 @@ typedef void (*tiF_create_siiFunc)(NMParams p);
 Err fileCreate(NATIVE_FILE* fref, TCHARP path, int32 mode, int32* slot);
 Err fileGetSize(NATIVE_FILE fref, TCHARP szPath, int32* size);
 Err fileClose(NATIVE_FILE* fref);
+
+/* Android-only JNI bridge, shared by File and SQLite access recovery. */
+#if defined(ANDROID)
+bool fileRequestStoragePermission(void);
+#endif
+
 #endif
