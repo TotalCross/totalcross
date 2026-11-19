@@ -16,6 +16,7 @@
 #undef Class
 
 extern int32 keepRunning;
+extern double screenContentScale;
 static bool mainThreadSuspended;
 
 bool allowMainThread()
@@ -30,6 +31,25 @@ int32 iphone_privateIsEventAvailable()
 
 void screenChange(Context currentContext, int32 newWidth, int32 newHeight, int32 hRes, int32 vRes, int32 nothingChanged); // rotate the screen
 void setEditText(Context currentContext, TCObject control, NSString *str);
+
+// ChildView queues single-touch pen events in physical pixels; Java window
+// hit testing expects logical points. Convert only pen events here, leaving
+// multitouch gestures and the physical safe-area insets unchanged.
+static int32 iosPenPhysicalToLogical(int32 value)
+{
+   double scale = screenContentScale > 0 ? screenContentScale : 1.0;
+   double logical = (double)value / scale;
+   return logical >= 0 ? (int32)(logical + 0.5) : (int32)(logical - 0.5);
+}
+
+static void postIosPenEvent(Context currentContext, TotalCrossUiEvent type, NSDictionary *event)
+{
+   int32 physicalX = [[event objectForKey:@"x"] intValue];
+   int32 physicalY = [[event objectForKey:@"y"] intValue];
+   postEvent(currentContext, type, 0,
+       iosPenPhysicalToLogical(physicalX),
+       iosPenPhysicalToLogical(physicalY), -1);
+}
 
 void iphone_privatePumpEvent(Context currentContext)
 {
@@ -51,17 +71,17 @@ void iphone_privatePumpEvent(Context currentContext)
       else
       if([type isEqualToString:@"mouseDown"])
       {
-         postEvent(currentContext, PENEVENT_PEN_DOWN, 0, [[event objectForKey:@"x"] intValue], [[event objectForKey:@"y"] intValue], -1);
+         postIosPenEvent(currentContext, PENEVENT_PEN_DOWN, event);
       }
       else
       if([type isEqualToString:@"mouseUp"])
       {
-         postEvent(currentContext, PENEVENT_PEN_UP, 0, [[event objectForKey:@"x"] intValue], [[event objectForKey:@"y"] intValue], -1);
+         postIosPenEvent(currentContext, PENEVENT_PEN_UP, event);
       }
       else
       if(([type isEqualToString:@"mouseDragged"]) || ([type isEqualToString:@"mouseMoved"]))
       {
-         postEvent(currentContext, PENEVENT_PEN_DRAG, 0, [[event objectForKey:@"x"] intValue], [[event objectForKey:@"y"] intValue], -1);
+         postIosPenEvent(currentContext, PENEVENT_PEN_DRAG, event);
       }
       else
       if([type isEqualToString:@"sipClosed"])
