@@ -197,6 +197,12 @@ the Android, Windows x64, and Linux x64 GitHub Actions results.
   packaging passed (`TotalCrossSDK/agent-logs/20261119-184100-test-agent.log`).
   The source fixture is 136 bytes with FNV-1a `cdf05a32`. The TCG-enabled
   Android job `135894837011` remains active after the 900-second boot limit.
+- FNV-1a diagnostic was committed/pushed as `d94573a46` (`fix(ci): report TCZ
+  image byte checksum`) after `jarEncodedImageSourceSmoke` and the focused image
+  test passed. The source fixture checksum is `cdf05a32`; manual run
+  `44621855184` is active on this revision. Android TCG-enabled job
+  `135894837011` has not completed yet, more than 900 seconds after its action
+  step began.
 - The Android job log for run `44613588440` shows the emulator exited
   immediately: software CPU emulation with `-accel off` now requires
   `ANDROID_I_WANT_MY_TCG=yes`. The action's boot loop retried until 900 seconds.
@@ -227,10 +233,10 @@ the Android, Windows x64, and Linux x64 GitHub Actions results.
 
 ## Next concrete action
 
-Push the FNV diagnostic and dispatch another smoke run. Compare the Linux
-`Vm.getFile` checksum with the source fixture, and collect the final Android
-TCG-enabled result from `44618392682`. Keep the plan open until Android API 35,
-Windows x64, and Linux x64 deployed functional checks pass.
+Compare run `44621855184`'s Linux `Vm.getFile` checksum with the source fixture,
+and collect the Android TCG-enabled result from `44618392682`. Use those results
+to choose the next native decode correction. Keep the plan open until Android
+API 35, Windows x64, and Linux x64 deployed functional checks pass.
 
 ## Preservation boundary
 
@@ -250,6 +256,6 @@ dispatch; PR creation, merge, rebase, and force-push remain unauthorized.
   and verified in CI; Linux native-bag decode still fails after direct and
   canonical decoding. A checksum diagnostic is prepared. Android API 35 jobs
   timed out at 600 and 900 seconds when `ANDROID_I_WANT_MY_TCG` was missing.
-  Run `44618392682` enables TCG and remains active past 900 seconds. iOS is out
-  of scope.
+  Run `44618392682` enables TCG and remains active more than 900 seconds after
+  the emulator step started. iOS is out of scope.
 - iOS build and functional validation are out of scope.
