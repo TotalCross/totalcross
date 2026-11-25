@@ -145,6 +145,36 @@ startup/logs are under `/tmp/luna-image-string-resume-20261125/`. The AVD was
 stopped after evidence collection. The emulator run was local macOS evidence,
 not GitHub Actions CI.
 
+### Android DEX-width follow-up
+
+Focused inspection of `TotalCrossSDK/src/main/java/tc/tools/deployer/Deployer4Android.java`
+found that `processClassesDex` performs an in-place byte-array replacement.
+Its comment requires equal package lengths: source `totalcross/android` is 18
+bytes, while target `totalcross/appimgsmoke` was 22 bytes. The longer copy
+overran the original DEX string, matching the `dexdump`/ART length failure.
+Changed only the smoke app's ID to `test` in commit `93f4ef016`; target
+`totalcross/apptest` is also 18 bytes. The source and target width check passed.
+
+`./gradlew-agent jarEncodedImageSourceSmoke --quiet` passed in 3 seconds. The
+established `tc.Deploy ... -android` command used the same SDK and Android AAB
+artifacts from run `45688281871` and produced APK SHA-256
+`e4051047278849d329a1e4e60a5d23dcdd39357056fd04b6e869896672e59a51`.
+`dexdump -f` passed for its sole 3,344,772-byte `classes.dex` (SHA-256
+`a0c00a9f31c395f8a12918f85d10ff24672dfe91ec474ef7d82e6692f746684e`). `aapt`
+derived package `totalcross.apptest` and activity
+`totalcross.apptest.Loader`; install succeeded and `am start -W` returned
+`Status: ok` (11.2 seconds). The existing API 34 ARM64 AVD booted and was
+stopped after evidence capture.
+
+The app emitted the fixture line within the 60-second bound, but
+`overallPass=false` solely because `absoluteFilesystemPath=false`. Filesystem
+PNG/JPEG parity, TCZ PNG/JPEG, TCZ precedence/no-fallback, missing/invalid
+files, `device/` path, path-length boundary, runtime fixture isolation, bag
+lifetime, and expected `cdf05a32` checksum all passed. The process exited from
+the smoke failure; no DEX crash remained. Full line and logs are in the JSONL
+record and `/tmp/luna-image-string-resume-20261125/android-fixed-id/`. This
+remains local evidence, not CI, and does not meet acceptance.
+
 ### Linux PNG investigation
 
 Downloaded the matching `linux-amd64` artifact (`15058040689`) and reused the
@@ -372,19 +402,19 @@ references.
 
 ## Next actions
 
-1. Investigate why the established `tc.Deploy` flow emits an APK whose only
-   `classes.dex` is invalid and lacks `androidx.multidex.MultiDexApplication`,
-   while the matching AAB DEX contains that class and parses successfully.
-   Keep SDK/VM/JAR provenance coherent; do not manually reconstruct the APK.
+1. Diagnose the false Android `absoluteFilesystemPath` assertion by recording
+   the exact appPath-derived path and `FilesystemResult.error`. Preserve the
+   assertion; use only the existing accelerated AVD and matching SDK/VM
+   artifacts in a later bounded resume.
 2. If Linux diagnosis continues, run only the focused discriminator described
    above: hash bytes at the `png_process_data` boundary and decode them through
    the same static libraries with a standard allocator. Do not dispatch the
    three-platform smoke matrix.
-3. Acceptance requires a local Android smoke result line with all required
-   assertions, plus passing same-commit Linux x64 and Windows x64 deployed
-   smokes. Windows passed on `6ccab1de5`; Android and Linux remain incomplete.
-   iOS remains untested and out of scope.
+3. Acceptance requires Android `overallPass=true`, plus passing same-commit
+   Linux x64 and Windows x64 deployed smokes. Windows passed on `6ccab1de5`;
+   Android and Linux remain incomplete. iOS remains untested and out of scope.
 
-At this checkpoint, no workflow is running. The Android DEX packaging defect
-and Linux PNG discriminator above are the next technical actions; only the
-final documentation checks and their commit/push remain in this resume.
+At this checkpoint, no workflow is running. The DEX-width defect has a
+test-harness correction; the Android absolute-path diagnostic and Linux PNG
+discriminator above remain. Only documentation checks and the final
+checkpoint commit/push remain in this resume.

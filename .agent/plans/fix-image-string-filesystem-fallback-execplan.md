@@ -112,10 +112,19 @@ unreadable must fail without trying a same-name filesystem file.
   routes, and inspect Linux's static libpng/zlib-ng build. No specific native
   defect was proven; no decoder change or Linux-only CI run was made. See the
   append-only evidence index for commands, artifact identities, and logs.
+- [x] (2026-11-25) Inspect the local APK's malformed DEX failure. The deployer
+  replaces package bytes in-place and requires equal source/target widths;
+  smoke app ID `imgsmoke` violated that invariant (18-byte source versus
+  22-byte target). Change the smoke-only ID to `test`, rebuild the smoke JAR,
+  deploy through `tc.Deploy` with the same SDK/AAB artifacts, and verify the
+  generated DEX with `dexdump`. The app then ran and emitted its fixture result;
+  `overallPass=false` only because `absoluteFilesystemPath=false`. This is
+  partial Android evidence, not acceptance. See the handoff/evidence for
+  hashes and the bounded next diagnostic.
 - [ ] Acceptance remains open: Linux PNG decode is unresolved and Android
-  functional smoke did not reach the TotalCross VM. Investigate the generated
-  APK's DEX packaging and use the Linux discriminator recorded below before
-  changing native decoder behavior.
+  functional smoke reached the TotalCross VM but its absolute-path assertion
+  failed. Instrument that result without removing the assertion, and use the
+  Linux discriminator recorded below before changing native decoder behavior.
 
 ## Current Architecture and Scope
 
@@ -318,9 +327,11 @@ Merge Flow with the smoke input. Windows has passed; Android API 35 and Linux
 x64 still need successful functional results. iOS remains out of scope.
 
 The 2026-11-25 resume confirmed Windows parity on the same SDK/VM artifacts,
-discriminated Linux PNG failure from TCZ transport by matching FNV-1a
-`cdf05a32`, and exposed a hosted-runner KVM permission blocker before Android
-deployment. Cross-platform acceptance remains open.
+discriminated Linux PNG failure from source-fixture corruption by matching
+FNV-1a `cdf05a32` and validating the PNG independently, and exposed the Android
+smoke deployer's fixed-width DEX package rewrite invariant. A smoke-only package
+ID correction produced valid DEX and an Android fixture result, but the
+absolute-path assertion remains false. Cross-platform acceptance remains open.
 
 ## Revision Note
 

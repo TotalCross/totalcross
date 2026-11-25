@@ -69,24 +69,33 @@ SPDX-License-Identifier: LGPL-2.1-only
   Its VM statically links libpng 1.6.48 and zlib-ng 2.1.6. No specific decoder
   or library defect is proven; no decoder change or CI run was made. The exact
   next discriminator is recorded in the ExecPlan and handoff.
+- Android follow-up identified the DEX corruption source: `Deployer4Android`
+  replaces `totalcross/android` with `totalcross/app` plus the app ID in-place,
+  and its source comment requires equal byte lengths. ID `imgsmoke` made the
+  replacement 22 bytes instead of 18, corrupting DEX data. Commit `93f4ef016`
+  changes only the smoke ID to `test` (both package strings are 18 bytes).
+  `jarEncodedImageSourceSmoke`, matching-artifact deployment, and `dexdump`
+  passed; the APK installed and ran. The fixture passed all checks except
+  `absoluteFilesystemPath=false`, so `overallPass=false`. No further Android
+  test was started within this timebox.
 
 ## Active slice
 
-**Checkpointed after two bounded 2026-11-25 resumes.** No functional source
-changed in the second resume. Android deployment launched but failed before the
-smoke because the `tc.Deploy` APK has invalid DEX and lacks its declared
-MultiDex application class. Linux fixture integrity is verified, but the
-failure remains within the shared native PNG decode stack or its static
-libraries. No CI workflow is active; acceptance remains incomplete. Read the
-latest second-resume section of the handoff and evidence index for artifacts,
-commands, logs, and the next discriminators.
+**Checkpointed after the 2026-11-25 bounded resume.** Commit `93f4ef016`
+corrects only the smoke app ID to satisfy the deployer's fixed-width DEX
+package rewrite; the resulting APK DEX parses and the app ran. Android
+acceptance remains incomplete because `absoluteFilesystemPath=false` made
+`overallPass=false`. Linux fixture integrity is verified, but the failure
+remains in the shared native PNG decode stack or its static libraries. No CI
+workflow is active. Read the latest Android follow-up and evidence record for
+the exact results and next discriminators.
 
 ## Last checkpoint
 
-- Resume code checkpoint: `6ccab1de50214fac44f2642960762edb1c867444` on
-  `fix/image-string-filesystem-fallback`, pushed to origin. The one new Merge
-  Flow run is `45688281871`; its acceptance is incomplete. A separate docs
-  checkpoint follows in Git history.
+- Product/CI code checkpoint: `6ccab1de50214fac44f2642960762edb1c867444`.
+  The follow-up smoke-harness correction is `93f4ef0166066b44a570cfda1a3c63ee419070d3`.
+  Merge Flow run `45688281871` remains the only new CI run and acceptance is
+  incomplete. Docs checkpoints are `f876b9e47` plus the current closure commit.
 - Branch: `fix/image-string-filesystem-fallback`
 - Starting commit: `61034a7562e7fa43df076dcc38bcd48128605395`
 - Host: Apple Silicon macOS (`Darwin arm64`)
@@ -305,13 +314,15 @@ commands, logs, and the next discriminators.
 
 ## Next concrete action
 
-Investigate why `tc.Deploy` emits an APK whose only `classes.dex` fails DEX
-verification and omits `androidx.multidex.MultiDexApplication`; preserve the
-matching SDK/AAB provenance and do not manually rebuild the APK. For Linux,
-the next discriminator is one Linux-only diagnostic that records the input
-length/hash immediately before `png_process_data` and decodes the same fixture
-through the same static libpng/zlib-ng pair with the standard allocator. Do not
-dispatch the three-platform smoke matrix for this diagnosis.
+Diagnose the false Android absolute-path assertion by recording the exact
+`Settings.appPath`-derived path and `FilesystemResult.error`. Preserve the
+assertion, and rerun only on the existing accelerated AVD in a later bounded
+resume. The DEX-width cause and test app-ID correction are recorded; do not
+change general deployment code without separate evidence. For Linux, the next
+discriminator is one Linux-only diagnostic that records the input length/hash
+immediately before `png_process_data` and decodes the same fixture through the
+same static libpng/zlib-ng pair with the standard allocator. Do not dispatch
+the three-platform smoke matrix for this diagnosis.
 
 ## Preservation boundary
 
