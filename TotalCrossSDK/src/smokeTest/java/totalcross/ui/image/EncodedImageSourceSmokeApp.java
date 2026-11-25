@@ -18,7 +18,8 @@ public class EncodedImageSourceSmokeApp extends MainWindow {
   private static String tinyPngFnv1a = "not-read";
 
   static {
-    totalcross.sys.Settings.applicationId = "imgsmoke";
+    // Android deployment patches fixed-width package descriptors in classes.dex.
+    totalcross.sys.Settings.applicationId = "test";
   }
 
   @Override
