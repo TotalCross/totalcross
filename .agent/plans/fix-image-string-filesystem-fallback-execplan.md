@@ -126,6 +126,12 @@ unreadable must fail without trying a same-name filesystem file.
   failed. Instrument that result without removing the assertion, and use the
   Linux discriminator recorded below before changing native decoder behavior.
 
+The Android absolute-path log reaches `filesystem-start=png` but has no
+successful write/read/path phase before the false result; the following
+`device/` PNG route passes. `safeFilesystemRoundTrip` hides its error for this
+case. Capture `Settings.appPath`, the composed path, and the failing phase/error
+before changing product path handling.
+
 ## Current Architecture and Scope
 
 `EncodedImageSource.fromPath` calls the private native-replaced

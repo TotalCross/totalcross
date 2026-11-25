@@ -175,6 +175,16 @@ the smoke failure; no DEX crash remained. Full line and logs are in the JSONL
 record and `/tmp/luna-image-string-resume-20261125/android-fixed-id/`. This
 remains local evidence, not CI, and does not meet acceptance.
 
+Static review of that log narrowed the next Android diagnostic. The absolute
+case logs `filesystem-start=png` and then `absolute-path-checked=false`, without
+`filesystem-written`, `filesystem-file-decoded`, or `filesystem-path-loaded`.
+The following `device/` case logs the complete write/read/path parity sequence.
+`filesystemRoundTrip` logs its start before constructing/writing and only logs
+the write after `File.CREATE_EMPTY` and PNG encoding return; the absolute case
+does not expose its `FilesystemResult.error`. This places the failure before a
+successful write marker, but does not identify which operation threw. Log the
+composed path and phase/error before attributing this to image path decoding.
+
 ### Linux PNG investigation
 
 Downloaded the matching `linux-amd64` artifact (`15058040689`) and reused the
@@ -403,9 +413,10 @@ references.
 ## Next actions
 
 1. Diagnose the false Android `absoluteFilesystemPath` assertion by recording
-   the exact appPath-derived path and `FilesystemResult.error`. Preserve the
-   assertion; use only the existing accelerated AVD and matching SDK/VM
-   artifacts in a later bounded resume.
+   `Settings.appPath`, the composed path, and the failing phase/error around
+   image construction and `File.CREATE_EMPTY`. Preserve the assertion; use
+   only the existing accelerated AVD and matching SDK/VM artifacts in a later
+   bounded resume.
 2. If Linux diagnosis continues, run only the focused discriminator described
    above: hash bytes at the `png_process_data` boundary and decode them through
    the same static libraries with a standard allocator. Do not dispatch the

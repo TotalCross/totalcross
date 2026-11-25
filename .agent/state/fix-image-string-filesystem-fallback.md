@@ -78,6 +78,12 @@ SPDX-License-Identifier: LGPL-2.1-only
   passed; the APK installed and ran. The fixture passed all checks except
   `absoluteFilesystemPath=false`, so `overallPass=false`. No further Android
   test was started within this timebox.
+- Static log review narrows the absolute-path failure to before the next
+  successful write marker: the case logs `filesystem-start=png` then
+  `absolute-path-checked=false`, with no write/read/path phases. The following
+  `device/` path completes PNG parity. The absolute case does not report its
+  `FilesystemResult.error`, so the exact operation remains unknown; record the
+  composed path and phase/error before attributing this to image decoding.
 
 ## Active slice
 
