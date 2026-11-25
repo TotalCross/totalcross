@@ -55,6 +55,8 @@ public class EncodedImageSourceSmokeApp extends MainWindow {
     boolean missingFile = false;
     boolean invalidFilesystemFile = false;
     boolean absoluteFilesystemPath = false;
+    String absoluteFilesystemPathValue = "";
+    String absoluteFilesystemPathError = "";
     boolean deviceFilesystemPath = false;
     boolean deviceFilesystemPathSupported = false;
     boolean devicePathImageException = false;
@@ -193,12 +195,17 @@ public class EncodedImageSourceSmokeApp extends MainWindow {
     }
     smokePhase("invalid-file-checked=" + invalidFilesystemFile);
     try {
-      absoluteFilesystemPath = safeFilesystemRoundTrip(
-          totalcross.sys.Settings.appPath + "runtime-image-string-fallback-absolute.png", false).parity;
+      absoluteFilesystemPathValue = totalcross.sys.Convert.appendPath(
+          totalcross.sys.Settings.appPath, "runtime-image-string-fallback-absolute.png");
+      FilesystemResult absolutePathResult = safeFilesystemRoundTrip(absoluteFilesystemPathValue, false);
+      absoluteFilesystemPath = absolutePathResult.parity;
+      absoluteFilesystemPathError = absolutePathResult.error;
     } catch (Throwable failure) {
       error = appendFailure(error, failure);
     }
-    smokePhase("absolute-path-checked=" + absoluteFilesystemPath);
+    smokePhase("absolute-path-input=" + absoluteFilesystemPathValue);
+    smokePhase("absolute-path-checked=" + absoluteFilesystemPath + ",error="
+        + absoluteFilesystemPathError.replace(' ', '_').replace(',', ';'));
     try {
       deviceFilesystemPathSupported = supportsDevicePath();
       if (deviceFilesystemPathSupported) {
@@ -240,6 +247,7 @@ public class EncodedImageSourceSmokeApp extends MainWindow {
         + ",filesystemPngFile=" + filesystemPngFile + ",filesystemPngPath=" + filesystemPngPath
         + ",filesystemPngPathImageException=" + filesystemPngPathImageException
         + ",filesystemPngError=" + filesystemPngError.replace(' ', '_')
+        + ",absoluteFilesystemPathError=" + absoluteFilesystemPathError.replace(' ', '_').replace(',', ';')
         + ",tczOnlyPng=" + tczOnlyPng + ",tczOnlyJpeg=" + tczOnlyJpeg
         + ",tczPrecedence=" + tczPrecedence + ",tczInvalidNoFallback=" + tczInvalidNoFallback
         + ",tczEmptyNoFallback=" + tczEmptyNoFallback + ",missingFile=" + missingFile
@@ -283,7 +291,8 @@ public class EncodedImageSourceSmokeApp extends MainWindow {
       missingFile = missingImageUsesFileError();
       invalidFilesystemFile = invalidFilesystemImageFails();
       absoluteFilesystemPath = filesystemRoundTrip(
-          totalcross.sys.Settings.appPath + "runtime-image-string-fallback-absolute.png", false).parity;
+          totalcross.sys.Convert.appendPath(totalcross.sys.Settings.appPath,
+              "runtime-image-string-fallback-absolute.png"), false).parity;
       deviceFilesystemPathSupported = supportsDevicePath();
       if (deviceFilesystemPathSupported) {
         FilesystemResult deviceResult = filesystemRoundTrip("device/runtime-image-string-fallback-device.png", false);
