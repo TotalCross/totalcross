@@ -24,6 +24,13 @@ SPDX-License-Identifier: LGPL-2.1-only
   **22:25:31 UTC**; stop new builds/tests/CI after 22:13:31 UTC and begin
   checkpoint closure by 22:15:31 UTC. Preserve the previous completed
   checkpoint; acceptance remains incomplete.
+- Linux baseline-vs-feature investigation began at **2026-11-25 22:38:53 UTC**
+  from clean, matching revision `63102acc2ce876f9d381e076d659e7a0a8303441`.
+  Hard deadline: **23:38:53 UTC**; stop new CI/build/test work after
+  **23:28:53 UTC** and begin checkpoint closure by **23:18:53 UTC**. Limit this
+  resume to one Linux x64 GitHub Actions run comparing master `61034a7562e7`
+  plus only the `153f9fae5` startup fix against the feature revision. Do not
+  run other platform tests or enable `TC_IMAGE_PNG_DIAGNOSTIC`.
 
 ## Resume progress (2026-11-25)
 
@@ -107,28 +114,35 @@ SPDX-License-Identifier: LGPL-2.1-only
   all libpng calls, so the next authorized Linux run can preserve the hash even
   if decoder cleanup crashes. The copyright-header validator and `git diff
   --check` passed. Runtime behavior is unverified; no second CI run was started.
+- [x] (2026-11-25) Add the bounded Linux x64 baseline comparison harness in
+  commit `b6c6641cd`: deploy the same `Image(File)`/`Image(byte[])` PNG and
+  JPEG-control app against feature SDK/VM artifacts and an isolated master
+  baseline (`61034a7` plus only startup fix `153f9fae5`), with the same pinned
+  depot-tools dependency artifact. Gradle JAR packaging, YAML/Bash syntax,
+  copyright headers, and diff checks passed. Pushed and dispatched the one
+  authorized run `45720318038` at 23:18 UTC; it is pending/in progress. No
+  decoder conclusion is available yet. The user confirmed no KVM runner is
+  available; Android remains skipped.
 
 ## Active slice
 
-**Checkpointed at `2faf62d24` during the 2026-11-25 continuation.** Smoke-only commits
-`93f4ef016`, `7d4d9d9b1` fix the deployer's equal-width DEX rewrite and the
-absolute runtime fixture path; the matching local API 34 ARM64 smoke emitted
-`overallPass=true`. Linux diagnostic commit `3084f55dd` builds, but its one
-Linux-only run failed inside standard libpng cleanup after ADLER32. The latest
-diagnostic-only commit prints and flushes the feed hash before libpng, but has
-not run. Native input parity remains unknown. Android API 35 CI and same-commit
-Windows/Linux acceptance remain incomplete. No workflow is active. Read the
-latest handoff and JSONL record for artifact provenance and the next safe
-Linux discriminator.
+**Checkpointed after `b6c6641cd` on 2026-11-25.** The feature branch has one
+active Linux x64 baseline-comparison workflow, run `45720318038`. It compares
+`Image(File)` and `Image(byte[])` for the fixed PNG and JPEG control on the
+feature build and a separately rebuilt baseline at `61034a7562e7` plus only
+startup fix `153f9fae5`; the dependency manifest is pinned to depot-tools
+`0fd3c98727c87a441bc9c8d2c8dd2b731ef0861a`, libpng `1.6.48-r3`, and zlib-ng
+`2.1.6-r3`. Result is pending; do not infer a decoder cause before the artifact
+logs arrive. No other platform lane runs in this resume. Read this state,
+the handoff, and the latest JSONL entry before continuing.
 
 ## Last checkpoint
 
-- Product/smoke checkpoint: `7d4d9d9b1d108e268fc99045bcca8ca5676d350a`;
-  Linux diagnostic checkpoint: `2faf62d24e604f27b68f38b0dac22352d98cb068`.
-  Run `45707753798` completed with Linux smoke failure; the follow-up change
-  only moves checksum output before libpng and is runtime-unverified.
-  Acceptance remains incomplete. This state, the handoff, plan, and
-  append-only evidence record contain the current findings and resume point.
+- Current implementation checkpoint: `b6c6641cdce593ea14dca2931626d0899067d7f8`.
+  One Linux x64 baseline-comparison run `45720318038` is pending/in progress;
+  acceptance remains incomplete. See the append-only evidence entry for
+  command and run identity. The earlier diagnostic run `45707753798` and
+  pre-libpng probe are recorded below and in the handoff.
 - Branch: `fix/image-string-filesystem-fallback`
 - Starting commit: `61034a7562e7fa43df076dcc38bcd48128605395`
 - Host: Apple Silicon macOS (`Darwin arm64`)
@@ -349,13 +363,14 @@ Linux discriminator.
 
 The absolute-path harness issue is fixed and locally passes on the existing
 API 34 ARM64 AVD. API 35 CI still requires a runner with read/write `/dev/kvm`;
-the user confirmed none is available, so do not retry that lane yet. Linux
-diagnosis remains open. In a later bounded Linux-only CI run, first print and
-flush the exact feed length/FNV before invoking libpng. Run the standard-
-allocator decode in an isolated helper process using the exact saved feed bytes
-and same static libraries, so a cleanup crash cannot erase the checksum or
-terminate the functional smoke. Compare with `cdf05a32`; do not run another
-cross-platform matrix or change decoder behavior without this evidence.
+the user confirmed none is available, so it is excluded. Follow the single
+Linux x64 run `45720318038` to completion and preserve its artifacts. It
+compares both constructors on master baseline and feature, records build
+provenance, fixture hashes, CMake dependency paths, and runs an isolated
+standard-allocator probe with the selected static libraries if both PNG cases
+fail while JPEG passes. Do not start another run or change decoder behavior in
+this timebox. If the run cannot finish before the deadline, checkpoint it as
+pending and keep acceptance incomplete.
 
 ## Preservation boundary
 
@@ -389,3 +404,7 @@ dispatch; PR creation, merge, rebase, and force-push remain unauthorized.
   `44620259847` was cancelled at the user's request while Android was active.
   All workflows are now finished. iOS is out of scope.
 - iOS build and functional validation are out of scope.
+- Run `45720318038` is the sole run in this 60-minute Linux investigation. It
+  was dispatched from `b6c6641cd` and remained in progress at checkpoint
+  creation; no baseline-versus-feature result is claimed. Android was omitted
+  after the user confirmed no KVM runner is available.

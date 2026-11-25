@@ -493,20 +493,24 @@ references.
 
 ## Next actions
 
-1. Android's API 34 local path smoke is fixed and passes. Resume API 35 CI only
-   after a runner with working read/write `/dev/kvm` is actually available; do
-   not use TCG/software emulation.
-2. In a later bounded Linux-only run, verify the pre-call feed length/FNV
-   diagnostic from `2faf62d24`, save those exact bytes, and decode them in a
-   separate helper process using the same static libpng/zlib-ng libraries and
-   default allocator. Compare the feed hash with `cdf05a32`; the prior standard
-   API crashed during `inflateEnd`/`free` cleanup. Do not rerun the
-   cross-platform matrix or change decoder behavior without this evidence.
-3. Acceptance still requires passing same-commit Linux x64, Windows x64, and
-   Android API 35 CI smokes. Local Android API 34 evidence and earlier Windows
-   results do not satisfy that final same-commit gate. iOS remains out of scope.
+1. Follow the single Linux x64 comparison run
+   [45720318038](https://github.com/TotalCross/totalcross/actions/runs/45720318038)
+   from commit `b6c6641cd`. It rebuilds master `61034a7562e7` plus only startup
+   fix `153f9fae5`, then runs the same Image(File)/Image(byte[]) PNG and JPEG
+   app against baseline and feature SDK/VM pairs with the same prepared
+   dependency archive. Preserve the logs and classify only from the recorded
+   case results.
+2. If both baseline and feature PNG cases fail while JPEG passes, review the
+   isolated default-allocator libpng probe, exact static archive hashes, ABI
+   report, and symbol providers before drawing a conclusion. Do not change
+   decoder behavior without that evidence.
+3. The user confirmed no KVM runner is available. Do not retry Android API 35,
+   use TCG/software emulation, or dispatch another workflow in this timebox.
+   Windows and Android same-commit CI acceptance remain incomplete; iOS stays
+   out of scope.
 
-At this checkpoint, no workflow is running. The API 34 local Android smoke
-passes; Linux remains inconclusive after the one authorized diagnostic run,
-and API 35 requires a KVM-capable runner. Only documentation checks and the
-final checkpoint commit/push remain in this resume.
+At this checkpoint, run `45720318038` was active. The local comparison JAR,
+workflow YAML/Bash syntax, headers, and diff checks passed. A first Gradle
+attempt failed at task configuration because the resource provider was used
+incorrectly; after correction, `jarLinuxPngDecodeComparison` passed and the
+JAR contains the app and both fixtures. No Linux decode result is claimed yet.

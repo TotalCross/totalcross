@@ -136,11 +136,18 @@ unreadable must fail without trying a same-name filesystem file.
   flush before libpng so a cleanup crash cannot suppress the checksum. Header
   validation and `git diff --check` passed. This diagnostic has not run; the
   one-run allowance is consumed and Linux byte parity remains unresolved.
-- [ ] Acceptance remains open: Linux PNG decode and the feed checksum remain
-  unresolved; Windows has not run on the current diagnostic commit; Android
-  API 35 CI awaits a runner with read/write `/dev/kvm`. The user confirmed no
-  such KVM runner is available. Do not dispatch another matrix or use software
-  emulation in this timebox.
+- [x] (2026-11-25) Add a dedicated Linux x64 baseline comparison harness in
+  `b6c6641cd` and dispatch one bounded run, `45720318038`. It uses the same
+  deployed PNG/JPEG fixture app on feature artifacts and a separately rebuilt
+  baseline (`61034a7562e7` plus startup fix `153f9fae5`), sharing the pinned
+  dependency artifact. Local JAR packaging and workflow syntax checks passed;
+  CI was pending at checkpoint. Diagnosis and acceptance remain open.
+- [ ] Acceptance remains open: run `45720318038` must first classify the
+  baseline and feature PNG results and preserve its isolated decoder evidence.
+  The result was pending at checkpoint. Windows has not run on the current
+  diagnostic commit. Android API 35 CI is unavailable because the user
+  confirmed no KVM runner exists. Do not dispatch another matrix or use
+  software emulation in this timebox.
 
 The earlier Android absolute-path log reached `filesystem-start=png` but had no
 successful write/read/path phase before the false result; the following
