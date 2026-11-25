@@ -460,6 +460,10 @@ does not imply the whole workflow passed.
    before the probe logged the feed FNV. The one-run allowance is consumed;
    isolate the next standard-allocator decode and flush the feed checksum before
    calling libpng.
+9. Commit `2faf62d24` moves the diagnostic feed length/FNV print and flush
+   before any libpng call. The copyright-header validator and `git diff
+   --check` passed. This is static-only evidence: no local Linux execution or
+   second CI run occurred, so runtime output remains unverified.
 
 ## Artifacts and logs
 
@@ -492,12 +496,12 @@ references.
 1. Android's API 34 local path smoke is fixed and passes. Resume API 35 CI only
    after a runner with working read/write `/dev/kvm` is actually available; do
    not use TCG/software emulation.
-2. In a later bounded Linux-only run, log and flush the exact feed length/FNV
-   before any libpng call, save those bytes, and decode them in a separate
-   helper process using the same static libpng/zlib-ng libraries and default
-   allocator. Compare the feed hash with `cdf05a32`; the prior standard API
-   crashed during `inflateEnd`/`free` cleanup. Do not rerun the cross-platform
-   matrix or change decoders speculatively.
+2. In a later bounded Linux-only run, verify the pre-call feed length/FNV
+   diagnostic from `2faf62d24`, save those exact bytes, and decode them in a
+   separate helper process using the same static libpng/zlib-ng libraries and
+   default allocator. Compare the feed hash with `cdf05a32`; the prior standard
+   API crashed during `inflateEnd`/`free` cleanup. Do not rerun the
+   cross-platform matrix or change decoder behavior without this evidence.
 3. Acceptance still requires passing same-commit Linux x64, Windows x64, and
    Android API 35 CI smokes. Local Android API 34 evidence and earlier Windows
    results do not satisfy that final same-commit gate. iOS remains out of scope.

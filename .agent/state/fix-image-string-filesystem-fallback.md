@@ -103,26 +103,32 @@ SPDX-License-Identifier: LGPL-2.1-only
   decode reported ADLER32; the standard-allocator probe then segfaulted in
   `inflateEnd`/`free` during `png_image_finish_read` cleanup before the feed
   hash was printed. No decoder fix is proven; see the handoff and JSONL record.
+- Commit `2faf62d24` moves the feed length/FNV diagnostic and flush ahead of
+  all libpng calls, so the next authorized Linux run can preserve the hash even
+  if decoder cleanup crashes. The copyright-header validator and `git diff
+  --check` passed. Runtime behavior is unverified; no second CI run was started.
 
 ## Active slice
 
-**Checkpointed after the 2026-11-25 continuation.** Smoke-only commits
+**Checkpointed at `2faf62d24` during the 2026-11-25 continuation.** Smoke-only commits
 `93f4ef016`, `7d4d9d9b1` fix the deployer's equal-width DEX rewrite and the
 absolute runtime fixture path; the matching local API 34 ARM64 smoke emitted
-`overallPass=true`. Diagnostic commit `3084f55dd` builds, but its one Linux-only
-run failed inside the standard libpng read cleanup after ADLER32. The feed hash
-was not emitted, so native input parity remains unknown. Android API 35 CI and
-same-commit Windows/Linux acceptance remain incomplete. No workflow is active.
-Read the latest handoff and JSONL record for artifact provenance and the next
-safe Linux discriminator.
+`overallPass=true`. Linux diagnostic commit `3084f55dd` builds, but its one
+Linux-only run failed inside standard libpng cleanup after ADLER32. The latest
+diagnostic-only commit prints and flushes the feed hash before libpng, but has
+not run. Native input parity remains unknown. Android API 35 CI and same-commit
+Windows/Linux acceptance remain incomplete. No workflow is active. Read the
+latest handoff and JSONL record for artifact provenance and the next safe
+Linux discriminator.
 
 ## Last checkpoint
 
 - Product/smoke checkpoint: `7d4d9d9b1d108e268fc99045bcca8ca5676d350a`;
-  Linux diagnostic checkpoint: `3084f55dd2db6993fc28dd60d0fa6607c17ce923`.
-  Run `45707753798` completed with Linux smoke failure; acceptance is
-  incomplete. This state, the handoff, plan, and append-only evidence record
-  contain the current findings and resume point.
+  Linux diagnostic checkpoint: `2faf62d24e604f27b68f38b0dac22352d98cb068`.
+  Run `45707753798` completed with Linux smoke failure; the follow-up change
+  only moves checksum output before libpng and is runtime-unverified.
+  Acceptance remains incomplete. This state, the handoff, plan, and
+  append-only evidence record contain the current findings and resume point.
 - Branch: `fix/image-string-filesystem-fallback`
 - Starting commit: `61034a7562e7fa43df076dcc38bcd48128605395`
 - Host: Apple Silicon macOS (`Darwin arm64`)

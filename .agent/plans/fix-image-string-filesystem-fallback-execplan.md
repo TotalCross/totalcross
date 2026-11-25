@@ -132,6 +132,10 @@ unreadable must fail without trying a same-name filesystem file.
   failed: the ordinary PNG decode reported ADLER32, then the same-data
   standard-allocator `png_image_finish_read` path segfaulted in
   `inflateEnd`/`free` before the feed FNV was printed. No decoder fix is proven.
+- [x] (2026-11-25) Commit `2faf62d24` moves the feed length/FNV output and
+  flush before libpng so a cleanup crash cannot suppress the checksum. Header
+  validation and `git diff --check` passed. This diagnostic has not run; the
+  one-run allowance is consumed and Linux byte parity remains unresolved.
 - [ ] Acceptance remains open: Linux PNG decode and the feed checksum remain
   unresolved; Windows has not run on the current diagnostic commit; Android
   API 35 CI awaits a runner with read/write `/dev/kvm`. The user confirmed no
@@ -308,10 +312,10 @@ then segfaulted during `png_image_finish_read` cleanup in `inflateEnd`/`free`
 before logging the feed FNV. This does not establish whether the mapped bytes
 differ from `cdf05a32`; the diagnostic did not reach that comparison. No
 decoder change is supported. A future Linux-only discriminator should print
-and flush the feed length/FNV before calling libpng, persist the bytes, and run
-the standard-allocator decode in a separate helper process with the same
-static pair so its cleanup crash cannot terminate the smoke. iOS is out of
-scope.
+and flush the feed length/FNV before calling libpng (implemented but not yet
+runtime-verified in `2faf62d24`), persist the bytes, and run the
+standard-allocator decode in a separate helper process with the same static
+pair so its cleanup crash cannot terminate the smoke. iOS is out of scope.
 
 ## Risks and Open Questions
 
