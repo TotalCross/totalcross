@@ -29,6 +29,14 @@ SPDX-License-Identifier: LGPL-2.1-only
   size mismatch and system ANRs occurred, but no app activity/result proves
   the cause. The new run stopped before `am start -W` because the hosted runner
   could not read/write `/dev/kvm`; the prior cause remains inconclusive.
+- Runner availability check found zero repository-level self-hosted runners.
+  Listing organization runner groups requires `admin:org`, unavailable to this
+  session. The performance-lab reference also uses `ubuntu-24.04`; its latest
+  run passed the udev step but failed emulator boot, so it does not establish a
+  KVM-capable alternative.
+- No different runner label can be selected from the current repository state.
+  The next external prerequisite is an owner/admin-provided runner with
+  read/write KVM access; no second CI run was started.
 - Pushed the three code commits and dispatched the existing Merge Flow once
   with `image-string-smoke=true` at source commit
   `6ccab1de50214fac44f2642960762edb1c867444`; run `45688281871` completed.

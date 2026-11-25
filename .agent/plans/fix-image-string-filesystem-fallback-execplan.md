@@ -260,6 +260,9 @@ explicitly out of scope and must be stated as a limitation.
 - The hosted Android runner exposed `/dev/kvm` but remained unable to read and
   write it after the copied udev rule. Which supported runner configuration
   provides usable KVM without software emulation?
+- The repository has zero self-hosted runners; listing organization runner
+  groups requires an unavailable `admin:org` scope. The reference workflow's
+  latest `ubuntu-24.04` run does not establish an alternative with usable KVM.
 - Linux's expected TCZ checksum matches, but both filesystem PNG decoding and
   TCZ `Image(byte[])` decoding fail. Is the remaining issue generated fixture
   data or the Linux image decoder? Keep the next discriminator focused.

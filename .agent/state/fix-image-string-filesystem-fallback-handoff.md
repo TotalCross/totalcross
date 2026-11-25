@@ -46,6 +46,13 @@ completed on source commit `6ccab1de50214fac44f2642960762edb1c867444`:
   before APK deploy and the emulator action. No Android smoke artifact exists;
   do not fall back to TCG or software emulation.
 
+Runner follow-up found no repository-level self-hosted runners (`total_count=0`).
+The organization runner-groups API returned HTTP 403 because this session lacks
+`admin:org`. The performance-lab reference workflow also runs on
+`ubuntu-24.04`; its most recent run passed the udev step but failed emulator
+boot, so it does not establish an available KVM-capable runner. No alternate
+label is known and no second matrix was dispatched.
+
 Run: [45688281871](https://github.com/TotalCross/totalcross/actions/runs/45688281871).
 Linux job/artifact: `139468036549` / `15057173135` at
 `/tmp/luna-linux-run-45688281871/`. Windows job/artifact:
@@ -71,10 +78,11 @@ to native code, which was not changed in this timebox. Exact commands and logs
 are in the append-only evidence file.
 
 Acceptance is incomplete: Android is unverified and Linux PNG decode fails.
-The next actionable step is to select a hosted runner that grants the job
-read/write access to `/dev/kvm`, then confirm the KVM preflight before spending
-time on another emulator startup. Preserve the one-run-per-resume policy and
-do not dispatch another matrix until that infrastructure gate is fixed.
+The next actionable step requires a repository/organization owner to identify
+or enable a runner with read/write access to `/dev/kvm`. Confirm the KVM
+preflight before spending time on another emulator startup. Preserve the
+one-run-per-resume policy and do not dispatch another matrix until that
+infrastructure gate is fixed.
 
 ## Checkout and remote state
 
