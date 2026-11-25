@@ -14,6 +14,10 @@ SPDX-License-Identifier: LGPL-2.1-only
   `fix/image-string-filesystem-fallback`; local and origin refs matched, with
   no active workflow. The attachment requires stopping implementation and
   testing by minute 55 and completing a truthful docs checkpoint by minute 60.
+- A second bounded resume began at **2026-11-25 20:24:48 UTC** from clean,
+  matching local/origin revision `f86ed0473df7dd880677e8a4a4fbe543b8158e27`.
+  Its hard deadline is **21:24:48 UTC**; do not start new CI/build/test work
+  after 21:12:48 UTC and begin closure by 21:14:48 UTC.
 
 ## Resume progress (2026-11-25)
 
@@ -48,17 +52,34 @@ SPDX-License-Identifier: LGPL-2.1-only
   a Linux decode/fixture issue, not evidence of a filesystem fallback
   regression. Android stopped at KVM preflight. The checkpoint deadline
   remains 20:22:44 UTC, with closure due by 20:12:44.
+- The second resume downloaded and provenance-checked `sdk-build`, `android`,
+  and `image-string-smoke-app` from run `45688281871` (source `6ccab1de5`,
+  matching tree/build ID). The existing Apple Silicon API 34 ARM64 AVD booted
+  with Hypervisor.Framework; no API 35 AVD exists. `tc.Deploy -android`
+  produced a compatible ARM64 APK, but the launched app crashed before the
+  TotalCross VM started: the APK's sole `classes.dex` is rejected by `dexdump`
+  and lacks `androidx.multidex.MultiDexApplication`, required by its manifest.
+  `am start -W` returned `Status: ok`, but no fixture line appeared within the
+  60-second bound; this is not a functional smoke pass. Details/logs are in
+  the append-only evidence index.
+- The Linux source PNG from both matching SDK artifact and smoke JAR is valid:
+  all chunk CRCs and the IDAT zlib/Adler stream pass independent validation,
+  and macOS `sips` decodes it as 36x36. The prior Linux run's valid fixture
+  reaches the same `png_process_data` point from mapped bytes and file streams.
+  Its VM statically links libpng 1.6.48 and zlib-ng 2.1.6. No specific decoder
+  or library defect is proven; no decoder change or CI run was made. The exact
+  next discriminator is recorded in the ExecPlan and handoff.
 
 ## Active slice
 
-**Checkpointed after the 2026-11-25 one-hour resume.** Code changes were pushed
-through `6ccab1de50214fac44f2642960762edb1c867444`; the final docs checkpoint
-commit is recorded in the handoff and this file's Git history. The single
-authorized run completed: Windows passed, Linux failed on PNG decode with a
-matching source checksum, and Android stopped before deploy because the runner
-could not read/write `/dev/kvm`. Acceptance remains incomplete. Read this state
-first, then the 2026-11-25 section of the handoff for exact artifacts, commands,
-platform results, and the next action. No workflow is active.
+**Checkpointed after two bounded 2026-11-25 resumes.** No functional source
+changed in the second resume. Android deployment launched but failed before the
+smoke because the `tc.Deploy` APK has invalid DEX and lacks its declared
+MultiDex application class. Linux fixture integrity is verified, but the
+failure remains within the shared native PNG decode stack or its static
+libraries. No CI workflow is active; acceptance remains incomplete. Read the
+latest second-resume section of the handoff and evidence index for artifacts,
+commands, logs, and the next discriminators.
 
 ## Last checkpoint
 
@@ -284,11 +305,13 @@ platform results, and the next action. No workflow is active.
 
 ## Next concrete action
 
-Fix the smoke app's unsupported `Long.toHexString(long)` use identified in
-run `44621855184`; its deploy failed on Linux, Android, and Windows before the
-checksum could be measured. Then investigate why the TCG-enabled Android 15 run
-`44618392682` booted at 898,991 ms but emitted no fixture result. Continue from
-the detailed steps in `.agent/state/fix-image-string-filesystem-fallback-handoff.md`.
+Investigate why `tc.Deploy` emits an APK whose only `classes.dex` fails DEX
+verification and omits `androidx.multidex.MultiDexApplication`; preserve the
+matching SDK/AAB provenance and do not manually rebuild the APK. For Linux,
+the next discriminator is one Linux-only diagnostic that records the input
+length/hash immediately before `png_process_data` and decodes the same fixture
+through the same static libpng/zlib-ng pair with the standard allocator. Do not
+dispatch the three-platform smoke matrix for this diagnosis.
 
 ## Preservation boundary
 

@@ -103,9 +103,19 @@ unreadable must fail without trying a same-name filesystem file.
   bytes, and Android stopped before deployment because the runner could not
   read/write `/dev/kvm`. See the handoff and append-only evidence for job and
   artifact details.
+- [x] (2026-11-25) Execute the authorized local Android smoke with the matching
+  run `45688281871` SDK/AAB/JAR artifacts on the existing accelerated ARM64
+  API 34 AVD. APK install and activity launch succeeded, but the app crashed
+  before TotalCross startup because `tc.Deploy` output an invalid DEX and
+  omitted its manifest-declared `androidx.multidex.MultiDexApplication` class.
+  Also validate the source PNG's CRC/zlib stream, compare both native PNG input
+  routes, and inspect Linux's static libpng/zlib-ng build. No specific native
+  defect was proven; no decoder change or Linux-only CI run was made. See the
+  append-only evidence index for commands, artifact identities, and logs.
 - [ ] Acceptance remains open: Linux PNG decode is unresolved and Android
-  functional smoke has not run. Obtain a KVM-capable runner, then continue
-  acceptance without changing decoders absent a new discriminator.
+  functional smoke did not reach the TotalCross VM. Investigate the generated
+  APK's DEX packaging and use the Linux discriminator recorded below before
+  changing native decoder behavior.
 
 ## Current Architecture and Scope
 
@@ -249,7 +259,22 @@ returned the expected `cdf05a32` for `image-abi/tiny.png`, then failed decoding
 the same PNG through both `Image(byte[])` and the filesystem `Image(File)` path
 with an ADLER32 mismatch; this does not implicate `Image(String)` fallback.
 Android failed its KVM access check after the udev rule and did not deploy or
-start an emulator. Acceptance is therefore incomplete. Do not use TCG.
+start an emulator. Acceptance was incomplete. Do not use TCG.
+In the later bounded local follow-up, the same-run artifacts produced an APK
+that installed and returned `Status: ok` from its manifest-derived activity,
+then crashed before the TotalCross VM: ART rejected the sole APK DEX and
+reported `ClassNotFoundException` for `androidx.multidex.MultiDexApplication`.
+The matching AAB's DEX passes `dexdump` and contains that class; the generated
+APK DEX does neither. The local run is not a functional pass.
+
+The 136-byte source PNG is byte-identical in the SDK artifact and smoke JAR;
+every PNG chunk CRC and its 79-byte IDAT zlib/Adler stream validate, and the
+host decoder reads it as 36x36. Linux routes both the TCZ mapped-byte decode and
+file-stream decode through `PngLoader::pngLoad` and `png_process_data` using a
+512-byte feed buffer. The Linux VM statically links libpng 1.6.48 and zlib-ng
+2.1.6; no dynamic PNG/zlib libraries are listed. The fixture itself is valid,
+but current evidence cannot distinguish a byte handoff/custom allocator issue
+from the linked library pair. No decoder change or diagnostic CI run was made.
 The exact Gradle test selector and existing smoke tasks must be established
 from project configuration before invocation. Use `.agent/guides/macos-native-runtime-validation.md`
 and the build-provenance guide for local deployed identity. iOS coverage is
@@ -264,10 +289,14 @@ explicitly out of scope and must be stated as a limitation.
   groups requires an unavailable `admin:org` scope. The reference workflow's
   latest `ubuntu-24.04` run does not establish an alternative with usable KVM.
 - The user confirmed no KVM-capable runner is currently available; Android
-  acceptance requires an external runner change before another dispatch.
-- Linux's expected TCZ checksum matches, but both filesystem PNG decoding and
-  TCZ `Image(byte[])` decoding fail. Is the remaining issue generated fixture
-  data or the Linux image decoder? Keep the next discriminator focused.
+  acceptance was unblocked locally by the current plan's explicit macOS
+  emulator authorization; the API 34 app run instead exposed malformed DEX in
+  the deployed APK before TotalCross startup.
+- Linux's valid source fixture fails inside the shared native decode stack.
+  The next discriminator is a single Linux-only run comparing the exact bytes
+  immediately before `png_process_data` with a standard-allocation decode
+  through the same statically linked libpng/zlib-ng pair. Keep that run scoped
+  to Linux x64; do not dispatch the existing cross-platform smoke matrix.
 
 ## Idempotence and Recovery
 
