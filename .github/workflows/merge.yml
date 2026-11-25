@@ -12,6 +12,11 @@ on:
         required: false
         type: boolean
         default: false
+      image-string-linux-diagnostic:
+        description: Run the Linux PNG feed diagnostic without other platform smokes
+        required: false
+        type: boolean
+        default: false
   push:
     branches: [ master ]
   pull_request:
@@ -22,4 +27,5 @@ jobs:
     with:
       selective: ${{ github.event_name == 'pull_request' }}
       image-string-smoke: ${{ inputs.image-string-smoke }}
+      image-string-linux-diagnostic: ${{ inputs.image-string-linux-diagnostic }}
     secrets: inherit

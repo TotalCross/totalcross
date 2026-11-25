@@ -10,8 +10,62 @@
 #include "tcvm.h"
 #include "ui/image/ImageDecodeStatus.h"
 #include "ui/NativeImageBacking.h"
+#ifdef TC_IMAGE_PNG_DIAGNOSTIC
+#include <stdio.h>
+#include <stdlib.h>
+#endif
 #if TC_RENDERER_SKIA
 #include "ui/skia/skia.h"
+#endif
+
+#ifdef TC_IMAGE_PNG_DIAGNOSTIC
+static void diagnosePngFeed(const uint8* bytes, int32 length)
+{
+   uint32 hash = 2166136261U;
+   int32 i;
+   png_image image;
+   uint8* pixels = null;
+   const char* result = "begin-failed";
+   const char* error = "";
+
+   for (i = 0; i < length; i++)
+   {
+      hash ^= bytes[i];
+      hash *= 16777619U;
+   }
+   xmemzero(&image, sizeof(image));
+   image.version = PNG_IMAGE_VERSION;
+   if (png_image_begin_read_from_memory(&image, bytes, (size_t)length))
+   {
+      image.format = PNG_FORMAT_RGBA;
+      pixels = (uint8*)malloc((size_t)PNG_IMAGE_SIZE(image));
+      if (pixels == null)
+      {
+         result = "allocation-failed";
+      }
+      else if (png_image_finish_read(&image, null, pixels, 0, null))
+      {
+         result = "passed";
+      }
+      else
+      {
+         result = "finish-failed";
+         error = image.message;
+      }
+   }
+   else
+   {
+      error = image.message;
+   }
+
+   fprintf(stderr,
+      "ImageStringPngDiagnostic feedLength=%d feedFnv1a=%08x standardDecode=%s error=%s\n",
+      length, (unsigned int)hash, result, error);
+   fflush(stderr);
+   if (pixels != null)
+      free(pixels);
+   png_image_free(&image);
+}
 #endif
 
 static void row_callback(png_structp, png_bytep, png_uint_32, int);
@@ -136,6 +190,9 @@ ImageDecodeStatus pngLoad(Context currentContext, TCObject imageObj, TCObject in
 
    png_textp text = null;
    png_byte color_type;
+#ifdef TC_IMAGE_PNG_DIAGNOSTIC
+   bool imageStringDiagnosticDone = false;
+#endif
 
    xmemzero(&png_ptr, sizeof(png_ptr));
    xmemzero(&userData, sizeof(userData));
@@ -207,7 +264,16 @@ ImageDecodeStatus pngLoad(Context currentContext, TCObject imageObj, TCObject in
 
    /* Create decompressor output buffer. */
    while (!userData.quit && (count = pngRead(buffer, sizeof(buffer), &userData)) > 0)
+   {
+#ifdef TC_IMAGE_PNG_DIAGNOSTIC
+      if (!imageStringDiagnosticDone && mapped != null && mappedLength == 136 && count == mappedLength)
+      {
+         diagnosePngFeed(buffer, count);
+         imageStringDiagnosticDone = true;
+      }
+#endif
       png_process_data(png_ptr, userData.info_ptr, buffer, count);
+   }
 
    if (decodeStatus != IMAGE_DECODE_SUCCESS
       || (userData.pixelsObj == null && userData.pixels == null
