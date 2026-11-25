@@ -120,29 +120,33 @@ SPDX-License-Identifier: LGPL-2.1-only
   baseline (`61034a7` plus only startup fix `153f9fae5`), with the same pinned
   depot-tools dependency artifact. Gradle JAR packaging, YAML/Bash syntax,
   copyright headers, and diff checks passed. Pushed and dispatched the one
-  authorized run `45720318038` at 23:18 UTC; it is pending/in progress. No
-  decoder conclusion is available yet. The user confirmed no KVM runner is
-  available; Android remains skipped.
+  authorized run `45720318038` at 23:18 UTC. The run failed before baseline
+  SDK/VM construction because `scripts/package-sdk.sh` was invoked from the
+  wrong working directory; feature SDK and Linux VM builds passed. Both
+  comparison lanes were skipped, so no decode result exists. Commit
+  `903996257` fixes the working directory (`scripts/`), but was not rerun
+  because the one-run allowance is consumed. No decoder conclusion is
+  available. The user confirmed no KVM runner is available; Android remains
+  skipped.
 
 ## Active slice
 
-**Checkpointed after `b6c6641cd` on 2026-11-25.** The feature branch has one
-active Linux x64 baseline-comparison workflow, run `45720318038`. It compares
-`Image(File)` and `Image(byte[])` for the fixed PNG and JPEG control on the
-feature build and a separately rebuilt baseline at `61034a7562e7` plus only
-startup fix `153f9fae5`; the dependency manifest is pinned to depot-tools
-`0fd3c98727c87a441bc9c8d2c8dd2b731ef0861a`, libpng `1.6.48-r3`, and zlib-ng
-`2.1.6-r3`. Result is pending; do not infer a decoder cause before the artifact
-logs arrive. No other platform lane runs in this resume. Read this state,
+**Checkpointed after `903996257` on 2026-11-25.** The single Linux x64 run
+`45720318038` failed before baseline SDK construction: the package script was
+called from the repository root instead of `scripts/`. Feature SDK and Linux
+VM builds passed; baseline setup/provenance passed; PNG/JPEG comparison and the
+standalone probe were skipped. The branch now contains the corrected working
+directory in `903996257`, but the one-run allowance is consumed. Keep root
+cause and acceptance unresolved. No other platform lane ran. Read this state,
 the handoff, and the latest JSONL entry before continuing.
 
 ## Last checkpoint
 
-- Current implementation checkpoint: `b6c6641cdce593ea14dca2931626d0899067d7f8`.
-  One Linux x64 baseline-comparison run `45720318038` is pending/in progress;
-  acceptance remains incomplete. See the append-only evidence entry for
-  command and run identity. The earlier diagnostic run `45707753798` and
-  pre-libpng probe are recorded below and in the handoff.
+- Current implementation checkpoint: `903996257` (workflow correction after
+  the run). Run `45720318038` from `b6c6641cd` failed before comparison; the
+  allowance is consumed and acceptance remains incomplete. See the latest
+  append-only evidence entries for outcome and correction. The earlier
+  diagnostic run `45707753798` and pre-libpng probe are also recorded below.
 - Branch: `fix/image-string-filesystem-fallback`
 - Starting commit: `61034a7562e7fa43df076dcc38bcd48128605395`
 - Host: Apple Silicon macOS (`Darwin arm64`)
@@ -362,15 +366,12 @@ the handoff, and the latest JSONL entry before continuing.
 ## Next concrete action
 
 The absolute-path harness issue is fixed and locally passes on the existing
-API 34 ARM64 AVD. API 35 CI still requires a runner with read/write `/dev/kvm`;
-the user confirmed none is available, so it is excluded. Follow the single
-Linux x64 run `45720318038` to completion and preserve its artifacts. It
-compares both constructors on master baseline and feature, records build
-provenance, fixture hashes, CMake dependency paths, and runs an isolated
-standard-allocator probe with the selected static libraries if both PNG cases
-fail while JPEG passes. Do not start another run or change decoder behavior in
-this timebox. If the run cannot finish before the deadline, checkpoint it as
-pending and keep acceptance incomplete.
+API 34 ARM64 AVD. The one Linux x64 run `45720318038` is finished but failed
+before baseline SDK construction because `package-sdk.sh` ran from the wrong
+working directory. Commit `903996257` corrects that path. Do not rerun CI in
+this timebox: the one-run allowance is consumed. There is no Linux PNG result
+or decoder conclusion, so acceptance remains incomplete. API 35 CI also stays
+excluded because the user confirmed no KVM runner is available.
 
 ## Preservation boundary
 
@@ -405,6 +406,8 @@ dispatch; PR creation, merge, rebase, and force-push remain unauthorized.
   All workflows are now finished. iOS is out of scope.
 - iOS build and functional validation are out of scope.
 - Run `45720318038` is the sole run in this 60-minute Linux investigation. It
-  was dispatched from `b6c6641cd` and remained in progress at checkpoint
-  creation; no baseline-versus-feature result is claimed. Android was omitted
-  after the user confirmed no KVM runner is available.
+  was dispatched from `b6c6641cd` and failed in baseline SDK packaging before
+  either deployed variant ran. Feature SDK/VM builds passed. Workflow commit
+  `903996257` fixes the package script working directory but is unverified by
+  CI; no baseline-versus-feature result is claimed. Android was omitted after
+  the user confirmed no KVM runner is available.

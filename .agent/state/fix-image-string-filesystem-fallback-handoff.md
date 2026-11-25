@@ -493,24 +493,24 @@ references.
 
 ## Next actions
 
-1. Follow the single Linux x64 comparison run
+1. The one Linux x64 run
    [45720318038](https://github.com/TotalCross/totalcross/actions/runs/45720318038)
-   from commit `b6c6641cd`. It rebuilds master `61034a7562e7` plus only startup
-   fix `153f9fae5`, then runs the same Image(File)/Image(byte[]) PNG and JPEG
-   app against baseline and feature SDK/VM pairs with the same prepared
-   dependency archive. Preserve the logs and classify only from the recorded
-   case results.
-2. If both baseline and feature PNG cases fail while JPEG passes, review the
-   isolated default-allocator libpng probe, exact static archive hashes, ABI
-   report, and symbol providers before drawing a conclusion. Do not change
-   decoder behavior without that evidence.
+   finished unsuccessfully before baseline SDK construction. It passed exact
+   baseline selection, dependency archive/tag checks, and baseline provenance,
+   and feature SDK/VM builds passed. `scripts/package-sdk.sh` was called from
+   the repository root; its canonical working directory is `scripts/`. The
+   deployed comparison and conditional standalone probe were skipped.
+2. Commit `903996257` fixes the script working directory and was pushed, but
+   has not been run. Do not rerun CI in the current timebox because the
+   one-run allowance is consumed. Preserve the failure as infrastructure
+   evidence; no Linux PNG conclusion was reached.
 3. The user confirmed no KVM runner is available. Do not retry Android API 35,
    use TCG/software emulation, or dispatch another workflow in this timebox.
    Windows and Android same-commit CI acceptance remain incomplete; iOS stays
    out of scope.
 
-At this checkpoint, run `45720318038` was active. The local comparison JAR,
-workflow YAML/Bash syntax, headers, and diff checks passed. A first Gradle
-attempt failed at task configuration because the resource provider was used
-incorrectly; after correction, `jarLinuxPngDecodeComparison` passed and the
-JAR contains the app and both fixtures. No Linux decode result is claimed yet.
+The comparison JAR, workflow YAML/Bash syntax, headers, and diff checks passed.
+A first Gradle attempt failed at task configuration because the resource
+provider was used incorrectly; after correction, `jarLinuxPngDecodeComparison`
+passed and the JAR contains the app and both fixtures. Run `45720318038` was the
+only dispatch and failed before decode; no Linux result is claimed.

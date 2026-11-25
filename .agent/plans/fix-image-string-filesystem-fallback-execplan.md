@@ -140,14 +140,17 @@ unreadable must fail without trying a same-name filesystem file.
   `b6c6641cd` and dispatch one bounded run, `45720318038`. It uses the same
   deployed PNG/JPEG fixture app on feature artifacts and a separately rebuilt
   baseline (`61034a7562e7` plus startup fix `153f9fae5`), sharing the pinned
-  dependency artifact. Local JAR packaging and workflow syntax checks passed;
-  CI was pending at checkpoint. Diagnosis and acceptance remain open.
-- [ ] Acceptance remains open: run `45720318038` must first classify the
-  baseline and feature PNG results and preserve its isolated decoder evidence.
-  The result was pending at checkpoint. Windows has not run on the current
+  dependency artifact. Local JAR packaging and workflow syntax checks passed.
+  CI failed before baseline SDK construction because `package-sdk.sh` was
+  invoked from the repository root rather than its canonical `scripts/`
+  working directory; feature SDK/VM builds passed and comparison was skipped.
+  Commit `903996257` corrects the path but is not runtime-verified. The one-run
+  allowance is consumed, so diagnosis and acceptance remain open.
+- [ ] Acceptance remains open: no baseline-versus-feature PNG/JPEG result was
+  produced by `45720318038`. Do not claim a decoder root cause or dispatch
+  another run within this timebox. Windows has not run on the current
   diagnostic commit. Android API 35 CI is unavailable because the user
-  confirmed no KVM runner exists. Do not dispatch another matrix or use
-  software emulation in this timebox.
+  confirmed no KVM runner exists; do not use software emulation.
 
 The earlier Android absolute-path log reached `filesystem-start=png` but had no
 successful write/read/path phase before the false result; the following
