@@ -1238,9 +1238,9 @@ jobs:
         BASELINE: ${{ steps.baseline.outputs.path }}
       run: |
         set -euo pipefail
-        cd "${BASELINE}"
-        scripts/package-sdk.sh
-        cd TotalCrossSDK
+        cd "${BASELINE}/scripts"
+        ./package-sdk.sh
+        cd "${BASELINE}/TotalCrossSDK"
         ./gradlew-agent generateNativeBridgeSources
 
     - name: Build baseline Linux VM in the canonical container
