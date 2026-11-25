@@ -12,6 +12,11 @@ import totalcross.ui.MainWindow;
 
 /** Deployed smoke for native encoded-source capture and metadata. */
 public class EncodedImageSourceSmokeApp extends MainWindow {
+  private static final char[] HEX_DIGITS = {
+      '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
+  };
+  private static String tinyPngFnv1a = "not-read";
+
   static {
     totalcross.sys.Settings.applicationId = "imgsmoke";
   }
@@ -55,6 +60,7 @@ public class EncodedImageSourceSmokeApp extends MainWindow {
     String devicePathError = "";
     boolean pathLengthBoundary = false;
     String error = "";
+    tinyPngFnv1a = "not-read";
 
     smokePhase("start");
     try {
@@ -62,9 +68,29 @@ public class EncodedImageSourceSmokeApp extends MainWindow {
       discardRuntimeFile("runtime-image-string-fallback.jpg");
       runtimeFixturesNotPackaged = totalcross.sys.Vm.getFile("runtime-image-string-fallback.png") == null
           && totalcross.sys.Vm.getFile("runtime-image-string-fallback.jpg") == null;
-      require(runtimeFixturesNotPackaged, "runtime filesystem fixtures are absent from TCZ");
-      smokePhase("runtime-fixtures-checked");
+    } catch (Throwable failure) {
+      error = appendFailure(error, failure);
+    }
+    smokePhase("runtime-fixtures-checked=" + runtimeFixturesNotPackaged);
 
+    smokePhase("filesystem-parity-start");
+    FilesystemResult pngResult = safeFilesystemRoundTrip("runtime-image-string-fallback.png", false);
+    smokePhase("filesystem-png-result=" + pngResult.parity + ",error=" + pngResult.error);
+    filesystemPngFile = pngResult.fileLoaded;
+    filesystemPngPath = pngResult.pathLoaded;
+    filesystemPngPathImageException = pngResult.pathImageException;
+    filesystemPngError = pngResult.error;
+    filesystemPng = pngResult.parity;
+    FilesystemResult jpegResult = safeFilesystemRoundTrip("runtime-image-string-fallback.jpg", true);
+    smokePhase("filesystem-jpeg-result=" + jpegResult.parity + ",error=" + jpegResult.error);
+    filesystemJpegFile = jpegResult.fileLoaded;
+    filesystemJpegPath = jpegResult.pathLoaded;
+    filesystemJpegPathImageException = jpegResult.pathImageException;
+    filesystemJpegError = jpegResult.error;
+    filesystemJpeg = jpegResult.parity;
+    smokePhase("filesystem-parity-summary=png:" + filesystemPng + ",jpeg:" + filesystemJpeg);
+
+    try {
       byte[] framedPng = png(300, 40, "FC=3", new byte[] { 1, 2, 3 });
       EncodedImageSource bytes = EncodedImageSource.fromBytes(framedPng);
       byteCapture = bytes.hasNativeBackingForSmoke() && !bytes.hasJavaBackingForSmoke()
@@ -97,20 +123,6 @@ public class EncodedImageSourceSmokeApp extends MainWindow {
           && path.getIntrinsicWidth() == 36 && path.getIntrinsicHeight() == 36;
       require(pathCapture, "TCZ path capture metadata/backing");
 
-      smokePhase("tcz-only-png-start");
-      tczOnlyPng = tczImageParity("image-abi/tiny.png");
-      smokePhase("tcz-only-png-result=" + tczOnlyPng);
-      tczOnlyJpeg = tczImageParity("image-abi/lena512.jpg");
-      smokePhase("tcz-only-jpeg-result=" + tczOnlyJpeg);
-      require(tczOnlyPng && tczOnlyJpeg, "TCZ-only PNG/JPEG native-bag parity");
-      tczPrecedence = tczPrecedenceOverPhysicalFile();
-      require(tczPrecedence, "TCZ entry precedence over same-name filesystem image");
-      tczInvalidNoFallback = packagedInvalidDoesNotFallback("image-abi/invalid.png", false);
-      tczEmptyNoFallback = packagedInvalidDoesNotFallback("image-abi/empty.png", true);
-      require(tczInvalidNoFallback && tczEmptyNoFallback,
-          "invalid/empty TCZ entries do not fall back to same-name files");
-      smokePhase("tcz-images-checked");
-
       byte[] badCrc = framedPng.clone();
       badCrc[badCrc.length - 5] ^= 1;
       byte[] truncated = new byte[framedPng.length - 3];
@@ -133,52 +145,84 @@ public class EncodedImageSourceSmokeApp extends MainWindow {
       require(jpegValidation, "JPEG header/marker validation");
       smokePhase("encoded-source-validation-complete");
 
-      FilesystemResult pngResult = filesystemRoundTrip("runtime-image-string-fallback.png", false);
-      smokePhase("filesystem-png-result=" + pngResult.parity + ",error=" + pngResult.error);
-      filesystemPngFile = pngResult.fileLoaded;
-      filesystemPngPath = pngResult.pathLoaded;
-      filesystemPngPathImageException = pngResult.pathImageException;
-      filesystemPngError = pngResult.error;
-      filesystemPng = pngResult.parity;
-      FilesystemResult jpegResult = filesystemRoundTrip("runtime-image-string-fallback.jpg", true);
-      smokePhase("filesystem-jpeg-result=" + jpegResult.parity + ",error=" + jpegResult.error);
-      filesystemJpegFile = jpegResult.fileLoaded;
-      filesystemJpegPath = jpegResult.pathLoaded;
-      filesystemJpegPathImageException = jpegResult.pathImageException;
-      filesystemJpegError = jpegResult.error;
-      filesystemJpeg = jpegResult.parity;
+    } catch (Throwable failure) {
+      error = appendFailure(error, failure);
+    }
+
+    smokePhase("tcz-only-png-start");
+    try {
+      tczOnlyPng = tczImageParity("image-abi/tiny.png");
+    } catch (Throwable failure) {
+      error = appendFailure(error, failure);
+    }
+    smokePhase("tcz-only-png-result=" + tczOnlyPng);
+    try {
+      tczOnlyJpeg = tczImageParity("image-abi/lena512.jpg");
+    } catch (Throwable failure) {
+      error = appendFailure(error, failure);
+    }
+    smokePhase("tcz-only-jpeg-result=" + tczOnlyJpeg);
+    try {
+      tczPrecedence = tczPrecedenceOverPhysicalFile();
+    } catch (Throwable failure) {
+      error = appendFailure(error, failure);
+    }
+    try {
+      tczInvalidNoFallback = packagedInvalidDoesNotFallback("image-abi/invalid.png", false);
+    } catch (Throwable failure) {
+      error = appendFailure(error, failure);
+    }
+    try {
+      tczEmptyNoFallback = packagedInvalidDoesNotFallback("image-abi/empty.png", true);
+    } catch (Throwable failure) {
+      error = appendFailure(error, failure);
+    }
+    smokePhase("tcz-images-checked");
+
+    try {
       missingFile = missingImageUsesFileError();
-      smokePhase("missing-file-checked=" + missingFile);
+    } catch (Throwable failure) {
+      error = appendFailure(error, failure);
+    }
+    smokePhase("missing-file-checked=" + missingFile);
+    try {
       invalidFilesystemFile = invalidFilesystemImageFails();
-      smokePhase("invalid-file-checked=" + invalidFilesystemFile);
-      absoluteFilesystemPath = filesystemRoundTrip(
+    } catch (Throwable failure) {
+      error = appendFailure(error, failure);
+    }
+    smokePhase("invalid-file-checked=" + invalidFilesystemFile);
+    try {
+      absoluteFilesystemPath = safeFilesystemRoundTrip(
           totalcross.sys.Settings.appPath + "runtime-image-string-fallback-absolute.png", false).parity;
-      smokePhase("absolute-path-checked=" + absoluteFilesystemPath);
+    } catch (Throwable failure) {
+      error = appendFailure(error, failure);
+    }
+    smokePhase("absolute-path-checked=" + absoluteFilesystemPath);
+    try {
       deviceFilesystemPathSupported = supportsDevicePath();
-      smokePhase("device-path-supported=" + deviceFilesystemPathSupported);
       if (deviceFilesystemPathSupported) {
-        FilesystemResult deviceResult = filesystemRoundTrip("device/runtime-image-string-fallback-device.png", false);
+        FilesystemResult deviceResult = safeFilesystemRoundTrip(
+            "device/runtime-image-string-fallback-device.png", false);
         deviceFilesystemPath = deviceResult.parity;
         devicePathImageException = deviceResult.pathImageException;
         devicePathError = deviceResult.error;
       } else {
         deviceFilesystemPath = true;
       }
-      pathLengthBoundary = pathLengthBoundaryIsSafe();
-      smokePhase("path-length-checked=" + pathLengthBoundary);
-      require(filesystemPngFile && filesystemPngPath && filesystemPng
-          && filesystemJpegFile && filesystemJpegPath && filesystemJpeg,
-          "filesystem PNG/JPEG Image(String)/Image(File) parity");
-      require(missingFile && invalidFilesystemFile && absoluteFilesystemPath
-          && deviceFilesystemPath && pathLengthBoundary,
-          "filesystem errors, path forms, and length handling");
-
-      bytes.releaseForSmoke();
-      bytes.releaseForSmoke();
-      lifetime = lifetimeCheck(framedPng);
-      require(lifetime, "idempotent native bag release");
     } catch (Throwable failure) {
-      error = failureChain(failure).replace(' ', '_');
+      error = appendFailure(error, failure);
+    }
+    smokePhase("device-path-supported=" + deviceFilesystemPathSupported);
+    try {
+      pathLengthBoundary = pathLengthBoundaryIsSafe();
+    } catch (Throwable failure) {
+      error = appendFailure(error, failure);
+    }
+    smokePhase("path-length-checked=" + pathLengthBoundary);
+    try {
+      lifetime = lifetimeCheck(png(300, 40, "FC=3", new byte[] { 1, 2, 3 }));
+    } catch (Throwable failure) {
+      error = appendFailure(error, failure);
     }
 
     boolean overallPass = byteCapture && streamCapture && pathCapture && pngValidation
@@ -205,6 +249,7 @@ public class EncodedImageSourceSmokeApp extends MainWindow {
         + ",devicePathImageException=" + devicePathImageException
         + ",devicePathError=" + devicePathError.replace(' ', '_')
         + ",pathLengthBoundary=" + pathLengthBoundary
+        + ",tczTinyPngFnv1a=" + tinyPngFnv1a
         + ",filesystemJpegFile=" + filesystemJpegFile + ",filesystemJpegPath=" + filesystemJpegPath
         + ",filesystemJpegPathImageException=" + filesystemJpegPathImageException
         + ",filesystemJpegError=" + filesystemJpegError.replace(' ', '_')
@@ -278,8 +323,15 @@ public class EncodedImageSourceSmokeApp extends MainWindow {
     if (encoded == null) {
       return false;
     }
-    smokePhase("tcz-parity-read-length=" + path + ",bytes=" + encoded.length
-        + ",fnv1a=" + Long.toHexString(fnv1a(encoded)));
+    String checksum = hex32(fnv1a(encoded));
+    if ("image-abi/tiny.png".equals(path)) {
+      tinyPngFnv1a = checksum;
+      if (!"cdf05a32".equals(checksum)) {
+        smokePhase("tcz-parity-checksum-mismatch=" + path + ",expected=cdf05a32,actual=" + checksum);
+        return false;
+      }
+    }
+    smokePhase("tcz-parity-read-length=" + path + ",bytes=" + encoded.length + ",fnv1a=" + checksum);
     try (File physical = new File(path)) {
       if (physical.exists()) {
         return false;
@@ -331,12 +383,36 @@ public class EncodedImageSourceSmokeApp extends MainWindow {
     return message.toString();
   }
 
-  private static long fnv1a(byte[] bytes) {
-    long hash = 0x811c9dc5L;
+  private static int fnv1a(byte[] bytes) {
+    int hash = 0x811c9dc5;
     for (int i = 0; i < bytes.length; i++) {
-      hash = ((hash ^ (bytes[i] & 0xff)) * 0x01000193L) & 0xffffffffL;
+      hash = (hash ^ (bytes[i] & 0xff)) * 0x01000193;
     }
     return hash;
+  }
+
+  private static String hex32(int value) {
+    char[] digits = new char[8];
+    for (int i = 7; i >= 0; i--) {
+      digits[i] = HEX_DIGITS[value & 0x0f];
+      value >>>= 4;
+    }
+    return new String(digits);
+  }
+
+  private static FilesystemResult safeFilesystemRoundTrip(String path, boolean jpeg) {
+    try {
+      return filesystemRoundTrip(path, jpeg);
+    } catch (Throwable failure) {
+      FilesystemResult result = new FilesystemResult();
+      result.error = failureChain(failure).replace(' ', '_');
+      return result;
+    }
+  }
+
+  private static String appendFailure(String existing, Throwable failure) {
+    String current = failureChain(failure).replace(' ', '_');
+    return existing.length() == 0 ? current : existing + "|" + current;
   }
 
   private static boolean tczPrecedenceOverPhysicalFile() throws Exception {
