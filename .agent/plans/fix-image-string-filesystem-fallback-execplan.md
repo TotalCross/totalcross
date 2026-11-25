@@ -263,6 +263,8 @@ explicitly out of scope and must be stated as a limitation.
 - The repository has zero self-hosted runners; listing organization runner
   groups requires an unavailable `admin:org` scope. The reference workflow's
   latest `ubuntu-24.04` run does not establish an alternative with usable KVM.
+- The user confirmed no KVM-capable runner is currently available; Android
+  acceptance requires an external runner change before another dispatch.
 - Linux's expected TCZ checksum matches, but both filesystem PNG decoding and
   TCZ `Image(byte[])` decoding fail. Is the remaining issue generated fixture
   data or the Linux image decoder? Keep the next discriminator focused.

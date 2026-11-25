@@ -37,6 +37,9 @@ SPDX-License-Identifier: LGPL-2.1-only
 - No different runner label can be selected from the current repository state.
   The next external prerequisite is an owner/admin-provided runner with
   read/write KVM access; no second CI run was started.
+- The user confirmed that no KVM runner is available now. Cross-platform
+  acceptance cannot advance until runner availability changes; Linux PNG
+  decode remains a separate unresolved CI failure.
 - Pushed the three code commits and dispatched the existing Merge Flow once
   with `image-string-smoke=true` at source commit
   `6ccab1de50214fac44f2642960762edb1c867444`; run `45688281871` completed.

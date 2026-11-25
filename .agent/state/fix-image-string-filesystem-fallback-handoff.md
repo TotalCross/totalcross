@@ -53,6 +53,11 @@ The organization runner-groups API returned HTTP 403 because this session lacks
 boot, so it does not establish an available KVM-capable runner. No alternate
 label is known and no second matrix was dispatched.
 
+The user confirmed that no KVM runner is currently available. Android
+acceptance must wait for an owner/organization-level runner change. Linux PNG
+decode remains independently unresolved; no decoder change or additional
+platform run is authorized in this checkpoint.
+
 Run: [45688281871](https://github.com/TotalCross/totalcross/actions/runs/45688281871).
 Linux job/artifact: `139468036549` / `15057173135` at
 `/tmp/luna-linux-run-45688281871/`. Windows job/artifact:
@@ -78,8 +83,8 @@ to native code, which was not changed in this timebox. Exact commands and logs
 are in the append-only evidence file.
 
 Acceptance is incomplete: Android is unverified and Linux PNG decode fails.
-The next actionable step requires a repository/organization owner to identify
-or enable a runner with read/write access to `/dev/kvm`. Confirm the KVM
+The next actionable step is to resume after a repository/organization owner
+provides a runner with read/write access to `/dev/kvm`. Confirm the KVM
 preflight before spending time on another emulator startup. Preserve the
 one-run-per-resume policy and do not dispatch another matrix until that
 infrastructure gate is fixed.
