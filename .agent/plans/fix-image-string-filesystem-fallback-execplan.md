@@ -121,16 +121,30 @@ unreadable must fail without trying a same-name filesystem file.
   `overallPass=false` only because `absoluteFilesystemPath=false`. This is
   partial Android evidence, not acceptance. See the handoff/evidence for
   hashes and the bounded next diagnostic.
-- [ ] Acceptance remains open: Linux PNG decode is unresolved and Android
-  functional smoke reached the TotalCross VM but its absolute-path assertion
-  failed. Instrument that result without removing the assertion, and use the
-  Linux discriminator recorded below before changing native decoder behavior.
+- [x] (2026-11-25) Diagnose the Android absolute fixture path. `Settings.appPath`
+  has no trailing separator on the VM, so direct concatenation omitted `/`.
+  Commit `7d4d9d9b1` uses `Convert.appendPath`; the existing accelerated API 34
+  ARM64 AVD then emitted `absoluteFilesystemPath=true` and `overallPass=true`.
+  This is local evidence, not API 35 CI.
+- [x] (2026-11-25) Dispatch one Linux-only diagnostic on commit `3084f55dd`.
+  SDK and Linux VM builds passed; the diagnostic macro compiled and Android,
+  Windows, macOS, and iOS lanes were skipped. The deployed Linux smoke still
+  failed: the ordinary PNG decode reported ADLER32, then the same-data
+  standard-allocator `png_image_finish_read` path segfaulted in
+  `inflateEnd`/`free` before the feed FNV was printed. No decoder fix is proven.
+- [ ] Acceptance remains open: Linux PNG decode and the feed checksum remain
+  unresolved; Windows has not run on the current diagnostic commit; Android
+  API 35 CI awaits a runner with read/write `/dev/kvm`. The user confirmed no
+  such KVM runner is available. Do not dispatch another matrix or use software
+  emulation in this timebox.
 
-The Android absolute-path log reaches `filesystem-start=png` but has no
+The earlier Android absolute-path log reached `filesystem-start=png` but had no
 successful write/read/path phase before the false result; the following
-`device/` PNG route passes. `safeFilesystemRoundTrip` hides its error for this
-case. Capture `Settings.appPath`, the composed path, and the failing phase/error
-before changing product path handling.
+`device/` route passed. The third continuation showed the cause was direct
+concatenation against a `Settings.appPath` without a trailing separator.
+`Convert.appendPath` fixes the smoke fixture, and its preserved assertion now
+passes on the existing API 34 AVD. Do not change product path handling for this
+harness defect.
 
 ## Current Architecture and Scope
 
@@ -284,16 +298,20 @@ APK DEX does neither. The local run is not a functional pass.
 
 The 136-byte source PNG is byte-identical in the SDK artifact and smoke JAR;
 every PNG chunk CRC and its 79-byte IDAT zlib/Adler stream validate, and the
-host decoder reads it as 36x36. Linux routes both the TCZ mapped-byte decode and
-file-stream decode through `PngLoader::pngLoad` and `png_process_data` using a
-512-byte feed buffer. The Linux VM statically links libpng 1.6.48 and zlib-ng
-2.1.6; no dynamic PNG/zlib libraries are listed. The fixture itself is valid,
-but current evidence cannot distinguish a byte handoff/custom allocator issue
-from the linked library pair. No decoder change or diagnostic CI run was made.
-The exact Gradle test selector and existing smoke tasks must be established
-from project configuration before invocation. Use `.agent/guides/macos-native-runtime-validation.md`
-and the build-provenance guide for local deployed identity. iOS coverage is
-explicitly out of scope and must be stated as a limitation.
+host decoder reads it as 36x36. Linux routes both TCZ mapped-byte and file
+stream decoding through `PngLoader::pngLoad` and `png_process_data`, with a
+512-byte feed buffer. The VM statically links libpng 1.6.48 and zlib-ng 2.1.6.
+In run `45707753798`, the diagnostic macro was present in the Linux compile
+command and the SDK/VM build passed. The ordinary runtime-created PNG file
+still failed with ADLER32. The same-buffer simplified standard-allocator probe
+then segfaulted during `png_image_finish_read` cleanup in `inflateEnd`/`free`
+before logging the feed FNV. This does not establish whether the mapped bytes
+differ from `cdf05a32`; the diagnostic did not reach that comparison. No
+decoder change is supported. A future Linux-only discriminator should print
+and flush the feed length/FNV before calling libpng, persist the bytes, and run
+the standard-allocator decode in a separate helper process with the same
+static pair so its cleanup crash cannot terminate the smoke. iOS is out of
+scope.
 
 ## Risks and Open Questions
 
@@ -303,15 +321,14 @@ explicitly out of scope and must be stated as a limitation.
 - The repository has zero self-hosted runners; listing organization runner
   groups requires an unavailable `admin:org` scope. The reference workflow's
   latest `ubuntu-24.04` run does not establish an alternative with usable KVM.
-- The user confirmed no KVM-capable runner is currently available; Android
-  acceptance was unblocked locally by the current plan's explicit macOS
-  emulator authorization; the API 34 app run instead exposed malformed DEX in
-  the deployed APK before TotalCross startup.
-- Linux's valid source fixture fails inside the shared native decode stack.
-  The next discriminator is a single Linux-only run comparing the exact bytes
-  immediately before `png_process_data` with a standard-allocation decode
-  through the same statically linked libpng/zlib-ng pair. Keep that run scoped
-  to Linux x64; do not dispatch the existing cross-platform smoke matrix.
+- The user confirmed no KVM-capable runner is currently available. Local API 34
+  ARM64 emulator validation is authorized and the absolute-path smoke passes;
+  API 35 GitHub Actions acceptance remains unavailable until KVM is available.
+- Linux's valid source fixture still fails in the shared native PNG stack. The
+  single Linux-only probe in run `45707753798` crashed during standard
+  `png_image_finish_read` cleanup before the feed checksum was logged. Any
+  follow-up must log/hash before libpng and isolate the standard decoder in a
+  separate process. Do not rerun the cross-platform matrix.
 
 ## Idempotence and Recovery
 
@@ -332,12 +349,13 @@ The user authorized pushing the feature branch and dispatching the existing
 Merge Flow with the smoke input. Windows has passed; Android API 35 and Linux
 x64 still need successful functional results. iOS remains out of scope.
 
-The 2026-11-25 resume confirmed Windows parity on the same SDK/VM artifacts,
-discriminated Linux PNG failure from source-fixture corruption by matching
-FNV-1a `cdf05a32` and validating the PNG independently, and exposed the Android
-smoke deployer's fixed-width DEX package rewrite invariant. A smoke-only package
-ID correction produced valid DEX and an Android fixture result, but the
-absolute-path assertion remains false. Cross-platform acceptance remains open.
+The 2026-11-25 resumes confirmed the matching source fixture and Android smoke
+deployer's fixed-width DEX package rewrite invariant. The smoke-only package ID
+and absolute-path fixture corrections produced valid DEX and a passing local
+API 34 ARM64 fixture result. The one Linux-only diagnostic compiled but failed
+inside standard libpng/zlib cleanup before logging the feed hash. Windows passed
+on an earlier source commit; final same-commit Linux, Windows, and API 35 Android
+acceptance remains open.
 
 ## Revision Note
 
@@ -347,3 +365,9 @@ static-analysis reference.
 2026-11-25: added the bounded resume checkpoint and updated acceptance status
 after the single same-commit cross-platform run. Detailed logs and artifact
 identifiers remain in the state and append-only evidence files.
+
+2026-11-25: the later continuation fixed the Android absolute fixture path and
+passed the local API 34 smoke, then ran one Linux-only diagnostic. Its standard
+libpng API segfaulted in zlib cleanup before the feed FNV was emitted. The next
+discriminator is documented above; Android API 35 remains blocked by KVM
+availability and final cross-platform acceptance is incomplete.

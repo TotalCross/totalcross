@@ -18,6 +18,12 @@ SPDX-License-Identifier: LGPL-2.1-only
   matching local/origin revision `f86ed0473df7dd880677e8a4a4fbe543b8158e27`.
   Its hard deadline is **21:24:48 UTC**; do not start new CI/build/test work
   after 21:12:48 UTC and begin closure by 21:14:48 UTC.
+- A new continuation explicitly requested by the active goal began at
+  **2026-11-25 21:25:31 UTC** from clean, matching local/origin revision
+  `ecdcbe1fcc618a95a55e180dcaf4022111dace7a`. This follow-up is bounded to
+  **22:25:31 UTC**; stop new builds/tests/CI after 22:13:31 UTC and begin
+  checkpoint closure by 22:15:31 UTC. Preserve the previous completed
+  checkpoint; acceptance remains incomplete.
 
 ## Resume progress (2026-11-25)
 
@@ -84,24 +90,39 @@ SPDX-License-Identifier: LGPL-2.1-only
   `device/` path completes PNG parity. The absolute case does not report its
   `FilesystemResult.error`, so the exact operation remains unknown; record the
   composed path and phase/error before attributing this to image decoding.
+- The 21:25 UTC continuation diagnosed the path: `Settings.appPath` has no
+  trailing separator, and the smoke concatenated the filename directly. Use
+  `Convert.appendPath` for this fixture; commit `7d4d9d9b1` also records the
+  composed path/error. The existing accelerated API 34 ARM64 AVD then emitted
+  the full fixture line with `absoluteFilesystemPath=true` and `overallPass=true`.
+  This is local macOS emulator evidence, not API 35 CI.
+- Commit `3084f55dd` adds a separate Linux-only diagnostic input and a
+  macro-guarded check at the exact `png_process_data` feed boundary. Run
+  `45707753798` built the Linux VM and SDK successfully and skipped Android,
+  Windows, macOS, and iOS. Linux smoke still failed: its ordinary file PNG
+  decode reported ADLER32; the standard-allocator probe then segfaulted in
+  `inflateEnd`/`free` during `png_image_finish_read` cleanup before the feed
+  hash was printed. No decoder fix is proven; see the handoff and JSONL record.
 
 ## Active slice
 
-**Checkpointed after the 2026-11-25 bounded resume.** Commit `93f4ef016`
-corrects only the smoke app ID to satisfy the deployer's fixed-width DEX
-package rewrite; the resulting APK DEX parses and the app ran. Android
-acceptance remains incomplete because `absoluteFilesystemPath=false` made
-`overallPass=false`. Linux fixture integrity is verified, but the failure
-remains in the shared native PNG decode stack or its static libraries. No CI
-workflow is active. Read the latest Android follow-up and evidence record for
-the exact results and next discriminators.
+**Checkpointed after the 2026-11-25 continuation.** Smoke-only commits
+`93f4ef016`, `7d4d9d9b1` fix the deployer's equal-width DEX rewrite and the
+absolute runtime fixture path; the matching local API 34 ARM64 smoke emitted
+`overallPass=true`. Diagnostic commit `3084f55dd` builds, but its one Linux-only
+run failed inside the standard libpng read cleanup after ADLER32. The feed hash
+was not emitted, so native input parity remains unknown. Android API 35 CI and
+same-commit Windows/Linux acceptance remain incomplete. No workflow is active.
+Read the latest handoff and JSONL record for artifact provenance and the next
+safe Linux discriminator.
 
 ## Last checkpoint
 
-- Product/CI code checkpoint: `6ccab1de50214fac44f2642960762edb1c867444`.
-  The follow-up smoke-harness correction is `93f4ef0166066b44a570cfda1a3c63ee419070d3`.
-  Merge Flow run `45688281871` remains the only new CI run and acceptance is
-  incomplete. Docs checkpoints are `f876b9e47` plus the current closure commit.
+- Product/smoke checkpoint: `7d4d9d9b1d108e268fc99045bcca8ca5676d350a`;
+  Linux diagnostic checkpoint: `3084f55dd2db6993fc28dd60d0fa6607c17ce923`.
+  Run `45707753798` completed with Linux smoke failure; acceptance is
+  incomplete. This state, the handoff, plan, and append-only evidence record
+  contain the current findings and resume point.
 - Branch: `fix/image-string-filesystem-fallback`
 - Starting commit: `61034a7562e7fa43df076dcc38bcd48128605395`
 - Host: Apple Silicon macOS (`Darwin arm64`)
@@ -320,15 +341,15 @@ the exact results and next discriminators.
 
 ## Next concrete action
 
-Diagnose the false Android absolute-path assertion by recording the exact
-`Settings.appPath`-derived path and `FilesystemResult.error`. Preserve the
-assertion, and rerun only on the existing accelerated AVD in a later bounded
-resume. The DEX-width cause and test app-ID correction are recorded; do not
-change general deployment code without separate evidence. For Linux, the next
-discriminator is one Linux-only diagnostic that records the input length/hash
-immediately before `png_process_data` and decodes the same fixture through the
-same static libpng/zlib-ng pair with the standard allocator. Do not dispatch
-the three-platform smoke matrix for this diagnosis.
+The absolute-path harness issue is fixed and locally passes on the existing
+API 34 ARM64 AVD. API 35 CI still requires a runner with read/write `/dev/kvm`;
+the user confirmed none is available, so do not retry that lane yet. Linux
+diagnosis remains open. In a later bounded Linux-only CI run, first print and
+flush the exact feed length/FNV before invoking libpng. Run the standard-
+allocator decode in an isolated helper process using the exact saved feed bytes
+and same static libraries, so a cleanup crash cannot erase the checksum or
+terminate the functional smoke. Compare with `cdf05a32`; do not run another
+cross-platform matrix or change decoder behavior without this evidence.
 
 ## Preservation boundary
 
@@ -344,11 +365,18 @@ dispatch; PR creation, merge, rebase, and force-push remain unauthorized.
 - Corrected JavaSE and deployed macOS arm64 checks passed.
 - Corrected deployed macOS arm64 AddressSanitizer smoke passed.
 - Windows x64 functional validation passed repeatedly on earlier revisions,
-  including runs `44613588440` and `44615780340`. The latest run
+  including runs `44613588440` and `44615780340`. Prior run
   `44621855184` failed deployment on all three platform lanes because its new
   checksum diagnostic calls unsupported `Long.toHexString(long)`. Linux's
-  `realpath` startup abort is fixed and verified in CI; its PNG decode still
-  fails with ADLER32 mismatch, and the checksum comparison remains unobserved.
+  `realpath` startup abort is fixed and verified in CI. The later Linux-only
+  run `45707753798` built SDK/VM and compiled the diagnostic, then the smoke
+  failed with ADLER32 and segfaulted in the standard libpng path's zlib cleanup.
+  Its feed FNV was not printed; see the evidence record. No same-commit Windows
+  or Linux functional acceptance is established by that run.
+- Android local API 34 ARM64 smoke now passes with `overallPass=true` after
+  fixing absolute fixture path composition in `7d4d9d9b1`. This is not API 35
+  GitHub Actions evidence. The user confirmed no runner with usable KVM is
+  available; do not attempt software emulation.
 - Android runs without TCG opt-in timed out before launch. Run `44618392682`
   enabled TCG and booted API 35 after 898,991 ms; APK deployment succeeded, but
   no smoke assertion line was emitted and the workflow failed. Run
