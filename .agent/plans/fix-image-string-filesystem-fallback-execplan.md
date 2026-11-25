@@ -94,18 +94,28 @@ unreadable must fail without trying a same-name filesystem file.
   no workflow remains active. See
   `.agent/state/fix-image-string-filesystem-fallback-handoff.md` for the full
   run chronology, artifact locations, current scope questions, and next steps.
-- [ ] Reconcile Android API 35, Windows x64, and Linux x64 results from the
-  next post-fix run and artifacts with the acceptance criteria. This acceptance
-  gate remains open while the task is paused.
+- [x] (2026-11-25) Resumed with a one-hour limit. Replaced the device-incompatible
+  checksum formatter, ran filesystem PNG/JPEG parity before TCZ decoding, and
+  isolated later smoke groups. Reverted the out-of-scope `Image.java` decoder
+  retry and corrected Android KVM/activity launch handling. Focused SDK checks
+  and harness preflights passed. In the single same-commit run `45688281871`,
+  Windows passed, Linux PNG decoding failed despite the matching `cdf05a32`
+  bytes, and Android stopped before deployment because the runner could not
+  read/write `/dev/kvm`. See the handoff and append-only evidence for job and
+  artifact details.
+- [ ] Acceptance remains open: Linux PNG decode is unresolved and Android
+  functional smoke has not run. Obtain a KVM-capable runner, then continue
+  acceptance without changing decoders absent a new discriminator.
 
 ## Current Architecture and Scope
 
 `EncodedImageSource.fromPath` calls the private native-replaced
-`captureNativePath(String)`. Its native bridge currently looks only in loaded
-TCZ resources, writes the unchecked path into `char path[256]`, and throws if
-the entry is absent. `Image(File)` instead reads through `totalcross.io.File`
-and `fromStream`, which supplies path normalization, `device/` handling,
-permissions, error behavior, and encoded-source ownership.
+`captureNativePath(String)` first. The bridge returns true after capturing a
+loaded TCZ entry, false when absent, and rejects paths at the 256-character
+boundary before copying into its native buffer. Only a missing entry reaches
+`File(path, READ_ONLY)` and `fromStream`; errors decoding a found TCZ entry do
+not fall back. The native bridge contract and converter tests remain unchanged
+in the 2026-11-25 checkpoint.
 
 Change only `EncodedImageSource.java`, its converter and runtime regressions,
 `TotalCrossVM/src/nm/ui/image_Image.c`, and narrowly scoped build/CI harness
@@ -234,9 +244,12 @@ record; bridge generation and converter test; targeted JavaSE tests; corrected
 native macOS build and real deployed PNG/JPEG parity; path-length and TCZ
 non-fallback behavior; local commits; and Android, Windows, and Linux CI
 functional results. The user authorized the branch push and manual dispatch.
-Windows passed, Linux still aborts, and Android did not reach the app because
-the action split the smoke script into separate shells. Re-run with the
-single-shell Android harness and Linux diagnostics.
+On commit `6ccab1de50214fac44f2642960762edb1c867444`, Windows passed. Linux
+returned the expected `cdf05a32` for `image-abi/tiny.png`, then failed decoding
+the same PNG through both `Image(byte[])` and the filesystem `Image(File)` path
+with an ADLER32 mismatch; this does not implicate `Image(String)` fallback.
+Android failed its KVM access check after the udev rule and did not deploy or
+start an emulator. Acceptance is therefore incomplete. Do not use TCG.
 The exact Gradle test selector and existing smoke tasks must be established
 from project configuration before invocation. Use `.agent/guides/macos-native-runtime-validation.md`
 and the build-provenance guide for local deployed identity. iOS coverage is
@@ -244,12 +257,12 @@ explicitly out of scope and must be stated as a limitation.
 
 ## Risks and Open Questions
 
-- Can this clean worktree fetch/build all pinned native dependencies and run a
-  real deployed fixture on the available Apple Silicon host?
-- Is the performance-lab repository available through a connected source even
-  though it is not checked out locally?
-- Remote Android/Windows/Linux functional runs cannot be claimed unless an
-  authorized push/PR or existing trigger produces those runs.
+- The hosted Android runner exposed `/dev/kvm` but remained unable to read and
+  write it after the copied udev rule. Which supported runner configuration
+  provides usable KVM without software emulation?
+- Linux's expected TCZ checksum matches, but both filesystem PNG decoding and
+  TCZ `Image(byte[])` decoding fail. Is the remaining issue generated fixture
+  data or the Linux image decoder? Keep the next discriminator focused.
 
 ## Idempotence and Recovery
 
@@ -270,7 +283,16 @@ The user authorized pushing the feature branch and dispatching the existing
 Merge Flow with the smoke input. Windows has passed; Android API 35 and Linux
 x64 still need successful functional results. iOS remains out of scope.
 
+The 2026-11-25 resume confirmed Windows parity on the same SDK/VM artifacts,
+discriminated Linux PNG failure from TCZ transport by matching FNV-1a
+`cdf05a32`, and exposed a hosted-runner KVM permission blocker before Android
+deployment. Cross-platform acceptance remains open.
+
 ## Revision Note
 
 Created from the user's v4 plan; the starting commit matches its specified
 static-analysis reference.
+
+2026-11-25: added the bounded resume checkpoint and updated acceptance status
+after the single same-commit cross-platform run. Detailed logs and artifact
+identifiers remain in the state and append-only evidence files.

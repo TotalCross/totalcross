@@ -6,8 +6,8 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Image(String) filesystem fallback: resumable handoff
 
-> **Status: paused at the user's request on 2026-11-19.** The code and local
-> validations are committed and pushed. Cross-platform acceptance is still
+> **Status: checkpointed after a 2026-11-25 resume.** The code corrections
+> below are committed and pushed. Cross-platform acceptance is still
 > incomplete. This is a handoff checkpoint, not a claim that the task passed.
 
 ## Objective and source of truth
@@ -23,6 +23,58 @@ repository's full scoped requirements and acceptance criteria are copied to
 The attached plan is the user's requested work. This file records execution
 facts and the current resume point; it does not override the design or broaden
 the acceptance criteria.
+
+## 2026-11-25 resume result
+
+The user resumed this plan with a hard 60-minute budget beginning at
+2026-11-25 19:22:44 UTC (deadline 20:22:44 UTC). The single authorized CI run
+completed on source commit `6ccab1de50214fac44f2642960762edb1c867444`:
+
+- **Windows x64 passed** with exit code 0. The GUI launcher does not expose
+  fixture stdout, so process exit carries `overallPass`. SDK and VM source tree
+  `07b128cde6159fa7485b90962835d4c7958c1b2f` and build ID
+  `7005145217837a416f905a5e578e9bc71af0d41b8600dda34916a0bd70316e5c` match.
+- **Linux x64 failed** during PNG decoding. The runtime `image-abi/tiny.png`
+  bytes were 136 bytes with expected FNV-1a `cdf05a32`, but `Image(byte[])`
+  pixel decoding failed with libpng ADLER32 mismatch. A runtime-created PNG
+  also failed through `Image(File)` before `Image(String)` parity; JPEG parity,
+  TCZ JPEG, path lengths, and native bag lifetime passed. This is a Linux
+  decode/runtime or fixture-generation issue, not evidence against the path
+  fallback; do not change decoders without a new discriminator.
+- **Android API 35 did not launch.** After applying the copied KVM udev rule,
+  `/dev/kvm` existed but the runner could not read and write it. The job stopped
+  before APK deploy and the emulator action. No Android smoke artifact exists;
+  do not fall back to TCG or software emulation.
+
+Run: [45688281871](https://github.com/TotalCross/totalcross/actions/runs/45688281871).
+Linux job/artifact: `139468036549` / `15057173135` at
+`/tmp/luna-linux-run-45688281871/`. Windows job/artifact:
+`139468401567` / `15057591393` at
+`/tmp/luna-windows-run-45688281871/`. Android job `139468241145` failed at the
+KVM preflight, before creating its lane artifact or running the deploy-time
+provenance check. Linux and Windows verified matching SDK/VM artifacts from
+the same source commit. No workflow is active.
+
+Three code commits were pushed: `43298175a` reverts only the decoder retry
+from `231dd329b`; `d3d6af5ef` replaces `Long.toHexString`, retains the expected
+checksum, and reports filesystem PNG/JPEG parity before isolated TCZ checks;
+`6ccab1de5` adds KVM validation and manifest-derived Android activity launch.
+The existing Linux `realpath` startup fix remains as a separately justified
+integration change. iOS remains out of scope.
+
+Focused SDK tests, bridge generation, deployed API validation, smoke JAR
+packaging, YAML/shell checks, mock Android pass/failure preflight, headers, and
+diff checks passed. The local `tc.Deploy -macos` invocation wrote the TCZ but
+could not package it because `macos/Launcher` was absent; no new local deployed
+runtime result is claimed. Prior macOS ARM64/ASan evidence remains applicable
+to native code, which was not changed in this timebox. Exact commands and logs
+are in the append-only evidence file.
+
+Acceptance is incomplete: Android is unverified and Linux PNG decode fails.
+The next actionable step is to select a hosted runner that grants the job
+read/write access to `/dev/kvm`, then confirm the KVM preflight before spending
+time on another emulator startup. Preserve the one-run-per-resume policy and
+do not dispatch another matrix until that infrastructure gate is fixed.
 
 ## Checkout and remote state
 
@@ -215,26 +267,17 @@ references.
 
 ## Next actions
 
-1. Replace `Long.toHexString` in
-   `EncodedImageSourceSmokeApp` with a device-supported fixed-width hex
-   formatter (or decimal hash), then run the focused smoke packaging task and
-   all required deploy checks. A host-only Java test is insufficient to catch
-   the converter compatibility issue.
-2. Inspect and explain the TCG Android artifact: verify why `monkey` returned
-   zero while no fixture result line was captured, and investigate the
-   `dex2oat` string-size failure. Emulator boot nearly consumes the full
-   900-second allowance, so account for that when choosing the next hosted run.
-3. Dispatch the minimal authorized Android/Windows/Linux workflow on the
-   repaired branch. For Linux, compare the runtime `Vm.getFile` FNV-1a value
-   with `cdf05a32`; only then choose whether the fault is in TCZ bytes or later
-   decoding. Do not infer the checksum from the existing failures.
-4. Reassess the `Image.java` decoder retry against the attached plan's explicit
-   “do not change decoders” constraint, and decide how to handle the separate
-   Linux `realpath` fix. Keep or remove neither by assumption; explain the
-   choice in the plan and commit history.
-5. Continue until Android API 35, Windows x64, and Linux x64 deployed functional
-   smokes pass on the same intended implementation. Report iOS as untested, as
-   required by the plan.
+1. Select a hosted runner that gives the Android job read/write access to
+   `/dev/kvm`, then confirm the existing KVM preflight on that runner before
+   scheduling another emulator. Keep TCG/software acceleration disabled.
+2. After the Android infrastructure gate is resolved, continue the Linux PNG
+   decode investigation from the matching `cdf05a32` runtime checksum and the
+   failure shared by `Image(byte[])` and `Image(File)`. Do not change decoders
+   without a discriminator showing a decoder defect.
+3. Acceptance requires same-commit Android API 35, Windows x64, and Linux x64
+   deployed functional smokes. Windows passed on `6ccab1de5`; Android is
+   unverified and Linux PNG decode failed in run `45688281871`. iOS remains
+   untested and out of scope.
 
 At the handoff point, no workflow is running and no further functional tests
 were started after the user asked to stop. Only the final report/state/evidence

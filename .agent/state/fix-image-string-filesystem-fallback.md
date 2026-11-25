@@ -6,17 +6,55 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Active state: Image(String) filesystem fallback
 
+## Current execution timebox
+
+- User resumed the plan at **2026-11-25 19:22:44 UTC**; hard deadline is
+  **2026-11-25 20:22:44 UTC**. Checkpoint closure starts by 20:12:44 UTC.
+- Resume began from clean `d51ba37590ea3dcb3519af65c57306cbb5045486` on
+  `fix/image-string-filesystem-fallback`; local and origin refs matched, with
+  no active workflow. The attachment requires stopping implementation and
+  testing by minute 55 and completing a truthful docs checkpoint by minute 60.
+
+## Resume progress (2026-11-25)
+
+- Removed only the deterministic `Image.java` retry from `231dd329b` in commit
+  `43298175a`; the targeted lazy-materialization, image-source, and converter
+  tests passed. Details, including the incomplete direct deploy attempt, are
+  in the append-only evidence index.
+- Replaced the unsupported device `Long.toHexString` diagnostic and moved
+  runtime-created PNG/JPEG parity before TCZ decoding in `d3d6af5ef`. The
+  Android 15 KVM and manifest-derived launch correction is committed in
+  `6ccab1de5`; YAML, shell, and mocked pass/failure preflights passed.
+- The previous TCG Android artifact was inspected: dex2oat reported a string
+  size mismatch and system ANRs occurred, but no app activity/result proves
+  the cause. The new run stopped before `am start -W` because the hosted runner
+  could not read/write `/dev/kvm`; the prior cause remains inconclusive.
+- Pushed the three code commits and dispatched the existing Merge Flow once
+  with `image-string-smoke=true` at source commit
+  `6ccab1de50214fac44f2642960762edb1c867444`; run `45688281871` completed.
+  Windows passed; Linux observed the expected `cdf05a32` TCZ checksum but
+  `Image(byte[])` and `Image(File)` both failed PNG decode with ADLER32. This is
+  a Linux decode/fixture issue, not evidence of a filesystem fallback
+  regression. Android stopped at KVM preflight. The checkpoint deadline
+  remains 20:22:44 UTC, with closure due by 20:12:44.
+
 ## Active slice
 
-**Paused at the user's request (2026-11-19).** Local implementation,
-regression coverage, workflow preparation, validation, and commits are
-complete; cross-platform acceptance is not. Read
-`.agent/state/fix-image-string-filesystem-fallback-handoff.md` first for the
-current result, full test/correction chronology, completed workflow statuses,
-and exact next action. No workflow is still running.
+**Checkpointed after the 2026-11-25 one-hour resume.** Code changes were pushed
+through `6ccab1de50214fac44f2642960762edb1c867444`; the final docs checkpoint
+commit is recorded in the handoff and this file's Git history. The single
+authorized run completed: Windows passed, Linux failed on PNG decode with a
+matching source checksum, and Android stopped before deploy because the runner
+could not read/write `/dev/kvm`. Acceptance remains incomplete. Read this state
+first, then the 2026-11-25 section of the handoff for exact artifacts, commands,
+platform results, and the next action. No workflow is active.
 
 ## Last checkpoint
 
+- Resume code checkpoint: `6ccab1de50214fac44f2642960762edb1c867444` on
+  `fix/image-string-filesystem-fallback`, pushed to origin. The one new Merge
+  Flow run is `45688281871`; its acceptance is incomplete. A separate docs
+  checkpoint follows in Git history.
 - Branch: `fix/image-string-filesystem-fallback`
 - Starting commit: `61034a7562e7fa43df076dcc38bcd48128605395`
 - Host: Apple Silicon macOS (`Darwin arm64`)
