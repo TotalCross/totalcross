@@ -17,6 +17,11 @@ on:
         required: false
         type: boolean
         default: false
+      image-string-linux-baseline-comparison:
+        description: Compare master and feature PNG decoding on Linux x64 only
+        required: false
+        type: boolean
+        default: false
   push:
     branches: [ master ]
   pull_request:
@@ -28,4 +33,5 @@ jobs:
       selective: ${{ github.event_name == 'pull_request' }}
       image-string-smoke: ${{ inputs.image-string-smoke }}
       image-string-linux-diagnostic: ${{ inputs.image-string-linux-diagnostic }}
+      image-string-linux-baseline-comparison: ${{ inputs.image-string-linux-baseline-comparison }}
     secrets: inherit

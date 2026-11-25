@@ -2335,6 +2335,26 @@ tasks.register('jarEncodedImageSourceSmoke', Jar) {
     from(encodedImageSourceSmokeClassesDir)
 }
 
+def linuxPngDecodeComparisonDir = layout.buildDirectory.dir('linux-png-decode-comparison')
+
+tasks.register('jarLinuxPngDecodeComparison', Jar) {
+    group = 'verification'
+    description = 'Packages the Linux PNG baseline comparison app and fixed fixtures.'
+    dependsOn sourceSets.smokeTest.classesTaskName
+    archiveFileName = 'LinuxPngDecodeComparisonApp.jar'
+    destinationDirectory = linuxPngDecodeComparisonDir
+    from(smokeTestClassesDir) {
+        include 'totalcross/ui/image/LinuxPngDecodeComparisonApp*.class'
+    }
+    from(smokeTestResourcesDir.get().file('image-abi/tiny.png')) {
+        into 'comparison'
+    }
+    from(smokeTestResourcesDir.get().file('image-abi/lena512.jpg')) {
+        into 'comparison'
+        rename { 'control.jpg' }
+    }
+}
+
 tasks.register('deployEncodedImageSourceSmokeMacOS', JavaExec) {
     group = 'verification'
     description = 'Deploys the EncodedImageSource smoke app for macOS.'

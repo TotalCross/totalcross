@@ -28,6 +28,11 @@ on:
         required: false
         type: boolean
         default: false
+      image-string-linux-baseline-comparison:
+        description: Compare deployed Image(File)/Image(byte[]) PNG decoding on master baseline and feature using Linux x64 only
+        required: false
+        type: boolean
+        default: false
 
 env:
   SQLITE3_GITHUB_TOKEN: ${{ secrets.SQLITE3_GITHUB_TOKEN }}
@@ -305,7 +310,7 @@ jobs:
     needs: [checkout-source, prepare-native-dependencies, generate-native-bridges]
     strategy:
       fail-fast: false
-      matrix: ${{ fromJSON((inputs.image-string-smoke || inputs.image-string-linux-diagnostic) && '{"include":[{"project":"linux-amd64","runner":"ubuntu-22.04","docker_platform":"linux/amd64","use_qemu":false}]}' || '{"include":[{"project":"linux-amd64","runner":"ubuntu-22.04","docker_platform":"linux/amd64","use_qemu":false},{"project":"linux-arm32v7","runner":"ubuntu-22.04","docker_platform":"linux/arm/v7","use_qemu":true},{"project":"linux-arm64","runner":"ubuntu-22.04-arm","docker_platform":"linux/arm64","use_qemu":false}]}') }}
+      matrix: ${{ fromJSON((inputs.image-string-smoke || inputs.image-string-linux-diagnostic || inputs.image-string-linux-baseline-comparison) && '{"include":[{"project":"linux-amd64","runner":"ubuntu-22.04","docker_platform":"linux/amd64","use_qemu":false}]}' || '{"include":[{"project":"linux-amd64","runner":"ubuntu-22.04","docker_platform":"linux/amd64","use_qemu":false},{"project":"linux-arm32v7","runner":"ubuntu-22.04","docker_platform":"linux/arm/v7","use_qemu":true},{"project":"linux-arm64","runner":"ubuntu-22.04-arm","docker_platform":"linux/arm64","use_qemu":false}]}') }}
 
     runs-on: ${{ matrix.runner }}
 
@@ -498,7 +503,7 @@ jobs:
         ninja
 
   build-windows:
-    if: ${{ needs.checkout-source.outputs.scope == 'full' && !inputs.image-string-linux-diagnostic }}
+    if: ${{ needs.checkout-source.outputs.scope == 'full' && !inputs.image-string-linux-diagnostic && !inputs.image-string-linux-baseline-comparison }}
     name: Build `windows`
     needs: [checkout-source, prepare-native-dependencies, generate-native-bridges]
     runs-on: windows-2022
@@ -586,7 +591,7 @@ jobs:
           build-provenance.json
 
   build-windows-native-legacy:
-    if: ${{ needs.checkout-source.outputs.scope == 'full' && !inputs.image-string-smoke && !inputs.image-string-linux-diagnostic }}
+    if: ${{ needs.checkout-source.outputs.scope == 'full' && !inputs.image-string-smoke && !inputs.image-string-linux-diagnostic && !inputs.image-string-linux-baseline-comparison }}
     name: Build `windows-native-legacy`
     needs: [checkout-source, prepare-native-dependencies, generate-native-bridges]
     runs-on: windows-2022
@@ -642,7 +647,7 @@ jobs:
         popd
 
   build-macos-arm64:
-    if: ${{ needs.checkout-source.outputs.scope == 'full' && !inputs.image-string-smoke && !inputs.image-string-linux-diagnostic }}
+    if: ${{ needs.checkout-source.outputs.scope == 'full' && !inputs.image-string-smoke && !inputs.image-string-linux-diagnostic && !inputs.image-string-linux-baseline-comparison }}
     name: Build `macos-arm64`
     needs: [checkout-source, prepare-native-dependencies, generate-native-bridges]
     runs-on: xcode-27
@@ -754,12 +759,26 @@ jobs:
       working-directory: TotalCrossSDK
       run: ./gradlew-agent jarEncodedImageSourceSmoke
 
+    - name: Package Linux PNG comparison app
+      if: ${{ inputs.image-string-linux-baseline-comparison }}
+      working-directory: TotalCrossSDK
+      run: ./gradlew-agent jarLinuxPngDecodeComparison
+
     - name: Upload Image(String) smoke app
       if: ${{ inputs.image-string-smoke || inputs.image-string-linux-diagnostic }}
       uses: actions/upload-artifact@v7
       with:
         name: image-string-smoke-app
         path: TotalCrossSDK/build/encoded-image-source-smoke/classes/EncodedImageSourceSmokeApp.jar
+        if-no-files-found: error
+        retention-days: 1
+
+    - name: Upload Linux PNG comparison app
+      if: ${{ inputs.image-string-linux-baseline-comparison }}
+      uses: actions/upload-artifact@v7
+      with:
+        name: linux-png-comparison-app
+        path: TotalCrossSDK/build/linux-png-decode-comparison/LinuxPngDecodeComparisonApp.jar
         if-no-files-found: error
         retention-days: 1
 
@@ -803,7 +822,7 @@ jobs:
         path: sdk-build.tar.gz
 
   build-android:
-    if: ${{ needs.checkout-source.outputs.scope == 'full' && !inputs.image-string-linux-diagnostic }}
+    if: ${{ needs.checkout-source.outputs.scope == 'full' && !inputs.image-string-linux-diagnostic && !inputs.image-string-linux-baseline-comparison }}
     name: Build `Android`
     needs: [checkout-source, prepare-native-dependencies, generate-native-bridges]
     runs-on: ubuntu-24.04
@@ -895,7 +914,7 @@ jobs:
           build-provenance.json
 
   build-ios:
-    if: ${{ needs.checkout-source.outputs.scope == 'full' && !inputs.image-string-smoke && !inputs.image-string-linux-diagnostic }}
+    if: ${{ needs.checkout-source.outputs.scope == 'full' && !inputs.image-string-smoke && !inputs.image-string-linux-diagnostic && !inputs.image-string-linux-baseline-comparison }}
     name: Build `iOS`
     needs: [checkout-source, prepare-native-dependencies, generate-native-bridges]
     runs-on: xcode-27
@@ -1120,6 +1139,352 @@ jobs:
         path: |
           ios.tar.gz
           build-provenance.json
+
+  build-linux-png-baseline:
+    if: ${{ inputs.image-string-linux-baseline-comparison }}
+    name: Build master Linux PNG baseline
+    needs: [prepare-native-dependencies]
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: Checkout feature source and history
+      uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
+
+    - name: Download prepared native dependencies
+      uses: actions/download-artifact@v7
+      with:
+        name: prepared-native-dependencies
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v5
+      with:
+        distribution: temurin
+        java-version: 17
+
+    - name: Create isolated master baseline with startup fix
+      id: baseline
+      shell: bash
+      run: |
+        set -euo pipefail
+        baseline="${RUNNER_TEMP}/totalcross-linux-png-baseline"
+        git worktree add --detach "${baseline}" 61034a7562e7fa43df076dcc38bcd48128605395
+        git -C "${baseline}" -c user.name='GitHub Actions' -c user.email='actions@github.com' cherry-pick 153f9fae5
+        test "$(sed -n '/^[^#[:space:]]/p' "${baseline}/TotalCrossVM/deps/totalcross-depot-tools.ref" | head -1)" = 0fd3c98727c87a441bc9c8d2c8dd2b731ef0861a
+        test "$(git show "${GITHUB_SHA}:TotalCrossVM/deps/totalcross-depot-tools.ref" | sed -n '/^[^#[:space:]]/p' | head -1)" = 0fd3c98727c87a441bc9c8d2c8dd2b731ef0861a
+        test "$(git -C "${baseline}" rev-parse HEAD^)" = 61034a7562e7fa43df076dcc38bcd48128605395
+        test "$(git -C "${baseline}" diff --name-only 61034a7562e7fa43df076dcc38bcd48128605395..HEAD)" = TotalCrossVM/src/init/posix/startup_c.h
+        test -z "$(git -C "${baseline}" status --short --untracked-files=no)"
+        printf 'path=%s\ncommit=%s\ntree=%s\n' \
+          "${baseline}" \
+          "$(git -C "${baseline}" rev-parse HEAD)" \
+          "$(git -C "${baseline}" rev-parse HEAD^{tree})" >> "${GITHUB_OUTPUT}"
+
+    - name: Extract matching native dependencies
+      env:
+        BASELINE: ${{ steps.baseline.outputs.path }}
+      run: |
+        set -euo pipefail
+        tar -xzf depot-tools-native-dependencies.tar.gz -C "${BASELINE}"
+        python3 - "${BASELINE}" <<'PY'
+        import json, sys
+        from pathlib import Path
+        manifest=Path(sys.argv[1])/"TotalCrossVM/deps/totalcross-depot-tools/prepared-native-dependencies.json"
+        data=json.loads(manifest.read_text())
+        assert data["depot_tools_revision"] == "0fd3c98727c87a441bc9c8d2c8dd2b731ef0861a"
+        tags={item.get("release_tag") for item in data["dependencies"]}
+        expected={"libpng-1.6.48-r3","zlib-ng-2.1.6-r3"}
+        assert expected <= tags, f"native tags differ: {sorted(tags)}"
+        print(f"depotTools={data['depot_tools_revision']} libpng=libpng-1.6.48-r3 zlib-ng=zlib-ng-2.1.6-r3")
+        for item in data["dependencies"]:
+            if item.get("release_tag") in expected:
+                print(f"dependency={item['dependency']} tag={item['release_tag']} asset={item['asset']} sha256={item['sha256']}")
+        PY
+
+    - name: Record baseline provenance
+      env:
+        BASELINE: ${{ steps.baseline.outputs.path }}
+      run: |
+        set -euo pipefail
+        cd "${BASELINE}"
+        python3 scripts/provenance/validate-compatibility.py --repository-root .
+        python3 - <<'PY'
+        import json, os, subprocess, sys
+        from pathlib import Path
+        sys.path.insert(0, str(Path("scripts/provenance").resolve()))
+        from compatibility_contract import read_compatibility_contract
+        Path("build-provenance.json").write_text(json.dumps({
+            "schemaVersion": 1,
+            "repository": os.environ["GITHUB_REPOSITORY"],
+            "source": {
+                "commit": subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip(),
+                "tree": subprocess.check_output(["git", "rev-parse", "HEAD^{tree}"], text=True).strip(),
+                "dirty": False,
+            },
+            "producer": {
+                "kind": "github-actions",
+                "runId": os.environ["GITHUB_RUN_ID"],
+                "runAttempt": os.environ["GITHUB_RUN_ATTEMPT"],
+            },
+            "compatibility": read_compatibility_contract(Path("config/artifact-compatibility.properties")),
+        }, sort_keys=True) + "\n", encoding="utf-8")
+        PY
+        python3 scripts/provenance/build-identity.py --repository-root . \
+          --update-manifest build-provenance.json --format id
+
+    - name: Build baseline SDK and native bridges
+      env:
+        BASELINE: ${{ steps.baseline.outputs.path }}
+      run: |
+        set -euo pipefail
+        cd "${BASELINE}"
+        scripts/package-sdk.sh
+        cd TotalCrossSDK
+        ./gradlew-agent generateNativeBridgeSources
+
+    - name: Build baseline Linux VM in the canonical container
+      env:
+        BASELINE: ${{ steps.baseline.outputs.path }}
+      run: |
+        set -euo pipefail
+        mkdir -p "${BASELINE}/build"
+        docker run --rm \
+          -v "${BASELINE}/build:/build" \
+          -v "${BASELINE}:/sources" \
+          -t totalcross/linux-amd64:v1.0.7 bash -lc '
+            set -e
+            cmake /sources/TotalCrossVM -DCMAKE_BUILD_TYPE=Release -G Ninja
+            ninja
+          '
+
+    - name: Pack baseline build artifacts
+      env:
+        BASELINE: ${{ steps.baseline.outputs.path }}
+      run: tar -czf "${RUNNER_TEMP}/linux-png-baseline-build.tar.gz" -C "${BASELINE}" build build-provenance.json
+
+    - name: Upload baseline build artifacts
+      uses: actions/upload-artifact@v7
+      with:
+        name: linux-png-baseline-build
+        path: ${{ runner.temp }}/linux-png-baseline-build.tar.gz
+        if-no-files-found: error
+        retention-days: 1
+
+  image-string-linux-baseline-comparison:
+    if: ${{ inputs.image-string-linux-baseline-comparison }}
+    name: Compare deployed PNG decode on Linux x64
+    needs: [build-linux, build-sdk, prepare-native-dependencies, build-linux-png-baseline]
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: Checkout feature source
+      uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
+
+    - name: Download feature SDK
+      uses: actions/download-artifact@v7
+      with:
+        name: sdk-build
+        path: feature-sdk
+
+    - name: Download feature Linux VM
+      uses: actions/download-artifact@v7
+      with:
+        name: linux-amd64
+        path: feature-native
+
+    - name: Download comparison app and baseline artifacts
+      uses: actions/download-artifact@v7
+      with:
+        pattern: linux-png-*
+        path: comparison-artifacts
+        merge-multiple: false
+
+    - name: Download prepared native dependencies
+      uses: actions/download-artifact@v7
+      with:
+        name: prepared-native-dependencies
+        path: prepared-dependencies
+
+    - name: Set up Linux runtime and JDK
+      run: |
+        sudo apt-get update -qq
+        sudo apt-get install -qq --no-install-recommends --yes libegl1 libgles2 xvfb
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v5
+      with:
+        distribution: temurin
+        java-version: 17
+
+    - name: Record pinned dependency manifest
+      run: |
+        set -euo pipefail
+        tar -xzf prepared-dependencies/depot-tools-native-dependencies.tar.gz -C .
+        cp TotalCrossVM/deps/totalcross-depot-tools/prepared-native-dependencies.json dependency-manifest.json
+        python3 - <<'PY'
+        import json
+        from pathlib import Path
+        data=json.loads(Path("dependency-manifest.json").read_text())
+        assert data["depot_tools_revision"] == "0fd3c98727c87a441bc9c8d2c8dd2b731ef0861a"
+        tags={item.get("release_tag") for item in data["dependencies"]}
+        expected={"libpng-1.6.48-r3","zlib-ng-2.1.6-r3"}
+        assert expected <= tags, f"native tags differ: {sorted(tags)}"
+        print(f"depotTools={data['depot_tools_revision']} libpng=libpng-1.6.48-r3 zlib-ng=zlib-ng-2.1.6-r3")
+        for item in data["dependencies"]:
+            if item.get("release_tag") in expected:
+                print(f"dependency={item['dependency']} tag={item['release_tag']} asset={item['asset']} sha256={item['sha256']}")
+        PY
+
+    - name: Prepare feature and baseline SDK/VM pairs
+      env:
+        EXPECTED_FEATURE_COMMIT: ${{ github.sha }}
+      run: |
+        set -euo pipefail
+        mkdir -p feature baseline
+        tar -xzf feature-sdk/sdk-build.tar.gz
+        mkdir -p feature/build/TotalCross/dist/vm/linux feature/build/TotalCross/etc/launchers/linux
+        native_manifest="$(find feature-native -type f -name build-provenance.json -print -quit)"
+        cp "$(find feature-native -type f -name libtcvm.so -print -quit)" feature/build/TotalCross/dist/vm/linux/libtcvm.so
+        cp "$(find feature-native -type f -name Launcher -print -quit)" feature/build/TotalCross/etc/launchers/linux/Launcher
+        cp "${native_manifest}" feature/native-provenance.json
+        tar -xzf comparison-artifacts/linux-png-baseline-build/linux-png-baseline-build.tar.gz -C baseline
+        if grep -q 'CMAKE_C_FLAGS:STRING=-DTC_IMAGE_PNG_DIAGNOSTIC' feature-native/build/CMakeCache.txt baseline/build/CMakeCache.txt; then
+          echo 'comparison build unexpectedly enabled TC_IMAGE_PNG_DIAGNOSTIC' >&2
+          exit 1
+        fi
+        baseline_commit="$(python3 -c 'import json;print(json.load(open("baseline/build-provenance.json"))["source"]["commit"])')"
+        test "$(git -C . rev-parse HEAD)" = "${EXPECTED_FEATURE_COMMIT}"
+        test "$(python3 -c 'import json;print(json.load(open("build-provenance.json"))["source"]["commit"])')" = "${EXPECTED_FEATURE_COMMIT}"
+        FEATURE_NATIVE_MANIFEST=feature/native-provenance.json EXPECTED_FEATURE_COMMIT="${EXPECTED_FEATURE_COMMIT}" python3 - <<'PY'
+        import json, os
+        from pathlib import Path
+        sdk=json.loads(Path("build-provenance.json").read_text())
+        native=json.loads(Path(os.environ["FEATURE_NATIVE_MANIFEST"]).read_text())
+        assert sdk["source"]["commit"] == os.environ["EXPECTED_FEATURE_COMMIT"] and not sdk["source"]["dirty"]
+        assert native["source"]["commit"] == os.environ["EXPECTED_FEATURE_COMMIT"] and not native["source"]["dirty"]
+        assert sdk["source"]["tree"] == native["source"]["tree"]
+        assert sdk["build"]["id"] == native["build"]["id"]
+        baseline=json.loads(Path("baseline/build-provenance.json").read_text())
+        print(f"featureCommit={sdk['source']['commit']} featureTree={sdk['source']['tree']} featureBuildId={sdk['build']['id']}")
+        print(f"baselineCommit={baseline['source']['commit']} baselineTree={baseline['source']['tree']} baselineBuildId={baseline['build']['id']}")
+        PY
+        mkdir -p baseline/build/TotalCross/dist/vm/linux baseline/build/TotalCross/etc/launchers/linux
+        cp baseline/build/libtcvm.so baseline/build/TotalCross/dist/vm/linux/libtcvm.so
+        cp baseline/build/Launcher baseline/build/TotalCross/etc/launchers/linux/Launcher
+
+    - name: Verify fixtures and deploy both smoke variants
+      id: compare
+      env:
+        TOTALCROSS3_HOME: ${{ github.workspace }}/build/TotalCross
+      shell: bash
+      run: |
+        set -euo pipefail
+        app="${GITHUB_WORKSPACE}/comparison-artifacts/linux-png-comparison-app/LinuxPngDecodeComparisonApp.jar"
+        test -f "${app}"
+        sha256sum TotalCrossSDK/src/smokeTest/resources/image-abi/tiny.png TotalCrossSDK/src/smokeTest/resources/image-abi/lena512.jpg
+        unzip -p "${app}" comparison/tiny.png | sha256sum | grep -q '958903b3f880fbf626fa8fbba8f69856a989f5930531984be9585aac08a5aba6'
+        unzip -p "${app}" comparison/control.jpg | sha256sum | grep -q 'df0035534c5c12d024763dce5f515023ad7e16139f4278b360291b2f0261fb51'
+        mkdir -p "${RUNNER_TEMP}/png-compare/feature" "${RUNNER_TEMP}/png-compare/baseline"
+        run_variant() {
+          label="$1" sdkroot="$2" home="$3"
+          work="${RUNNER_TEMP}/png-compare/${label}"
+          cp "${app}" "${work}/"
+          (
+            cd "${work}"
+            if ! TOTALCROSS3_HOME="${home}" java -cp "${sdkroot}/dist/totalcross-sdk.jar:${sdkroot}/dist/libs/*" tc.Deploy LinuxPngDecodeComparisonApp.jar -linux > deploy.log 2>&1; then
+              printf 'deploy=failed\n' > smoke.log
+              return 0
+            fi
+            cd install/linux
+            set +e
+            TOTALCROSS3_HOME="${home}" timeout 120s xvfb-run -a ./LinuxPngDecodeComparisonApp > "${work}/smoke.log" 2>&1
+            status=$?
+            set -e
+            printf 'exitCode=%s\n' "${status}" >> "${work}/smoke.log"
+            return 0
+          )
+        }
+        run_variant feature "${GITHUB_WORKSPACE}/build/TotalCross" "${GITHUB_WORKSPACE}/build/TotalCross"
+        run_variant baseline "${GITHUB_WORKSPACE}/baseline/build/TotalCross" "${GITHUB_WORKSPACE}/baseline/build/TotalCross"
+        python3 - <<'PY'
+        import json, re
+        import os
+        from pathlib import Path
+        names=("png-file","png-bytes","jpeg-file","jpeg-bytes")
+        results={}
+        for variant in ("baseline","feature"):
+            output=Path(os.environ["RUNNER_TEMP"])/"png-compare"/variant/"smoke.log"
+            text=output.read_text(errors="replace") if output.exists() else ""
+            results[variant]={name: (re.search(rf"case={name},[^\n]*decode=(true|false)", text).group(1)=="true") if re.search(rf"case={name},[^\n]*decode=(true|false)", text) else None for name in names}
+        b=results["baseline"]; f=results["feature"]
+        if all(b[k] is False and f[k] is False for k in ("png-file","png-bytes")) and all(b[k] is True and f[k] is True for k in ("jpeg-file","jpeg-bytes")):
+            classification="preexisting-linux-png-decode-failure"
+        elif any(b[k] is True and f[k] is False for k in ("png-file","png-bytes")):
+            classification="feature-introduced-linux-png-decode-failure"
+        elif all(b[k] is True and f[k] is True for k in ("png-file","png-bytes")):
+            classification="png-decode-passes-on-both"
+        else:
+            classification="inconclusive"
+        (Path(os.environ["RUNNER_TEMP"])/"png-compare"/"result.json").write_text(json.dumps({"classification":classification,"baseline":b,"feature":f},indent=2)+"\n")
+        with open(os.environ["GITHUB_OUTPUT"],"a",encoding="utf-8") as output:
+            output.write(f"classification={classification}\n")
+        print(json.dumps({"classification":classification,"baseline":b,"feature":f},sort_keys=True))
+        PY
+
+    - name: Run isolated standalone libpng and ABI probes
+      if: ${{ steps.compare.outputs.classification == 'preexisting-linux-png-decode-failure' }}
+      shell: bash
+      run: |
+        set -euo pipefail
+        tar -xzf prepared-dependencies/depot-tools-native-dependencies.tar.gz -C .
+        feature_cache=feature-native/build/CMakeCache.txt
+        baseline_cache=baseline/build/CMakeCache.txt
+        png_library="$(sed -n 's/^PNG_LIBRARY:FILEPATH=\/sources\///p' "${feature_cache}")"
+        zlib_library="$(sed -n 's/^ZLIB_LIBRARY:FILEPATH=\/sources\///p' "${feature_cache}")"
+        png_include="$(sed -n 's/^PNG_INCLUDE_DIR:PATH=\/sources\///p' "${feature_cache}")"
+        zlib_include="$(sed -n 's/^ZLIB_INCLUDE_DIR:PATH=\/sources\///p' "${feature_cache}")"
+        test -n "${png_library}" && test -n "${zlib_library}"
+        test "$(sed -n 's/^PNG_LIBRARY:FILEPATH=\/sources\///p' "${baseline_cache}")" = "${png_library}"
+        test "$(sed -n 's/^ZLIB_LIBRARY:FILEPATH=\/sources\///p' "${baseline_cache}")" = "${zlib_library}"
+        test -f "${png_library}" && test -f "${zlib_library}"
+        mkdir -p "${RUNNER_TEMP}/png-compare/probe"
+        cp "${RUNNER_TEMP}/png-compare/feature/install/linux/comparison-png.png" comparison-feed.png
+        {
+          grep -E '^(CMAKE_BUILD_TYPE:STRING|CMAKE_C_FLAGS:STRING|PNG_DIR:PATH|PNG_INCLUDE_DIR:PATH|PNG_LIBRARY:FILEPATH|ZLIB_DIR:PATH|ZLIB_INCLUDE_DIR:PATH|ZLIB_LIBRARY:FILEPATH)=' "${feature_cache}"
+          printf 'PNG_LIBRARY=%s\nZLIB_LIBRARY=%s\n' "${png_library}" "${zlib_library}"
+          sha256sum "${png_library}" "${zlib_library}"
+          file feature/build/TotalCross/dist/vm/linux/libtcvm.so baseline/build/TotalCross/dist/vm/linux/libtcvm.so
+          readelf -h feature/build/TotalCross/dist/vm/linux/libtcvm.so | rg 'Class:|Machine:'
+          readelf -h baseline/build/TotalCross/dist/vm/linux/libtcvm.so | rg 'Class:|Machine:'
+        } > "${RUNNER_TEMP}/png-compare/probe/inputs.txt"
+        cc -I"${png_include}" -I"${zlib_include}" scripts/image-string-linux-comparison/abi_probe.c \
+          -o "${RUNNER_TEMP}/png-compare/probe/abi-probe"
+        "${RUNNER_TEMP}/png-compare/probe/abi-probe" > "${RUNNER_TEMP}/png-compare/probe/abi.txt"
+        cc -I"${png_include}" -I"${zlib_include}" scripts/image-string-linux-comparison/standalone_png_decode.c \
+          "${png_library}" "${zlib_library}" -lm -o "${RUNNER_TEMP}/png-compare/probe/standalone-png-decode"
+        set +e
+        "${RUNNER_TEMP}/png-compare/probe/standalone-png-decode" comparison-feed.png \
+          > "${RUNNER_TEMP}/png-compare/probe/standalone.stdout" \
+          2> "${RUNNER_TEMP}/png-compare/probe/standalone.stderr"
+        probe_status=$?
+        set -e
+        printf 'exitCode=%s\n' "${probe_status}" >> "${RUNNER_TEMP}/png-compare/probe/inputs.txt"
+        nm -A --defined-only "${png_library}" "${zlib_library}" | rg ' (png_create_read_struct|inflateEnd|adler32)$' \
+          > "${RUNNER_TEMP}/png-compare/probe/symbols.txt" || true
+        printf 'sha256=' >> "${RUNNER_TEMP}/png-compare/probe/inputs.txt"
+        sha256sum comparison-feed.png >> "${RUNNER_TEMP}/png-compare/probe/inputs.txt"
+
+    - name: Upload Linux baseline comparison evidence
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: linux-png-baseline-comparison-evidence
+        path: ${{ runner.temp }}/png-compare
+        if-no-files-found: warn
+        retention-days: 30
 
   image-string-smoke-linux:
     if: ${{ inputs.image-string-smoke || inputs.image-string-linux-diagnostic }}
