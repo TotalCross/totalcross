@@ -33,6 +33,10 @@ static void diagnosePngFeed(const uint8* bytes, int32 length)
       hash ^= bytes[i];
       hash *= 16777619U;
    }
+   fprintf(stderr,
+      "ImageStringPngDiagnostic feedLength=%d feedFnv1a=%08x standardDecode=starting\n",
+      length, (unsigned int)hash);
+   fflush(stderr);
    xmemzero(&image, sizeof(image));
    image.version = PNG_IMAGE_VERSION;
    if (png_image_begin_read_from_memory(&image, bytes, (size_t)length))
@@ -58,9 +62,7 @@ static void diagnosePngFeed(const uint8* bytes, int32 length)
       error = image.message;
    }
 
-   fprintf(stderr,
-      "ImageStringPngDiagnostic feedLength=%d feedFnv1a=%08x standardDecode=%s error=%s\n",
-      length, (unsigned int)hash, result, error);
+   fprintf(stderr, "ImageStringPngDiagnostic standardDecode=%s error=%s\n", result, error);
    fflush(stderr);
    if (pixels != null)
       free(pixels);
