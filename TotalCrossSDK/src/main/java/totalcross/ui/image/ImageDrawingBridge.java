@@ -20,6 +20,8 @@ import totalcross.util.concurrent.Lock;
 public final class ImageDrawingBridge {
   private static final ArrayList<PersistentOwnerEntry> PERSISTENT_OWNERS = new ArrayList<>();
   private static final Lock OWNERS_LOCK = new Lock();
+  private static boolean countRegistryInspectionsForTest;
+  private static long registryInspectionsForTest;
 
   private static final class PersistentOwnerEntry {
     final WeakReference<Object> owner;
@@ -44,6 +46,26 @@ public final class ImageDrawingBridge {
 
   static Lock ownersLock() {
     return OWNERS_LOCK;
+  }
+
+  static void startRegistryInspectionCountForTest() {
+    synchronized (OWNERS_LOCK) {
+      registryInspectionsForTest = 0;
+      countRegistryInspectionsForTest = true;
+    }
+  }
+
+  static long stopRegistryInspectionCountForTest() {
+    synchronized (OWNERS_LOCK) {
+      countRegistryInspectionsForTest = false;
+      return registryInspectionsForTest;
+    }
+  }
+
+  private static void recordRegistryInspectionForTest() {
+    if (countRegistryInspectionsForTest) {
+      registryInspectionsForTest++;
+    }
   }
 
   /** @hidden */
@@ -166,6 +188,7 @@ public final class ImageDrawingBridge {
       cleanPersistentOwners();
       int count = 0;
       for (PersistentOwnerEntry entry : PERSISTENT_OWNERS) {
+        recordRegistryInspectionForTest();
         if (entry.image.get() == image) {
           count++;
         }
@@ -178,6 +201,7 @@ public final class ImageDrawingBridge {
     synchronized (OWNERS_LOCK) {
       cleanPersistentOwners();
       for (PersistentOwnerEntry entry : PERSISTENT_OWNERS) {
+        recordRegistryInspectionForTest();
         if (entry.image.get() == image) {
           entry.pipeline = new WeakReference<>(pipeline);
         }
@@ -193,6 +217,7 @@ public final class ImageDrawingBridge {
 
   private static PersistentOwnerEntry findPersistentOwner(Object owner, Image image) {
     for (PersistentOwnerEntry entry : PERSISTENT_OWNERS) {
+      recordRegistryInspectionForTest();
       if (entry.owner.get() == owner && entry.image.get() == image) {
         return entry;
       }
@@ -203,6 +228,7 @@ public final class ImageDrawingBridge {
   private static void cleanPersistentOwners() {
     for (int i = PERSISTENT_OWNERS.size() - 1; i >= 0; i--) {
       PersistentOwnerEntry entry = PERSISTENT_OWNERS.get(i);
+      recordRegistryInspectionForTest();
       if (entry.owner.get() == null || entry.image.get() == null) {
         PERSISTENT_OWNERS.remove(i);
         ImagePipeline pipeline = entry.pipeline.get();
