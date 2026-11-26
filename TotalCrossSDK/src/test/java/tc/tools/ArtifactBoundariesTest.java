@@ -59,21 +59,25 @@ class ArtifactBoundariesTest {
         String rasterBridge = "totalcross/ui/image/ImageRasterFeatureBridge";
         String compactStorageBridge = "totalcross/ui/image/ImageCompactStorageCapabilityBridge";
         String drawingBridge = "totalcross/ui/image/ImageDrawingFeatureBridge";
+        String ownershipMaintenanceBridge = "totalcross/ui/image/ImageOwnershipMaintenanceBridge";
 
         assertTrue(runtimeJava.contains(diagnosticsBridge + ".class"));
         assertTrue(runtimeJava.contains(rasterBridge + ".class"));
         assertTrue(runtimeJava.contains(compactStorageBridge + ".class"));
         assertTrue(runtimeJava.contains(drawingBridge + ".class"));
+        assertTrue(runtimeJava.contains(ownershipMaintenanceBridge + ".class"));
         for (Set<String> aggregateArtifact : java.util.List.of(sdk, distributedSdk)) {
             assertTrue(aggregateArtifact.contains(diagnosticsBridge + ".class"));
             assertTrue(aggregateArtifact.contains(rasterBridge + ".class"));
             assertTrue(aggregateArtifact.contains(compactStorageBridge + ".class"));
             assertTrue(aggregateArtifact.contains(drawingBridge + ".class"));
+            assertTrue(aggregateArtifact.contains(ownershipMaintenanceBridge + ".class"));
         }
         assertFalse(api.stream().anyMatch(name -> name.startsWith(diagnosticsBridge)));
         assertFalse(api.stream().anyMatch(name -> name.startsWith(rasterBridge)));
         assertFalse(api.stream().anyMatch(name -> name.startsWith(compactStorageBridge)));
         assertFalse(api.stream().anyMatch(name -> name.startsWith(drawingBridge)));
+        assertFalse(api.stream().anyMatch(name -> name.startsWith(ownershipMaintenanceBridge)));
         assertFalse(api.stream().anyMatch(name -> name.startsWith("totalcross/ui/DisplayPreparation")));
         assertFalse(api.stream().anyMatch(name -> name.startsWith("totalcross/ui/image/ImagePreparation")));
         assertFalse(api.stream().anyMatch(name -> name.startsWith("totalcross/ui/image/PreparedImageResult")));

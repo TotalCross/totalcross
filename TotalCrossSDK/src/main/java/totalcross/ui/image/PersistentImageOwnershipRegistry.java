@@ -173,6 +173,10 @@ final class PersistentImageOwnershipRegistry {
     return relationCount;
   }
 
+  boolean hasRelations() {
+    return relationCount != 0;
+  }
+
   void setSweepCursorToOwnerForTest(Object owner, Image image) {
     sweepCursor = findOwnerRelation(owner, image, identityHash(owner));
   }
