@@ -35,12 +35,18 @@ documented below used AMD64 artifacts. Their matching x64 RVA and stack cannot
 be mapped onto Win32, and the x64 finding does not answer whether persistent
 image ownership works on the production Windows target.
 
-The corrected I386 validation is tracked in
+The corrected I386 validation is documented in
 [`windows-historical-startup-compatibility.md`](windows-historical-startup-compatibility.md).
-Its one-run workflow will compare both historical I386 pairs with a new
+Its one-job workflow compared both historical I386 pairs with a
 production-config Win32 build from `94af2b8b653cad509994b5ccf3dbb60ac28ef920`.
-The existing ownership smoke runs only if that corrected I386 startup passes.
-**I386 functional validation is pending the Windows Actions run.**
+The existing ownership smoke ran after corrected I386 startup passed. The
+priority-correction workflow completed successfully in run
+[45907759163](https://github.com/TotalCross/totalcross/actions/runs/45907759163):
+historical A/B and corrected production I386 startup passed, followed by the
+I386 ownership lifecycle smoke. See
+[`windows-historical-startup-compatibility.md`](windows-historical-startup-compatibility.md)
+for the final artifact and assertion evidence. This AMD64 finding remains
+architecture-specific.
 
 ## Tested revisions and provenance
 
@@ -224,13 +230,13 @@ the source path into a heap's exception-file buffer. The upstream reason the
 `Heap`/destination is invalid remains unresolved. Do not patch image ownership
 or add a CI graphics workaround based on this evidence.
 
-The next useful AMD64-only diagnostic would stop in CDB at entry to
+The next possible AMD64-only diagnostic would stop in CDB at entry to
 `privateHeapSetJump` and at `tczNewInstance` line 177, recording the x64
 arguments (`Heap *m`, `file`, and `line`) and the addresses of
 `ntcz->header->hheap` and `m->ex.setjmpFile`. That follow-up is deferred until
-the production I386 comparison and gated ownership smoke are resolved. The
-current priority is the I386 workflow referenced above; no production fix is
-proposed from the AMD64 finding alone.
+separately requested; the priority correction asked to resolve production I386
+startup and ownership first. No production fix is proposed from the AMD64
+finding alone.
 
 ## Scenario comparison
 

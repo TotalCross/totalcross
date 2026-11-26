@@ -26,7 +26,7 @@ together.
 |---|---|---|---|---|
 | Historical A | `61034a7562e7fa43df076dcc38bcd48128605395` | `44414042826` / `14479211695` | `44414042826` / `14478821824` | I386 |
 | Historical B | `c7cf79575602f3cc19e107643f0fa39d3e151004` | `44565183218` / `14551617269` | `44565183218` / `14551309226` | I386 |
-| Corrected Win32 | `94af2b8b653cad509994b5ccf3dbb60ac28ef920` | `45884551862` / `15148184230` | Built in the validation run from pinned dependencies and bridges | I386 expected; verify in run |
+| Corrected Win32 | `94af2b8b653cad509994b5ccf3dbb60ac28ef920` | `45884551862` / `15148184230` | `45907759163` / `15158467793` | I386 |
 
 All SDKs report TotalCross version 7.2.2. Exact artifact digests, local
 archive/JAR hashes, historical Launcher/tcvm hashes, dependency bundle
@@ -35,8 +35,8 @@ identity, and native bridge identity are in
 
 ## Startup comparison
 
-**Startup status: PASS for all three I386 artifacts.** Run
-[45902867357](https://github.com/TotalCross/totalcross/actions/runs/45902867357)
+**Startup status: PASS for all three I386 artifacts.** Final run
+[45907759163](https://github.com/TotalCross/totalcross/actions/runs/45907759163)
 executed historical A, historical B, and corrected production Win32 startup in
 that order on one `windows-2022` runner session. All three processes started,
 recorded all six durable Java markers and a durable `PASS` file, and exited
@@ -44,47 +44,52 @@ recorded all six durable Java markers and a durable `PASS` file, and exited
 
 | Runtime | Source commit | PE | PID / session | Duration | Result |
 |---|---|---:|---:|---:|---|
-| Historical A | `61034a7562e7fa43df076dcc38bcd48128605395` | I386 | 2876 / 2 | 1,558 ms | PASS |
-| Historical B | `c7cf79575602f3cc19e107643f0fa39d3e151004` | I386 | 4716 / 2 | 236 ms | PASS |
-| Corrected Win32 | `94af2b8b653cad509994b5ccf3dbb60ac28ef920` | I386 | 2600 / 2 | 232 ms | PASS |
+| Historical A | `61034a7562e7fa43df076dcc38bcd48128605395` | I386 | 7092 / 2 | 1,455 ms | PASS |
+| Historical B | `c7cf79575602f3cc19e107643f0fa39d3e151004` | I386 | 1972 / 2 | 236 ms | PASS |
+| Corrected Win32 | `94af2b8b653cad509994b5ccf3dbb60ac28ef920` | I386 | 5944 / 2 | 224 ms | PASS |
 
 The corrected runtime was built with `cmake .. -G "Visual Studio 17 2022" -A
 Win32` and Release. CMake recorded Skia ON, SDL ON, legacy renderer OFF, native
 windowing OFF, software surface ON, and GLES OFF. Launcher SHA-256 is
-`970f09146e877141f0f4ea2a52cfb545a0e348abb8733b386b91ef05b10deba2`; tcvm SHA-256
-is `bf843e6c78ef110f9f44a41d014b327392887e42230743b8bd3b5455261973c7`.
+`9ffe796f6cfa5ceaf33beaccde5f158cb9e47304256642913894849485fc8e31`; tcvm
+SHA-256 is `000d9d2ae734659383db9266b7e5c2db0e056de78ebbee68383142f7d797af52`.
+The fixed SDK archive is artifact `15148184230` from run `45884551862`; its
+JAR SHA-256 is `a18c80e2784543493370d1120afc3e2d10d7594b51e5032d1f779f1f51c2f12d`.
+The build consumed prepared dependencies `15148893237` and native bridges
+`15147749510` from the same run. The corrected runtime is artifact
+[`15158467793`](https://github.com/TotalCross/totalcross/actions/runs/45907759163/artifacts/15158467793)
+(`sha256:81c313cf8c6ab83c0a9b722a153f2b13e344358a91c99df806dcd613e64a73ec).
 
-**Ownership wrapper status: rerun pending.** The native fixture reached stage 7,
-exited 0, and wrote a durable JSON `PASS` containing every required ownership,
-cache, detach/reparent, and drawing assertion. The wrapper failed to recognize
-its stage files because they were written beside `install/win32/` as
-`install/win32tcdiag-*`. Launcher/tcvm hashes matched the corrected startup
-runtime. The helper now checks both locations in performance-lab commit
-`bf691c14d7c5fe807c62de98c7285f65d38de87e`; a final Actions rerun is needed to
-produce a passing wrapper summary. Full attempt details and artifact digests
-are in the evidence index.
+The accepted run uploaded
+[`windows-historical-i386-validation-results`](https://github.com/TotalCross/totalcross/actions/runs/45907759163/artifacts/15158866549)
+(`sha256:4d1f7ac1622ae4055b5816bdaa0ed74f99b46146bd4448ddef90710b43a7814c).
+The run used performance-lab commit
+`bf691c14d7c5fe807c62de98c7285f65d38de87e` to recognize marker files written
+beside the app directory.
 
 ## Persistent ownership gate
 
 The existing performance-lab lifecycle fixture is pinned to commit
-`c4ba2f568df374f19a8bbc2a74dcfb598f2ac48e`. Its helper now accepts I386 and
-checks the deployed launcher/`tcvm.dll` architecture and hashes. Its Java
-fixture remains unchanged.
+`bf691c14d7c5fe807c62de98c7285f65d38de87e`. Its helper accepts I386, checks
+the deployed launcher/`tcvm.dll` architecture and hashes, and discovers
+diagnostic files beside the app directory when needed. Its Java fixture remains
+unchanged.
 
 The ownership workload runs only after corrected Win32 minimal startup passes.
-In run `45902867357`, it verified two consecutive screens of 1,510 controls,
+In the accepted run, process 6196 completed in session 2 in 489 ms with exit
+code `0x00000000`. It verified two consecutive screens of 1,510 controls,
 immediate detach and complete owner release, subtree mutation and reattachment,
 active reparenting, shared ownership, pipeline replacement, raster-cache reuse
 and eviction, native draw output and red-pixel value, no owner-underflow
 diagnostic, and clean process completion. Its Launcher/VM hashes must match
 the corrected minimal-startup runtime.
 
-**Production Win32 ownership verdict: functionally PASS in the fixture; final
-wrapper acceptance pending.** The durable fixture JSON reports two full screen
+**Production Win32 ownership verdict: PASS.** The helper reports two full screen
 cycles, 3,020 controls, 0 mismatches, highest stage 7, `drawPixelRgb=16711680`,
 zero owners after detach, and all cache/reparent/shared-owner assertions true.
-The helper's false FAIL is due only to marker-path discovery and will be
-rechecked after its dedicated fix.
+The rendered PNG SHA-256 is
+`961193a64a23a06ebe62da397919e4e04d752c4f1a6fa31c4e7170fd70d365b5`. The
+ownership Launcher and `tcvm.dll` hashes match the corrected startup runtime.
 
 ## AMD64 reference and limitations
 
@@ -98,10 +103,14 @@ customer desktop environment.
 
 ## Validation and remote operations
 
-The initial Actions attempt exposed three harness defects and is recorded in the
-evidence index. The corrected Actions run passed both contract suites and the
-Win32 build/startup; the smoke fixture assertions passed while marker discovery
-failed. Focused local harness tests (12), ownership helper contracts (17),
-changed-file copyright validation, and `git diff --check` pass. One final
-Actions run with the corrected helper is pending. No production ownership
-implementation changes are included.
+The first two Actions attempts exposed and then isolated harness issues; both
+are retained in the evidence index. Final run `45907759163` passed contract
+tests, the production Win32 build, all three I386 startup probes, the complete
+ownership smoke, and the final workflow gate. Focused local tests passed:
+12 TotalCross diagnostic contracts and 17 ownership helper contracts. Header
+validation, workflow YAML parsing, `git diff --check`, and commit-message
+validation passed. The hosted run used Windows Server 2022 image
+`20261116.370.1`; the build emitted no PDBs, and no dump was needed because no
+native process failed. Diagnostic commits were pushed only to the dedicated
+TotalCross and performance-lab branches. No PR, merge, release, production
+branch push, or production ownership change was made.

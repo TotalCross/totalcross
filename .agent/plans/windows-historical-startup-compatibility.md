@@ -69,12 +69,13 @@ its existing finding as a separate architecture-specific reference.
   `45902867357` passed all three I386 startup probes and the ownership fixture's
   durable PASS result, but the helper rejected its markers because they were
   written beside the expected app directory.
-- [ ] Pin the marker-lookup correction at
+- [x] Pin the marker-lookup correction at
   `bf691c14d7c5fe807c62de98c7285f65d38de87e` and rerun the isolated Windows
-  job to produce a passing ownership summary and final machine-readable
-  evidence.
-- [ ] Review the uploaded artifact, record run URL/markers/exits/hashes/dumps,
-  update both reports and evidence, and state the Win32 functional verdict.
+  job. Final run `45907759163` passed all three startup probes, the corrected
+  Win32 build, ownership smoke, and the final workflow gate.
+- [x] Review the uploaded artifact and record run URL, markers, exits, hashes,
+  ownership assertions, and artifact identities in both reports and the
+  evidence index. Production Win32 ownership verdict: PASS.
 
 ## Current Architecture and Scope
 
