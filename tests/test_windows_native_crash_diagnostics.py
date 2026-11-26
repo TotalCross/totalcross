@@ -113,6 +113,7 @@ class WindowsNativeCrashDiagnosticsTest(unittest.TestCase):
         self.assertEqual(runner.count("'-y', $symbolPath"), 2)
         self.assertNotIn("srv*", runner)
         self.assertIn("ln tcvm!__entry_from_strcat_in_strcpy+0x1f", runner)
+        self.assertIn("ln tcvm!privateHeapSetJump+0x3c", runner)
         self.assertIn("procdumpCleanupStatus", runner)
 
 

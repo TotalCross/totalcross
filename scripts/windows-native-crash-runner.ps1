@@ -356,6 +356,9 @@ if ($debuggerPathAvailable -and $processStartObserved -and $null -ne $exitCode -
         $secondChanceCommands = '.lastevent; .exr -1; .ecxr; kv; .lines; ' +
             'ln tcvm!__entry_from_strcat_in_strcpy+0x1f; ' +
             'u tcvm!__entry_from_strcat_in_strcpy+0x1f L8; lmvm tcvm; ' +
+            'ln tcvm!privateHeapSetJump+0x3c; ' +
+            'ln tcvm!tczNewInstance+0x68; ln tcvm!tczFindName+0xa9; ' +
+            'ln tcvm!tczLoad+0x8b; ln tcvm!startVM+0x1af; ' +
             '.dump /ma ' + $liveDumpPath + '; !analyze -v; q'
         $debuggerCommands = 'sxd -c2 "' + $secondChanceCommands + '" av; g'
         $debuggerArguments = @('-logou', $liveDebuggerLog, '-y', $symbolPath,
@@ -465,7 +468,11 @@ if ($null -ne $dumpFile -and $debuggerPathAvailable) {
             '-i', "$workingDirectory;$env:SystemRoot\System32", '-z', $dumpFile.FullName,
             '-c', '.reload /f; !analyze -v; .exr -1; .ecxr; .lines; ' +
                 'ln tcvm!__entry_from_strcat_in_strcpy+0x1f; ' +
-                'u tcvm!__entry_from_strcat_in_strcpy+0x1f L8; kv; lmvm tcvm; q')
+                'u tcvm!__entry_from_strcat_in_strcpy+0x1f L8; ' +
+                'ln tcvm!privateHeapSetJump+0x3c; ' +
+                'ln tcvm!tczNewInstance+0x68; ln tcvm!tczFindName+0xa9; ' +
+                'ln tcvm!tczLoad+0x8b; ln tcvm!startVM+0x1af; ' +
+                'kv; lmvm tcvm; q')
         $debuggerInfo = New-CleanProcessStartInfo -FileName $DebuggerPath `
             -WorkingDirectory $out -Arguments $debuggerArgs -PathValue $cleanPath -UnicodeOutput
         $debugger = [System.Diagnostics.Process]::Start($debuggerInfo)

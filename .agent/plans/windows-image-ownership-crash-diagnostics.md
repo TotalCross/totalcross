@@ -77,6 +77,15 @@ Actions logs and downloaded artifacts are preserved under
   RVA 0xB93A52. The separate offline CDB pass still had the old relative PDB
   path and a bad remote symbol store, so the next slice fixes offline symbol
   setup and requests source-line/disassembly output from the local PDBs.
+- Run 45883413961 captured 55 MB dumps on the same hosted image version for
+  both revisions. The faulting instruction resolves to Microsoft CRT
+  `strcat.asm:180`, `mov qword ptr [rdx+rcx],rax`, at the same tcvm RVA
+  0xB93A52; its write target is invalid in both processes. The PDB stack again
+  runs through `privateHeapSetJump`, `tczNewInstance`, `tczFindName`, `tczLoad`,
+  and `startVM`. Offline CDB now loads the matching local PDBs and shows
+  registers/disassembly, but `!analyze` still emits a wrong OS-symbol bucket.
+  The current slice explicitly asks `ln` for the TotalCross caller and TCZ
+  frames to capture their source lines before classification and handoff.
 
 ## Current Architecture and Scope
 
@@ -169,6 +178,12 @@ deployment, execution, and debugging occur through GitHub Actions.
   SHA-256 hashes and matching PDB identities are in the evidence index. The
   offline pass's symbol path remains faulty and produced a misleading wrong
   OS-symbol bucket, so do not use that bucket for root-cause classification.
+- Run 45883413961 confirms the faulting instruction and write access for both
+  source revisions. CDB resolves the exception address to the same CRT source
+  line and TCVM-relative stack; register state shows the attempted write
+  target is invalid in both processes. The `!analyze` OS-symbol bucket remains
+  wrong, so classify from the exception record, direct instruction, matching
+  TotalCross PDBs, and identical baseline/fixed stack instead.
 
 ## Decision Log
 

@@ -20,21 +20,20 @@ SPDX-License-Identifier: LGPL-2.1-only
   branch and pinned by commit in the workflow.
 - Prior runs: 45853745093, 45856087270, 45857806319, 45858785421. Logs and all
   artifacts are under /Users/flsobral/.codex/windows-crash-diagnostics-prior-runs/.
-- Latest diagnostic run: 45881889694 on branch commit
-  d76135bd90b3e715be7d0a1c8e42e846575ecc3a. Exact builds/deploys passed and
-  both sequential probes used win22 image 20261123.376.1. Both exited
-  0xC0000005 before Java markers. Live CDB captured 57 MB dumps and loaded
-  matching private PDBs. Baseline and fixed faulted at tcvm RVA 0xB93A52 in
-  `__entry_from_strcat_in_strcpy`, on the same relative stack through
-  `privateHeapSetJump`, `tczNewInstance`, `tczFindName`, `tczLoad`, `startVM`,
-  and `executeProgram`. The offline analyzer still used the old relative PDB
-  path and misloaded remote OS symbols; artifacts and logs are under
-  /Users/flsobral/.codex/windows-crash-diagnostics-new-runs/45881889694/.
-- Current local slice makes the offline analyzer use the absolute local PDB
-  path, removes the invalid symbol-server store, and requests source-line and
-  disassembly output around the common fault. Next: validate, commit, and rerun
-  the diagnostic workflow. Progressive image work remains gated on both
-  minimal probes passing.
+- Latest diagnostic run: 45883413961 on branch commit
+  31d6c15032e56b1238616f03b2432fb1ce55a929. Both exact builds/deploys passed
+  on the same win22 image 20261116.370.1; both probes exited 0xC0000005 before
+  Java markers. CDB captured 55 MB dumps and resolved matching private PDBs.
+  Both revisions fault at tcvm RVA 0xB93A52 in CRT `strcat.asm:180`, instruction
+  `mov qword ptr [rdx+rcx],rax`, writing into an invalid 0x4f... address. The
+  identical stack goes through `privateHeapSetJump`, `tczNewInstance`,
+  `tczFindName`, `tczLoad`, and `startVM`. Offline symbols now load, but
+  `!analyze` still emits a wrong-OS-symbol bucket; artifacts and logs are under
+  /Users/flsobral/.codex/windows-crash-diagnostics-new-runs/45883413961/.
+- Current local slice asks CDB to map each relevant native stack frame to a
+  caller source line. Next: validate, commit, and rerun once to confirm the
+  `privateHeapSetJump` source line and compare the exact caller. Progressive
+  image work remains gated on both minimal probes passing.
 - Validation completed: downloaded full logs/artifacts for all four prior
   runs; the perf-lab instrumentation contract suite passes 14 tests. The first
   prior run failed during deploy; later runs lacked app markers, and the final
@@ -44,9 +43,10 @@ SPDX-License-Identifier: LGPL-2.1-only
   validation passed; both worktrees pass `git diff --check`. The approved
   depot-tools dependency fetch completed successfully;
   no tracked dependency files changed.
-- Deferred validation: Windows source-line and instruction analysis awaits a
-  workflow rerun with the offline PDB path fix. No Windows binary was built or
-  run locally.
+- Deferred validation: source mapping for the TotalCross caller awaits a
+  workflow rerun with explicit `ln` queries for the PDB-resolved stack frames.
+  The faulting CRT instruction and write access are confirmed. No Windows
+  binary was built or run locally.
 - Decisions: diagnostic-only source/workflow changes; the caller triggers on
   pushes to this dedicated branch and supports manual reruns. Use two calls to the
   canonical reusable build in one Actions run, with baseline/fixed artifact
