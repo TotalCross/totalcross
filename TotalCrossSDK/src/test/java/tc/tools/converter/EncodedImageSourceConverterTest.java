@@ -4,6 +4,7 @@
 
 package tc.tools.converter;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -41,6 +42,11 @@ class EncodedImageSourceConverterTest {
     assertTrue(hasNativeMethod(converted, "captureNative"));
     assertTrue(hasNativeMethod(converted, "captureNativePath"));
     assertTrue(hasNativeMethod(converted, "releaseNativeBag"));
+    TCMethod pathCapture = findMethod(converted, "captureNativePath");
+    assertNotNull(pathCapture, "captureNativePath method");
+    assertEquals("boolean", GlobalConstantPool.getType(pathCapture.cpReturn));
+    assertEquals(boolean.class, Class.forName("totalcross.ui.image.EncodedImageSource")
+        .getDeclaredMethod("captureNativePath", String.class).getReturnType());
   }
 
   @Test
@@ -60,5 +66,14 @@ class EncodedImageSourceConverterTest {
       }
     }
     return false;
+  }
+
+  private static TCMethod findMethod(TCClass converted, String name) {
+    for (TCMethod method : converted.methods) {
+      if (name.equals(GlobalConstantPool.getMethodFieldName(method.cpName))) {
+        return method;
+      }
+    }
+    return null;
   }
 }
