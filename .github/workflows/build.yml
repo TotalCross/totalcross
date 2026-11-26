@@ -1189,7 +1189,7 @@ jobs:
       uses: actions/checkout@v6
       with:
         repository: TotalCross/totalcross-performance-lab
-        ref: 3ff3fb0a8873d0edc16326cdbd41644c9412f78d
+        ref: bf4a820b505096a7ea42c5181fc558b2486342a2
         path: performance-lab
 
     - name: Setup JDK 17
@@ -1230,7 +1230,7 @@ jobs:
       env:
         TARGET: ${{ matrix.target }}
         PLATFORM_ARTIFACT: ${{ matrix.artifact }}
-        LAB_COMMIT: 3ff3fb0a8873d0edc16326cdbd41644c9412f78d
+        LAB_COMMIT: bf4a820b505096a7ea42c5181fc558b2486342a2
       run: |
         set -euo pipefail
         mkdir -p artifacts/sdk-extracted "image-ownership-results/${TARGET}"
