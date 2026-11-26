@@ -35,7 +35,9 @@ construction behavior.
   worktree at that exact commit. Initial contracts match the supplied snapshot.
 - [x] (2026-11-26) Added deterministic red reproducer tests and captured the
   baseline operation counts; commit them before production changes.
-- [ ] Implement detached-subtree ownership suspension and reconciliation.
+- [x] (2026-11-26) Implemented inherited suspension for explicitly removed
+  Container subtrees and verified removal, mutation, reattachment, reparenting,
+  popup visibility, and detached ScrollContainer construction.
 - [ ] Replace scans with indexed weak-identity ownership and aggregate pipeline
   transfers.
 - [ ] Add bounded incremental sweeping and the narrow repaint maintenance hook;
@@ -141,7 +143,9 @@ inspections grew from 249,500 at 500 pairs to 9,117,380 at 3,020 pairs;
 resolution/cache lookup scanned all 1,510 relationships twice. Removing a
 screen root retained its 1,510 descendant owners, and reconstructing the next
 screen raised the count to 3,020 without GC. See the evidence index for the
-exact run and log paths.
+exact run and log paths. The subtree lifecycle slice now releases descendant
+owners immediately and reconciles suspended mutations on reattachment; focused
+JavaSE lifecycle and cache-admission tests pass.
 
 ## Revision Note
 

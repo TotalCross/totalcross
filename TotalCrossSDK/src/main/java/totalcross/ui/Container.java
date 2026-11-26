@@ -30,6 +30,7 @@ import totalcross.util.Vector;
 public class Container extends Control {
   private static Control reparentingControl;
   private LayoutUnit layoutUnit = LayoutUnit.INHERIT;
+  private boolean persistentImageOwnershipSuspended;
   /** The children of the container. */
   protected Control children;
   /** The tail of the children list. */
@@ -438,10 +439,31 @@ public class Container extends Control {
     control.parent = this;
     control.onParentChanged(oldParent, this);
     numChildren++;
+    if (control.asContainer != null) {
+      control.asContainer.setPersistentImageOwnershipSuspended(persistentImageOwnershipSuspended);
+    }
   }
 
   static boolean isReparenting(Control control) {
     return reparentingControl == control;
+  }
+
+  boolean isPersistentImageOwnershipSuspended() {
+    return persistentImageOwnershipSuspended;
+  }
+
+  private void setPersistentImageOwnershipSuspended(boolean suspended) {
+    if (persistentImageOwnershipSuspended == suspended) {
+      return;
+    }
+    persistentImageOwnershipSuspended = suspended;
+    for (Control child = children; child != null; child = child.next) {
+      if (child.asContainer != null) {
+        child.asContainer.setPersistentImageOwnershipSuspended(suspended);
+      } else if (child instanceof ImageControl) {
+        ((ImageControl) child).syncPersistentImageOwnership();
+      }
+    }
   }
 
   /**
@@ -495,6 +517,9 @@ public class Container extends Control {
     Container oldParent = control.parent;
     control.parent = null;
     control.onParentChanged(oldParent, null);
+    if (control.asContainer != null && !isReparenting(control)) {
+      control.asContainer.setPersistentImageOwnershipSuspended(true);
+    }
     if (control.asContainer != null && !control.asContainer.ignoreOnRemove) {
       control.asContainer.onRemove(); // guich@402_5
     }

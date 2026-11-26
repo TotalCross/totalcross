@@ -6,24 +6,30 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Active state: persistent image ownership
 
-- Active milestone: commit baseline reproducer tests.
+- Active milestone: indexed weak-identity ownership registry.
 - Branch/worktree: `fix/image-persistent-ownership-scaling` at
   `/Users/flsobral/.codex/worktrees/fix-image-persistent-ownership-scaling`.
 - Base, initial HEAD, and merge-base:
   `6b915883dd202f6db891990f6c3af26fb645ecc7` (`origin/master`).
-- Last commit: base only; baseline red tests are ready to stage and commit.
+- Last commit: lifecycle commit pending; previous commit is `051e9d214`
+  `test(image): reproduce persistent ownership scaling leaks`.
 - Active paths: `TotalCrossSDK/src/main/java/totalcross/ui/image/`,
   `TotalCrossSDK/src/main/java/totalcross/ui/{Container,ScrollContainer,ImageControl,Window}.java`,
   focused tests in `TotalCrossSDK/src/test/java/`, and the ExecPlan records.
-- Next action: run focused copyright validation, inspect the scoped diff, stage
-  only the reproducer, counters, plan, state, and evidence, check the staged
-  diff and commit message, then create the baseline test commit.
+- Next action: implement owner/image identity-hash indexes with weak referents,
+  per-image aggregate counts, constant-time indexed unlink, and bulk pipeline
+  count transfer; retain test hooks for collisions, lifetime, and counts.
 - Focused validation completed: baseline command
   `./gradlew-agent test --tests totalcross.ui.image.ImagePersistentOwnershipScalingTest`
   compiled and ran all three tests; all failed as intended with deterministic
   counts recorded in `.agent/evidence/image-persistent-ownership.jsonl`.
+  Commit message and changed-file copyright validators passed before and after
+  commit; `git diff --cached --check` passed.
 - Deferred: production implementation checks pending; nonlocal CI tests require
   a remote runner and cannot be triggered without publication.
+- Lifecycle validation passed with 10 JavaSE tests: all 6
+  `ImagePersistentRasterAdmissionTest` tests and 4 selected lifecycle regressions
+  passed. The detailed run is recorded in the evidence index.
 - Active decisions: retain detached-construction ownership; explicit subtree
   suspension is separate from ancestor/window presence; no Image layout or
   `ImageDrawingFeatureBridge` public surface changes.
