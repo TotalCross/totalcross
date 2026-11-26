@@ -315,6 +315,115 @@ if ($null -ne $procdump -and $procdumpMode -eq 'monitor-fallback') {
     }
 }
 
+$debuggerPathAvailable = -not [string]::IsNullOrWhiteSpace($DebuggerPath) -and
+    (Test-Path -LiteralPath $DebuggerPath)
+$liveDebuggerStatus = 'not-run'
+$liveDebuggerProcessId = $null
+$liveDebuggerExitCode = $null
+$liveDebuggerTargetProcessId = $null
+$liveDebuggerTargetObserved = $false
+$liveDebuggerTimedOut = $false
+$liveDebuggerLog = Join-Path $out 'cdb-live-analysis.log'
+$liveDebuggerStdoutLog = Join-Path $out 'cdb-live-stdout.log'
+$liveDebuggerStderrLog = Join-Path $out 'cdb-live-stderr.log'
+$preexistingDump = Get-ChildItem -LiteralPath $dumpDirectory -Filter '*.dmp' -File `
+    -ErrorAction SilentlyContinue | Select-Object -First 1
+if ($debuggerPathAvailable -and $processStartObserved -and $null -ne $exitCode -and
+    $exitCode -ne 0 -and -not $timedOut -and $null -eq $preexistingDump) {
+    try {
+        $liveWorkDirectory = Join-Path $env:RUNNER_TEMP (
+            'windows-crash-live-cdb-' + [Guid]::NewGuid().ToString('N'))
+        New-Item -ItemType Directory -Force -Path $liveWorkDirectory | Out-Null
+        Get-ChildItem -LiteralPath $workingDirectory -Force |
+            Copy-Item -Destination $liveWorkDirectory -Recurse -Force
+        Get-ChildItem -LiteralPath $liveWorkDirectory -Filter 'tcdiag-*' -File -Recurse |
+            Remove-Item -Force -ErrorAction SilentlyContinue
+        $liveExecutable = Join-Path $liveWorkDirectory ([IO.Path]::GetFileName($exe))
+        if (-not (Test-Path -LiteralPath $liveExecutable)) {
+            throw 'Copied runtime does not contain the diagnostic executable.'
+        }
+        $liveExecutableSha256 = (Get-FileHash -LiteralPath $liveExecutable `
+            -Algorithm SHA256).Hash.ToLowerInvariant()
+        $sourceExecutableSha256 = (Get-FileHash -LiteralPath $exe `
+            -Algorithm SHA256).Hash.ToLowerInvariant()
+        if ($liveExecutableSha256 -ne $sourceExecutableSha256) {
+            throw 'Copied diagnostic executable does not match the original probe.'
+        }
+
+        $symbolCache = Join-Path $env:RUNNER_TEMP 'cdb-symbol-cache'
+        New-Item -ItemType Directory -Force -Path $symbolCache | Out-Null
+        $symbolPath = "$PdbDirectory;srv*$symbolCache*https://msdl.microsoft.com/download/symbols"
+        $liveDumpPath = Join-Path $dumpDirectory 'live-cdb.dmp'
+        $secondChanceCommands = '.lastevent; .ecxr; kv; lm; .dump /ma ' +
+            $liveDumpPath + '; !analyze -v; q'
+        $debuggerCommands = 'sxd -c2 "' + $secondChanceCommands + '" av; g'
+        $debuggerArguments = @('-logou', $liveDebuggerLog, '-y', $symbolPath,
+            '-i', "$liveWorkDirectory;$workingDirectory;$env:SystemRoot\System32",
+            '-o', '-G', '-c', $debuggerCommands, $liveExecutable)
+        $liveCleanPath = @($liveWorkDirectory, "$env:SystemRoot\System32", $env:SystemRoot,
+            "$env:SystemRoot\System32\Wbem") -join ';'
+        $debuggerInfo = New-CleanProcessStartInfo -FileName $DebuggerPath `
+            -WorkingDirectory $liveWorkDirectory -Arguments $debuggerArguments `
+            -PathValue $liveCleanPath -UnicodeOutput
+        $liveDebugger = [System.Diagnostics.Process]::Start($debuggerInfo)
+        $liveDebuggerProcessId = $liveDebugger.Id
+        $liveDebuggerStdoutTask = $liveDebugger.StandardOutput.ReadToEndAsync()
+        $liveDebuggerStderrTask = $liveDebugger.StandardError.ReadToEndAsync()
+        $liveDebuggerStatus = 'running'
+        $debuggerDeadline = [DateTime]::UtcNow.AddSeconds(180)
+        while (-not $liveDebugger.HasExited -and [DateTime]::UtcNow -lt $debuggerDeadline) {
+            try {
+                $targetProcesses = @(Get-CimInstance Win32_Process -Filter (
+                    "Name='" + [IO.Path]::GetFileName($liveExecutable) + "'") `
+                    -ErrorAction SilentlyContinue)
+                foreach ($target in $targetProcesses) {
+                    if ($target.ExecutablePath -ieq $liveExecutable) {
+                        $liveDebuggerTargetProcessId = [int]$target.ProcessId
+                        $liveDebuggerTargetObserved = $true
+                        break
+                    }
+                }
+            } catch { }
+            Start-Sleep -Milliseconds 20
+        }
+        if (-not $liveDebugger.HasExited) {
+            $liveDebuggerTimedOut = $true
+            $liveDebugger.Kill($true)
+            [void]$liveDebugger.WaitForExit(10000)
+            $liveDebuggerStatus = 'timed-out'
+        } else {
+            $liveDebuggerExitCode = $liveDebugger.ExitCode
+            $liveDebuggerStatus = 'completed'
+        }
+        $liveDebuggerStdoutTask.GetAwaiter().GetResult() |
+            Set-Content -LiteralPath $liveDebuggerStdoutLog -Encoding utf8NoBOM
+        $liveDebuggerError = $liveDebuggerStderrTask.GetAwaiter().GetResult()
+        $liveDebuggerError | Add-Content -LiteralPath $liveDebuggerStderrLog `
+            -Encoding utf8NoBOM
+        if (-not $liveDebuggerTargetObserved -and (Test-Path -LiteralPath $liveDebuggerLog)) {
+            $liveDebuggerTargetObserved = [IO.File]::ReadAllText($liveDebuggerLog) `
+                -match [regex]::Escape($liveExecutable)
+        }
+        if ($liveDebuggerStatus -eq 'completed') {
+            $liveDebuggerStatus = if (Test-Path -LiteralPath $liveDumpPath) {
+                'dump-captured'
+            } else {
+                'completed-no-dump'
+            }
+        }
+    } catch {
+        "CDB live capture failed: $($_.Exception.Message)" |
+            Set-Content -LiteralPath $liveDebuggerStderrLog -Encoding utf8NoBOM
+        if ($null -ne $liveDebugger -and -not $liveDebugger.HasExited) {
+            $liveDebugger.Kill($true)
+            [void]$liveDebugger.WaitForExit(10000)
+        }
+        if ($liveDebuggerStatus -in @('not-run', 'running')) {
+            $liveDebuggerStatus = 'failed'
+        }
+    }
+}
+
 $stdout | Set-Content -LiteralPath (Join-Path $out 'runtime-stdout.log') -Encoding utf8NoBOM
 $stderr | Set-Content -LiteralPath (Join-Path $out 'runtime-stderr.log') -Encoding utf8NoBOM
 ConvertTo-Json -InputObject @($moduleMap.Values | Sort-Object name) -Depth 6 |
@@ -345,18 +454,16 @@ try {
 } catch { }
 Write-JsonFile (Join-Path $out 'application-events.json') $eventRecords
 
-$debuggerStatus = 'unavailable'
+$debuggerStatus = $liveDebuggerStatus
 $debuggerLog = Join-Path $out 'cdb-analysis.log'
 $dumpFile = Get-ChildItem -LiteralPath $dumpDirectory -Filter '*.dmp' -File `
     -ErrorAction SilentlyContinue | Select-Object -First 1
-$debuggerPathAvailable = -not [string]::IsNullOrWhiteSpace($DebuggerPath) -and
-    (Test-Path -LiteralPath $DebuggerPath)
 if ($null -ne $dumpFile -and $debuggerPathAvailable) {
     try {
         $symbolCache = Join-Path $env:RUNNER_TEMP 'cdb-symbol-cache'
         New-Item -ItemType Directory -Force -Path $symbolCache | Out-Null
         $symbolPath = "$PdbDirectory;srv*$symbolCache*https://msdl.microsoft.com/download/symbols"
-        $debuggerArgs = @('-logo', $debuggerLog, '-y', $symbolPath,
+        $debuggerArgs = @('-logou', $debuggerLog, '-y', $symbolPath,
             '-i', "$workingDirectory;$env:SystemRoot\System32", '-z', $dumpFile.FullName,
             '-c', '.reload /f; !analyze -v; .ecxr; kv; lm; q')
         $debuggerInfo = New-CleanProcessStartInfo -FileName $DebuggerPath `
@@ -410,7 +517,23 @@ $runtime = [ordered]@{
     applicationEventsLog = 'application-events.json'
     debuggerStatus = $debuggerStatus
     debuggerPath = if ($debuggerPathAvailable) { $DebuggerPath } else { $null }
-    debuggerLog = if (Test-Path -LiteralPath $debuggerLog) { 'cdb-analysis.log' } else { $null }
+    debuggerLog = if (Test-Path -LiteralPath $debuggerLog) { 'cdb-analysis.log' } `
+        elseif (Test-Path -LiteralPath $liveDebuggerLog) { 'cdb-live-analysis.log' } else { $null }
+    liveDebugger = [ordered]@{
+        status = $liveDebuggerStatus
+        processId = $liveDebuggerProcessId
+        exitCode = $liveDebuggerExitCode
+        targetProcessId = $liveDebuggerTargetProcessId
+        targetProcessObserved = $liveDebuggerTargetObserved
+        timedOut = $liveDebuggerTimedOut
+        log = if (Test-Path -LiteralPath $liveDebuggerLog) { 'cdb-live-analysis.log' } else { $null }
+        stdoutLog = if (Test-Path -LiteralPath $liveDebuggerStdoutLog) { 'cdb-live-stdout.log' } else { $null }
+        stderrLog = if (Test-Path -LiteralPath $liveDebuggerStderrLog) { 'cdb-live-stderr.log' } else { $null }
+        dumpFile = if (Test-Path -LiteralPath (Join-Path $dumpDirectory 'live-cdb.dmp')) {
+            'dumps/live-cdb.dmp'
+        } else { $null }
+        executableSha256 = if ($liveExecutableSha256) { $liveExecutableSha256 } else { $null }
+    }
 }
 Write-JsonFile (Join-Path $out 'runtime.json') $runtime
 Remove-Item -LiteralPath $werKey -Recurse -Force -ErrorAction SilentlyContinue

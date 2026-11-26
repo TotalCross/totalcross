@@ -55,6 +55,13 @@ Actions logs and downloaded artifacts are preserved under
   monitor captured no dump, and the artifacts had no matching Launcher/tcvm
   PDBs. The current slice adds AeDebug postmortem capture, CDB installation and
   analysis, Release linker symbols, and matching-PDB selection.
+- The next isolated run, 45876788788, also built/deployed both exact revisions
+  and both exited 0xC0000005 before Java markers, now with tcvm.dll visible in
+  the module snapshots. ProcDump successfully registered and restored AeDebug;
+  CDB was already installed, and both matching PDBs were retained, but no dump
+  or Windows Error Event appeared. Baseline and fixed used different hosted
+  image versions, so their runner environments were not identical. Add a CDB
+  live-debug rerun to capture the second-chance exception and stack.
 
 ## Current Architecture and Scope
 
@@ -64,8 +71,8 @@ diagnostic caller invokes that reusable workflow twice with the exact baseline
 and fixed source SHAs. An opt-in artifact suffix keeps source, prepared
 dependencies, native bridges, SDK archives, and Windows runtime artifacts
 separate within one Actions run. The standard smoke job is suppressed for
-these calls; the caller runs a minimal probe matrix and gates the progressive
-image fixture on both minimal probes passing.
+these calls; the caller runs baseline and fixed minimal probes sequentially in
+one Windows job and gates the progressive image fixture on both passing.
 The artifact-suffix input and diagnostic PDB preservation are branch-scoped
 capabilities. Remove them when retiring this workflow unless maintainers adopt
 multi-revision diagnostic builds as a supported canonical workflow use case.
@@ -144,10 +151,15 @@ deployment, execution, and debugging occur through GitHub Actions.
 - Keep the integration fixture commit pinned. Never infer regression from
   temporal correlation; require the baseline run, fixed run, and crash
   location/stage evidence.
+- Run baseline and fixed minimal probes sequentially in one Actions job; the
+  previous matrix received different hosted Windows image versions within one
+  run, which weakened the environment comparison.
 - Prefer ProcDump postmortem dumps for pre-TCVM failures; install CDB from the
   Windows SDK when it is absent and analyze with local matching PDBs plus the
   Microsoft symbol server. WER LocalDumps and the module/Event Log reports
-  remain fallback evidence.
+  remain fallback evidence. When ProcDump/WER produce no dump, rerun the
+  failed minimal probe under CDB in a copied runtime directory and request a
+  dump on second-chance access violation.
 - Preserve crash dumps only as short-retention CI artifacts and record hashes;
   do not commit binaries, dumps, SDK packages, or raw logs.
 
@@ -180,6 +192,11 @@ is exclusively via Actions; no local Windows cross-compilation or execution.
 - Can ProcDump register as the AeDebug postmortem handler, and can the Windows
   SDK install CDB silently on the hosted runner? If not, report the exact
   limitation and preserve WER/Event Log evidence as the fallback.
+- Can the CDB live rerun capture an exception stack/dump when ProcDump's
+  postmortem handler produces no dump? The next run will test this directly.
+- The hosted baseline/fixed runner image versions differed in run 45876788788;
+  the next workflow iteration now runs both minimal probes in one job to
+  guarantee a shared Windows image and desktop session.
 - Baseline ownership behavior is known incorrect; the full fixture may stop on
   an early assertion. Adapt only diagnostic fixture checks so it can report
   reached stages without suppressing fixed-revision assertions.

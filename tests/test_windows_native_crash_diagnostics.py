@@ -102,6 +102,14 @@ class WindowsNativeCrashDiagnosticsTest(unittest.TestCase):
         for forbidden in ("ImageControl", "ImagePipeline", "new Image(", "ImageDrawingBridge"):
             self.assertNotIn(forbidden, source)
 
+    def test_runner_captures_second_chance_access_violations_with_cdb(self):
+        runner = (SCRIPT.parents[1] / "scripts/windows-native-crash-runner.ps1").read_text(
+            encoding="utf-8")
+        self.assertIn("sxd -c2", runner)
+        self.assertIn(".dump /ma ", runner)
+        self.assertIn("live-cdb.dmp", runner)
+        self.assertIn("procdumpCleanupStatus", runner)
+
 
 if __name__ == "__main__":
     unittest.main()

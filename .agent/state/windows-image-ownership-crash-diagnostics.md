@@ -12,7 +12,7 @@ SPDX-License-Identifier: LGPL-2.1-only
   /Users/flsobral/.codex/worktrees/image-ownership-windows-crash-diagnostics.
 - Base: f417e2513ffdf024d83885498cc68e9ed9fb60d5, the existing dedicated
   Windows validation branch. Current remote diagnostic branch head before
-  this checkpoint: e2fb0f1375364e56015e1ed50bc41f2ec104208c.
+  this checkpoint: 04041664bc798bcca51cc89c78f8972906f9ff38.
 - Exact source revisions: baseline 6b915883dd202f6db891990f6c3af26fb645ecc7;
   fixed 94af2b8b653cad509994b5ccf3dbb60ac28ef920.
 - Instrumented fixture: TotalCross/totalcross-performance-lab commit
@@ -20,23 +20,28 @@ SPDX-License-Identifier: LGPL-2.1-only
   branch and pinned by commit in the workflow.
 - Prior runs: 45853745093, 45856087270, 45857806319, 45858785421. Logs and all
   artifacts are under /Users/flsobral/.codex/windows-crash-diagnostics-prior-runs/.
-- Latest diagnostic run: 45871774434. Both exact source builds and deploys
-  passed; both minimal probes exited 0xC0000005 before app markers. Their
-  module snapshots do not contain tcvm.dll. The runner had WinSta0\Default,
-  an interactive session, Explorer/DWM, and a 1024x768 Hyper-V display. The
-  ProcDump wait monitor missed both short-lived processes; no dump or matching
-  Launcher/tcvm PDB was retained. Full artifacts are under
-  /Users/flsobral/.codex/windows-crash-diagnostics-new-runs/45871774434/.
-- Next action: finish focused checks, commit/push the revised diagnostic
-  workflow and capture tools, then inspect the next Actions dump and CDB stack.
+- Latest diagnostic run: 45876788788. Both exact source builds/deploys passed;
+  both probes exited 0xC0000005 with no Java markers. This time tcvm.dll was
+  loaded; measured process durations were 130 ms baseline and 241 ms fixed.
+  ProcDump registered and unregistered AeDebug successfully, CDB was present,
+  and matching Launcher/tcvm PDBs were retained, but no dump was produced.
+  Baseline and fixed received different hosted image versions (20261123.376.1
+  and 20261116.370.1), so the runner environment was not identical. Artifacts
+  and logs are under /Users/flsobral/.codex/windows-crash-diagnostics-new-runs/45876788788/.
+- Current local slice adds a second, isolated CDB launch after a failed direct
+  probe, with a copied runtime directory, second-chance AV commands, and a full
+  dump attempt. The minimal workflow now runs baseline and fixed sequentially
+  on one Windows host because the previous matrix received different hosted
+  image versions. Next: validate and push these updates, then inspect the next
+  run's CDB stack/dump.
 - Validation completed: downloaded full logs/artifacts for all four prior
   runs; the perf-lab instrumentation contract suite passes 14 tests. The first
   prior run failed during deploy; later runs lacked app markers, and the final
   process exit was 0xC0000005.
-- Focused validation now passes seven diagnostic Python tests and 14 fixture
+- Focused validation passed eight diagnostic Python tests and 14 fixture
   contract tests. Ruby parsed both workflow YAML files; focused copyright
-  validation passed six applicable files; both worktrees pass `git diff --check`.
-  The approved depot-tools dependency fetch completed successfully;
+  validation passed; both worktrees pass `git diff --check`. The approved
+  depot-tools dependency fetch completed successfully;
   no tracked dependency files changed.
 - Deferred validation: Windows execution/debugging awaits the diagnostic
   workflow. No Windows binary was built or run locally.
