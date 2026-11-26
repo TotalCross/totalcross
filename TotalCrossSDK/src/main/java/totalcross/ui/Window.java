@@ -32,6 +32,7 @@ import totalcross.ui.gfx.Coord;
 import totalcross.ui.gfx.Graphics;
 import totalcross.ui.gfx.Rect;
 import totalcross.ui.image.ImageException;
+import totalcross.ui.image.ImageOwnershipMaintenanceBridge;
 import totalcross.ui.media.Sound;
 import totalcross.unit.UIRobot;
 import totalcross.util.ElementNotFoundException;
@@ -117,6 +118,7 @@ public class Window extends Container {
   /** True if some area of any window is invalidated */
   public static boolean needsPaint;
   private static boolean repaintActiveWindowsRunning;
+  private static int imageOwnershipMaintenanceRepaintCountdown = 64;
   private static Rect rasterReusePaintClip;
   private static boolean rasterReusePaintFailed;
   private static boolean activeRepaintFailed;
@@ -1793,6 +1795,10 @@ public class Window extends Container {
     }
     repaintActiveWindowsRunning = true;
     try {
+      if (!wasRepainting && --imageOwnershipMaintenanceRepaintCountdown == 0) {
+        imageOwnershipMaintenanceRepaintCountdown = 64;
+        ImageOwnershipMaintenanceBridge.maintainPersistentImageOwnership();
+      }
       int i, j, n;
       boolean eas = enableUpdateScreen;
       enableUpdateScreen = false;

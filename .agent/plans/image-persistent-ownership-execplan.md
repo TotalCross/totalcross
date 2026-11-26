@@ -41,20 +41,23 @@ construction behavior.
 - [x] (2026-11-26) Replaced owner scans with two weak identity-hash indexes,
   image-group counts, bounded relation unlinking, and aggregate pipeline
   transfers; focused operation, collision, reclamation, and API checks pass.
-- [ ] Add bounded incremental sweeping and the narrow repaint maintenance hook;
-  measure it and remove only that hook if overhead is material.
+- [x] (2026-11-26) Removed draw-path maintenance; added bounded mutation and
+  outermost repaint sweeping, artifact exclusion, and a 200-sample comparison.
+  The measured paired median overhead was negligible against the observed
+  variation, so the repaint hook remains.
 - [ ] Run allowed JavaSE/JUnit and macOS arm64 checks, prepare nonlocal CI smoke
   coverage, reconcile all requirements, and write the handoff report.
 
 ## Current Architecture and Scope
 
-`ImageDrawingBridge` stores weak owner/image/pipeline references in one
-`ArrayList`; retain, release, count, pipeline update, and cleanup scan it.
-`Image.cachedFinalRasterForDrawing` and `resolveForDrawing` trigger full cleanup.
-`ImageControl` currently equates a non-null direct parent with ownership, while
-`Container.remove` only changes the directly removed child's parent. Pipelines
-count individual persistent owner/image pairs. The public static surface of
-`ImageDrawingFeatureBridge` is fixed by `ArtifactBoundariesTest`.
+`ImageDrawingBridge` delegates ownership to weak identity-hash indexes, with
+per-image relation groups and a bounded sweep cursor. Retain, release, and
+pipeline transfer inspect hash-collision chains and perform at most 32 stale
+relation checks per mutation. Image resolution and draw-cache lookup do not
+maintain the registry. `Container` propagates explicit subtree suspension to
+descendants; `ImageControl` retains ownership while constructed detached and
+releases it when an attached subtree is suspended. The public static surface of
+`ImageDrawingFeatureBridge` remains fixed by `ArtifactBoundariesTest`.
 
 Keep changes in the SDK UI/image lifecycle and its focused tests. Do not add
 fields to `Image`, modify native-sensitive layout, alter public methods on
@@ -77,10 +80,10 @@ fields to `Image`, modify native-sensitive layout, alter public methods on
    weak pipeline association. Transfer aggregate counts in `Image.setPipeline`
    through checked bulk pipeline methods. Verify deployed API availability.
 4. **Bounded maintenance.** Remove cleanup from image draw/resolve methods. Add a
-   resumable maximum-32-relation sweep, mutation-driven maintenance, a
-   no-allocation outermost repaint hook every 64 entries, and a package-private
-   deterministic sweep hook. Keep the repaint hook only if the specified
-   60-sample comparison shows no material frame-pacing cost.
+  resumable maximum-32-relation sweep, mutation-driven maintenance, a
+  no-allocation outermost repaint hook every 64 entries, and a package-private
+  deterministic sweep hook. Keep the repaint hook only if the specified
+  comparison shows no material frame-pacing cost.
 5. **Acceptance and handoff.** Expand focused tests for ownership semantics,
    collisions, weak reclamation, pipeline transitions, cache and pixel behavior,
    and public artifact boundaries. Run the permitted JavaSE/JUnit checks and
@@ -113,8 +116,9 @@ Use the smallest JavaSE/JUnit slice during development, with deterministic
 operation counters instead of timing thresholds. At the milestone gate, run the
 specified focused UI/image and artifact-boundary tests, deployed Java API
 validation, focused header validation, `git diff --check`, and the required
-60-sample repaint comparison (200 only if variance warrants it). A native smoke
-is optional and must follow `.agent/guides/macos-native-runtime-validation.md`.
+repaint comparison. The comparison used 200 samples per configuration because
+the paired timing spread exceeded the observed median delta. A native smoke is
+optional and must follow `.agent/guides/macos-native-runtime-validation.md`.
 Android, Windows, Linux, iOS, and other nonlocal targets are CI-only and remain
 pending without a published trigger.
 
@@ -145,10 +149,13 @@ resolution/cache lookup scanned all 1,510 relationships twice. Removing a
 screen root retained its 1,510 descendant owners, and reconstructing the next
 screen raised the count to 3,020 without GC. See the evidence index for the
 exact run and log paths. The subtree lifecycle slice now releases descendant
-owners immediately and reconciles suspended mutations on reattachment; focused
-JavaSE lifecycle and cache-admission tests pass. The indexed registry passes
-collision, arbitrary-slot, weak-reclamation, pipeline-transfer, and near-linear
-registration checks; draw-path maintenance removal remains active work.
+owners immediately and reconciles suspended mutations on reattachment. The
+indexed registry passes collision, arbitrary-slot, weak-reclamation,
+pipeline-transfer, and near-linear registration checks. Resolution and drawing
+no longer trigger global cleanup; bounded maintenance is exercised on mutation
+and on the measured repaint cadence. Focused JavaSE tests and artifact-content
+validation pass. Android, Windows, and Linux functional smokes remain pending
+until a publication trigger is available.
 
 ## Revision Note
 
