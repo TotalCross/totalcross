@@ -501,9 +501,9 @@ references.
    the repository root; its canonical working directory is `scripts/`. The
    deployed comparison and conditional standalone probe were skipped.
 2. Commit `903996257` fixes the script working directory and was pushed, but
-   has not been run. Do not rerun CI in the current timebox because the
-   one-run allowance is consumed. Preserve the failure as infrastructure
-   evidence; no Linux PNG conclusion was reached.
+   has not been run. The one-run allowance is consumed. Preserve the failure as
+   infrastructure evidence; no Linux PNG conclusion was reached. Any next CI
+   execution requires a new bounded Linux-only investigation.
 3. The user confirmed no KVM runner is available. Do not retry Android API 35,
    use TCG/software emulation, or dispatch another workflow in this timebox.
    Windows and Android same-commit CI acceptance remain incomplete; iOS stays
@@ -514,3 +514,32 @@ A first Gradle attempt failed at task configuration because the resource
 provider was used incorrectly; after correction, `jarLinuxPngDecodeComparison`
 passed and the JAR contains the app and both fixtures. Run `45720318038` was the
 only dispatch and failed before decode; no Linux result is claimed.
+
+## Linux baseline artifact-only follow-up (2026-11-26)
+
+This read-only follow-up does not change the runtime classification. The
+historical master run `45137788982` built the exact base, but its Linux
+packaged-ZIP job only ran `tc.Deploy HelloWorld.class` and checked generated
+files; it did not launch the VM or exercise PNG decoding. It predates the
+startup fix, so it is not baseline functional evidence. The sole comparison
+run, `45720318038`, passed the feature SDK/VM builds and pinned dependency
+checks, then failed before baseline SDK construction because the packaging
+script ran from the wrong working directory. `903996257` corrects that path,
+but has not been verified in CI.
+
+The available master and feature CMake caches match on Release mode, C/C++
+flags, Skia/SDL, and static PNG/ZLIB paths; both VMs are ELF64 x86-64. The
+`PngLoader.c` function instruction streams match after normalizing immediate
+operands. Residual differences align with source-line shifts in heap-error
+reporting. The feature artifact did not enable `TC_IMAGE_PNG_DIAGNOSTIC`; its
+other source change only adds braces around the existing read loop. These
+observations support static equivalence, not runtime equivalence. The same
+custom allocator cast and no-op `userfree` exist in both revisions, without
+proof of an allocator mismatch or pointer truncation.
+
+The Linux `sizeof` probe and conditional standalone decoder did not run, and
+the deployed PNG/JPEG comparison produced no result. Classification remains
+**inconclusive**. Exact provenance, hashes, dependency versions, symbol
+providers, and commands are recorded in the append-only JSONL evidence. Any
+further Linux execution requires a new bounded investigation; run the corrected
+baseline packaging step before spending another workflow run.

@@ -31,6 +31,11 @@ SPDX-License-Identifier: LGPL-2.1-only
   resume to one Linux x64 GitHub Actions run comparing master `61034a7562e7`
   plus only the `153f9fae5` startup fix against the feature revision. Do not
   run other platform tests or enable `TC_IMAGE_PNG_DIAGNOSTIC`.
+- Artifact-only documentation follow-up began at **2026-11-26 00:32:25 UTC**.
+  It reviewed already-downloaded Linux artifacts and closed the evidence gap
+  from the failed comparison run. No build, test, or workflow was started; the
+  one-run limit remains consumed and the runtime classification stays
+  inconclusive.
 
 ## Resume progress (2026-11-25)
 
@@ -368,10 +373,16 @@ the handoff, and the latest JSONL entry before continuing.
 The absolute-path harness issue is fixed and locally passes on the existing
 API 34 ARM64 AVD. The one Linux x64 run `45720318038` is finished but failed
 before baseline SDK construction because `package-sdk.sh` ran from the wrong
-working directory. Commit `903996257` corrects that path. Do not rerun CI in
-this timebox: the one-run allowance is consumed. There is no Linux PNG result
-or decoder conclusion, so acceptance remains incomplete. API 35 CI also stays
-excluded because the user confirmed no KVM runner is available.
+working directory. Commit `903996257` corrects that path but has not been
+runtime-verified. The read-only artifact review found matching Linux x64 CMake
+configurations and static dependency paths; `PngLoader.c` instruction streams
+match after normalizing immediate operands. The historical master workflow did
+not run the deployed PNG smoke. No baseline decode, Linux ABI `sizeof` results,
+or standalone decoder result exists. Root cause remains inconclusive. Detailed
+artifact identities and hashes are in the JSONL evidence and handoff. The
+one-run allowance is consumed; any further Linux execution requires a new
+bounded investigation. API 35 CI also stays excluded because the user confirmed
+no KVM runner is available.
 
 ## Preservation boundary
 

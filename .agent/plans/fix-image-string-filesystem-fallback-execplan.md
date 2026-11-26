@@ -146,11 +146,23 @@ unreadable must fail without trying a same-name filesystem file.
   working directory; feature SDK/VM builds passed and comparison was skipped.
   Commit `903996257` corrects the path but is not runtime-verified. The one-run
   allowance is consumed, so diagnosis and acceptance remain open.
-- [ ] Acceptance remains open: no baseline-versus-feature PNG/JPEG result was
-  produced by `45720318038`. Do not claim a decoder root cause or dispatch
-  another run within this timebox. Windows has not run on the current
-  diagnostic commit. Android API 35 CI is unavailable because the user
-  confirmed no KVM runner exists; do not use software emulation.
+- [x] (2026-11-26) Review the available historical master and failed feature
+  artifacts without starting another workflow. Historical master run
+  `45137788982` built the exact base, but its Linux packaged-ZIP check only
+  deployed `HelloWorld.class`; it did not launch the VM or test PNG decoding.
+  Static CMake and `PngLoader` comparisons support equivalent decoder code,
+  but do not establish runtime behavior. The failed run never produced Linux
+  ABI `sizeof` results, deployed PNG/JPEG results, or a standalone decoder
+  result. Detailed artifact identities and hashes are in the evidence index;
+  the run outcome and remaining limits are in the handoff. Root cause remains
+  inconclusive.
+- [ ] Acceptance remains open: run `45720318038` produced no baseline-versus-
+  feature PNG/JPEG result. `903996257` fixes its packaging working directory
+  but is not CI-verified. The one-run limit is consumed; another Linux run
+  requires a new bounded investigation. Do not infer a pass from static
+  artifacts. Windows has not run on the current diagnostic commit. Android
+  API 35 CI is unavailable because the user confirmed no KVM runner exists;
+  do not use software emulation.
 
 The earlier Android absolute-path log reached `filesystem-start=png` but had no
 successful write/read/path phase before the false result; the following
