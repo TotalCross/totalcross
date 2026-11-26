@@ -11,8 +11,7 @@ SPDX-License-Identifier: LGPL-2.1-only
   `/Users/flsobral/.codex/worktrees/fix-image-persistent-ownership-scaling`.
 - Base, initial HEAD, and merge-base:
   `6b915883dd202f6db891990f6c3af26fb645ecc7` (`origin/master`).
-- Last commit: lifecycle commit pending; previous commit is `051e9d214`
-  `test(image): reproduce persistent ownership scaling leaks`.
+- Last commit: `4cbd85fb6` `fix(image): suspend owners in detached subtrees`.
 - Active paths: `TotalCrossSDK/src/main/java/totalcross/ui/image/`,
   `TotalCrossSDK/src/main/java/totalcross/ui/{Container,ScrollContainer,ImageControl,Window}.java`,
   focused tests in `TotalCrossSDK/src/test/java/`, and the ExecPlan records.
@@ -30,6 +29,7 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Lifecycle validation passed with 10 JavaSE tests: all 6
   `ImagePersistentRasterAdmissionTest` tests and 4 selected lifecycle regressions
   passed. The detailed run is recorded in the evidence index.
+- Lifecycle commit message and copyright validators passed after commit.
 - Active decisions: retain detached-construction ownership; explicit subtree
   suspension is separate from ancestor/window presence; no Image layout or
   `ImageDrawingFeatureBridge` public surface changes.

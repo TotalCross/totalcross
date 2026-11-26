@@ -6,11 +6,15 @@ package totalcross.ui.image;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,6 +47,8 @@ class ImagePersistentOwnershipScalingTest {
     long at500 = registrationInspections(500);
     long at1510 = registrationInspections(1510);
     long at3020 = registrationInspections(3020);
+    System.out.println("registryRegistrationInspections: 500=" + at500 + ", 1510=" + at1510 + ", 3020="
+        + at3020);
 
     assertAll(
         () -> assertTrue(at500 <= 40L * 500,
@@ -116,6 +122,7 @@ class ImagePersistentOwnershipScalingTest {
     existing.setBackground(changed);
     nested.add(existing);
     screen.add(nested);
+    ImagePipeline scaledPipeline;
     mainWindow.add(screen);
     try {
       assertEquals(1, originalPipeline.persistentDrawingOwnerCountForSmoke());
@@ -127,17 +134,26 @@ class ImagePersistentOwnershipScalingTest {
 
       existing.setImage(changed);
       existing.setBackground(background);
+      existing.setRect(0, 0, 4, 4);
+      existing.scaleToFit = true;
+      existing.strechImage = true;
+      existing.setImage(changed);
+      Image scaled = existing.getImage();
+      scaledPipeline = scaled.pipelineForSmoke();
+      assertNotSame(changed, scaled);
       ImageControl addedWhileSuspended = new ImageControl(original);
       addedWhileSuspended.setBackground(background);
       nested.add(addedWhileSuspended);
       assertEquals(0, originalPipeline.persistentDrawingOwnerCountForSmoke());
       assertEquals(0, changedPipeline.persistentDrawingOwnerCountForSmoke());
       assertEquals(0, backgroundPipeline.persistentDrawingOwnerCountForSmoke());
+      assertEquals(0, scaledPipeline.persistentDrawingOwnerCountForSmoke());
 
       mainWindow.add(screen);
       assertEquals(1, originalPipeline.persistentDrawingOwnerCountForSmoke());
       assertEquals(1, changedPipeline.persistentDrawingOwnerCountForSmoke());
       assertEquals(2, backgroundPipeline.persistentDrawingOwnerCountForSmoke());
+      assertEquals(1, scaledPipeline.persistentDrawingOwnerCountForSmoke());
     } finally {
       mainWindow.remove(screen);
       screen.removeAll();
@@ -146,6 +162,7 @@ class ImagePersistentOwnershipScalingTest {
     assertEquals(0, originalPipeline.persistentDrawingOwnerCountForSmoke());
     assertEquals(0, changedPipeline.persistentDrawingOwnerCountForSmoke());
     assertEquals(0, backgroundPipeline.persistentDrawingOwnerCountForSmoke());
+    assertEquals(0, scaledPipeline.persistentDrawingOwnerCountForSmoke());
   }
 
   @Test
@@ -211,6 +228,142 @@ class ImagePersistentOwnershipScalingTest {
     assertEquals(0, pipeline.persistentDrawingOwnerCountForSmoke());
   }
 
+  @Test
+  void identityHashCollisionsAndContentEqualImagesRemainDistinct() throws Exception {
+    Image first = new ContentEqualImage(png());
+    Image second = new ContentEqualImage(png());
+    ImagePipeline firstPipeline = first.pipelineForSmoke();
+    ImagePipeline secondPipeline = second.pipelineForSmoke();
+    Object owner = new Object();
+    Object otherOwner = new Object();
+    boolean ownerHasFirst = false;
+    boolean ownerHasSecond = false;
+    boolean otherHasFirst = false;
+    ImageDrawingBridge.useIdentityHashOverrideForTest(17);
+    try {
+      assertNotSame(first, second);
+      assertTrue(first.equals(second));
+      ImageDrawingBridge.retainPersistentOwner(owner, first);
+      ownerHasFirst = true;
+      ImageDrawingBridge.retainPersistentOwner(owner, second);
+      ownerHasSecond = true;
+      ImageDrawingBridge.retainPersistentOwner(otherOwner, first);
+      otherHasFirst = true;
+
+      assertEquals(2, firstPipeline.persistentDrawingOwnerCountForSmoke());
+      assertEquals(1, secondPipeline.persistentDrawingOwnerCountForSmoke());
+
+      ImageDrawingBridge.releasePersistentOwner(owner, second);
+      ownerHasSecond = false;
+      ImageDrawingBridge.releasePersistentOwner(owner, first);
+      ownerHasFirst = false;
+      assertEquals(1, firstPipeline.persistentDrawingOwnerCountForSmoke());
+      assertEquals(0, secondPipeline.persistentDrawingOwnerCountForSmoke());
+    } finally {
+      if (ownerHasFirst) {
+        ImageDrawingBridge.releasePersistentOwner(owner, first);
+      }
+      if (ownerHasSecond) {
+        ImageDrawingBridge.releasePersistentOwner(owner, second);
+      }
+      if (otherHasFirst) {
+        ImageDrawingBridge.releasePersistentOwner(otherOwner, first);
+      }
+      ImageDrawingBridge.restoreIdentityHashForTest();
+    }
+  }
+
+  @Test
+  void oneOwnerCanRetainManyImagesAndDuplicateOrMissingCallsStayExact() throws Exception {
+    Object owner = new Object();
+    Image[] images = new Image[5];
+    ImagePipeline[] pipelines = new ImagePipeline[images.length];
+    for (int i = 0; i < images.length; i++) {
+      images[i] = new Image(png());
+      pipelines[i] = images[i].pipelineForSmoke();
+      ImageDrawingBridge.retainPersistentOwner(owner, images[i]);
+      ImageDrawingBridge.retainPersistentOwner(owner, images[i]);
+      assertEquals(1, pipelines[i].persistentDrawingOwnerCountForSmoke());
+    }
+
+    for (int i = 0; i < images.length; i++) {
+      Image current = images[i];
+      ImageDrawingBridge.releasePersistentOwner(owner, current);
+      assertEquals(0, pipelines[i].persistentDrawingOwnerCountForSmoke());
+      assertThrows(IllegalStateException.class,
+          () -> ImageDrawingBridge.releasePersistentOwner(owner, current));
+    }
+  }
+
+  @Test
+  void pipelineTransferMovesAnAggregateCountWithoutOwnerIteration() throws Exception {
+    Image image = new Image(png());
+    ImagePipeline previous = image.pipelineForSmoke();
+    List<Object> owners = retainOwners(image, SCREEN_SIZE);
+    ImageDrawingBridge.startRegistryInspectionCountForTest();
+    image.applyFade(120);
+    long inspections = ImageDrawingBridge.stopRegistryInspectionCountForTest();
+    ImagePipeline replacement = image.pipelineForSmoke();
+    try {
+      assertNotSame(previous, replacement);
+      assertEquals(0, previous.persistentDrawingOwnerCountForSmoke());
+      assertEquals(SCREEN_SIZE, replacement.persistentDrawingOwnerCountForSmoke());
+      assertTrue(inspections < 40,
+          "pipeline transfer should inspect bounded maintenance and one image group; observed " + inspections);
+    } finally {
+      releaseOwners(image, owners);
+    }
+    assertEquals(0, replacement.persistentDrawingOwnerCountForSmoke());
+  }
+
+  @Test
+  void weakOwnerReclamationUsesBoundedSweepsAndCursorDeletionDoesNotDoubleRelease() throws Exception {
+    ImageDrawingBridge.completePersistentOwnerSweepForTest();
+    Image image = new Image(png());
+    ImagePipeline pipeline = image.pipelineForSmoke();
+    int initialRelations = ImageDrawingBridge.persistentOwnerRelationCountForTest();
+    List<Object> ownersToDrop = new ArrayList<>(80);
+    List<WeakReference<Object>> staleOwners = new ArrayList<>(80);
+    for (int i = 0; i < 80; i++) {
+      Object staleOwner = new Object();
+      staleOwners.add(new WeakReference<>(staleOwner));
+      ownersToDrop.add(staleOwner);
+      ImageDrawingBridge.retainPersistentOwner(staleOwner, image);
+    }
+    Object liveOwner = new Object();
+    ImageDrawingBridge.retainPersistentOwner(liveOwner, image);
+    assertEquals(81, pipeline.persistentDrawingOwnerCountForSmoke());
+    ownersToDrop.clear();
+    for (WeakReference<Object> staleOwner : staleOwners) {
+      awaitCollection(staleOwner);
+    }
+
+    int boundedInspections = ImageDrawingBridge.maintainPersistentOwnersForTest();
+    assertEquals(PersistentImageOwnershipRegistry.MAX_SWEEP_RELATIONSHIPS, boundedInspections);
+    ImageDrawingBridge.completePersistentOwnerSweepForTest();
+    assertEquals(1, pipeline.persistentDrawingOwnerCountForSmoke());
+    assertEquals(initialRelations + 1, ImageDrawingBridge.persistentOwnerRelationCountForTest());
+
+    ImageDrawingBridge.setPersistentOwnerSweepCursorForTest(liveOwner, image);
+    ImageDrawingBridge.releasePersistentOwner(liveOwner, image);
+    ImageDrawingBridge.completePersistentOwnerSweepForTest();
+    assertEquals(0, pipeline.persistentDrawingOwnerCountForSmoke());
+    assertEquals(initialRelations, ImageDrawingBridge.persistentOwnerRelationCountForTest());
+  }
+
+  @Test
+  void weakImageReclamationUnlinksItsRelation() throws Exception {
+    ImageDrawingBridge.completePersistentOwnerSweepForTest();
+    int initialRelations = ImageDrawingBridge.persistentOwnerRelationCountForTest();
+    WeakReference<Image> imageReference = retainEphemeralImage(new Object());
+    awaitCollection(imageReference);
+
+    ImageDrawingBridge.completePersistentOwnerSweepForTest();
+
+    assertNull(imageReference.get());
+    assertEquals(initialRelations, ImageDrawingBridge.persistentOwnerRelationCountForTest());
+  }
+
   private static long registrationInspections(int count) throws Exception {
     Image image = new Image(png());
     List<Object> owners = new ArrayList<>(count);
@@ -235,6 +388,20 @@ class ImagePersistentOwnershipScalingTest {
     return owners;
   }
 
+  private static WeakReference<Image> retainEphemeralImage(Object owner) throws Exception {
+    Image image = new Image(png());
+    ImageDrawingBridge.retainPersistentOwner(owner, image);
+    return new WeakReference<>(image);
+  }
+
+  private static void awaitCollection(WeakReference<?> reference) throws InterruptedException {
+    for (int i = 0; i < 40 && reference.get() != null; i++) {
+      System.gc();
+      Thread.sleep(10);
+    }
+    assertNull(reference.get(), "test referent should be reclaimed before the explicit sweep");
+  }
+
   private static void releaseOwners(Image image, List<Object> owners) {
     for (int i = owners.size() - 1; i >= 0; i--) {
       ImageDrawingBridge.releasePersistentOwner(owners.get(i), image);
@@ -255,5 +422,21 @@ class ImagePersistentOwnershipScalingTest {
     ByteArrayOutputStream output = new ByteArrayOutputStream();
     ImageIO.write(image, "png", output);
     return output.toByteArray();
+  }
+
+  private static final class ContentEqualImage extends Image {
+    ContentEqualImage(byte[] source) throws ImageException {
+      super(source);
+    }
+
+    @Override
+    public boolean equals(Object other) {
+      return other instanceof ContentEqualImage;
+    }
+
+    @Override
+    public int hashCode() {
+      throw new AssertionError("the ownership registry must not call Image.hashCode()");
+    }
   }
 }

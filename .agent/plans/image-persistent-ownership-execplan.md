@@ -38,8 +38,9 @@ construction behavior.
 - [x] (2026-11-26) Implemented inherited suspension for explicitly removed
   Container subtrees and verified removal, mutation, reattachment, reparenting,
   popup visibility, and detached ScrollContainer construction.
-- [ ] Replace scans with indexed weak-identity ownership and aggregate pipeline
-  transfers.
+- [x] (2026-11-26) Replaced owner scans with two weak identity-hash indexes,
+  image-group counts, bounded relation unlinking, and aggregate pipeline
+  transfers; focused operation, collision, reclamation, and API checks pass.
 - [ ] Add bounded incremental sweeping and the narrow repaint maintenance hook;
   measure it and remove only that hook if overhead is material.
 - [ ] Run allowed JavaSE/JUnit and macOS arm64 checks, prepare nonlocal CI smoke
@@ -145,7 +146,9 @@ screen root retained its 1,510 descendant owners, and reconstructing the next
 screen raised the count to 3,020 without GC. See the evidence index for the
 exact run and log paths. The subtree lifecycle slice now releases descendant
 owners immediately and reconciles suspended mutations on reattachment; focused
-JavaSE lifecycle and cache-admission tests pass.
+JavaSE lifecycle and cache-admission tests pass. The indexed registry passes
+collision, arbitrary-slot, weak-reclamation, pipeline-transfer, and near-linear
+registration checks; draw-path maintenance removal remains active work.
 
 ## Revision Note
 
