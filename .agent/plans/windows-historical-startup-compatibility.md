@@ -40,8 +40,10 @@ its existing finding as a separate architecture-specific reference.
   architecture-correct CDB commands if a process fails.
 - The ownership smoke source/tool is pinned at
   `TotalCross/totalcross-performance-lab` commit
-  `c4ba2f568df374f19a8bbc2a74dcfb598f2ac48e`. It extends the existing I386
-  architecture checks without changing the Java functional fixture.
+  `bf691c14d7c5fe807c62de98c7285f65d38de87e`. It extends the existing I386
+  architecture checks and handles marker files written beside the Windows app
+  directory when `Settings.appPath` lacks a trailing separator. The Java
+  functional fixture is unchanged.
 - The earlier crash report and `.agents/skills/logical-commits/SKILL.md` hold
   background and commit guidance; reread only if needed for interpretation or
   the next commit.
@@ -63,9 +65,14 @@ its existing finding as a separate architecture-specific reference.
 - [x] Complete and statically validate the one-job Win32 workflow, build helper,
   result harness, report/state updates, and focused tests. The first Actions
   run exposed harness errors before a corrected runtime comparison completed.
-- [ ] Commit and push the focused harness corrections, then run the next
-  isolated Windows Actions job to build fixed Win32, execute A/B/fixed startup,
-  conditionally run ownership, and upload machine-readable evidence.
+- [x] Commit and push the focused harness corrections. Run
+  `45902867357` passed all three I386 startup probes and the ownership fixture's
+  durable PASS result, but the helper rejected its markers because they were
+  written beside the expected app directory.
+- [ ] Pin the marker-lookup correction at
+  `bf691c14d7c5fe807c62de98c7285f65d38de87e` and rerun the isolated Windows
+  job to produce a passing ownership summary and final machine-readable
+  evidence.
 - [ ] Review the uploaded artifact, record run URL/markers/exits/hashes/dumps,
   update both reports and evidence, and state the Win32 functional verdict.
 

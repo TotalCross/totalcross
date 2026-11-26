@@ -28,7 +28,7 @@ jobs:
     runs-on: windows-2022
     timeout-minutes: 100
     env:
-      PERFORMANCE_LAB_COMMIT: c4ba2f568df374f19a8bbc2a74dcfb598f2ac48e
+      PERFORMANCE_LAB_COMMIT: bf691c14d7c5fe807c62de98c7285f65d38de87e
 
     steps:
     - name: Checkout diagnostic harness
@@ -46,7 +46,7 @@ jobs:
       uses: actions/checkout@v6
       with:
         repository: TotalCross/totalcross-performance-lab
-        ref: c4ba2f568df374f19a8bbc2a74dcfb598f2ac48e
+        ref: bf691c14d7c5fe807c62de98c7285f65d38de87e
         path: performance-lab
 
     - name: Setup Python 3.12

@@ -21,9 +21,11 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Existing performance-lab worktree for this diagnostic change:
   `/Users/flsobral/.codex/worktrees/totalcross-performance-lab-windows-i386-ownership-smoke`.
   Its dedicated branch is pushed through commits `ea1c64eb781e0dd96a3b22f6055f0dda342f04ab`
-  and `c4ba2f568df374f19a8bbc2a74dcfb598f2ac48e`; it adds I386 runtime checks,
-  same-runtime hash checks, and I386 crash-runner selection to the existing
-  smoke tool. The Java ownership fixture is unchanged.
+  and `c4ba2f568df374f19a8bbc2a74dcfb598f2ac48e`; follow-up
+  `bf691c14d7c5fe807c62de98c7285f65d38de87e` fixes Windows marker/result
+  discovery for the appPath-without-separator layout. It adds I386 runtime
+  checks, same-runtime hash checks, and I386 crash-runner selection to the
+  existing smoke tool. The Java ownership fixture is unchanged.
 - Exact historical A/B SDK/runtime artifacts and fixed SDK are downloaded in
   the external artifact cache. IDs, digests, local hashes, source trees, and PE
   findings remain indexed in `.agent/evidence/windows-historical-startup-compatibility.jsonl`.
@@ -41,8 +43,9 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Focused local validation: initial TotalCross diagnostic contracts (11
   passed), performance-lab ownership contracts (15 passed), header validator
   (8 files, 0 changes), Ruby YAML parse, and staged `git diff --check` passed.
-  Follow-up diagnostic contracts pass (12 tests); changed-file header check and
-  working-tree `git diff --check` pass. No Windows work ran locally.
+  Follow-up diagnostic contracts pass (12 tests); marker-fix ownership
+  contracts pass (17 tests); changed-file header check and working-tree
+  `git diff --check` pass. No Windows work ran locally.
 - Initial Actions run `45901886592` built no corrected runtime because the
   PowerShell helper called `.Trim()` on the empty output from a clean Git
   status. Historical A and B each launched and exited 0 with `tcdiag-result`
@@ -53,10 +56,20 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Current follow-up changes: handle empty PowerShell status output, import the
   marker regex module, and emit the class-initialization marker from the
   constructor after class initialization completes. The static contract suite
-  passes. These changes are not yet committed or pushed.
-- Next action: commit and push the harness corrections to the same isolated
-  branch, run the next single Windows Actions job, then complete both reports
-  and the evidence index from its uploaded artifact.
+  passes. These changes are in pushed commit `44b15b469d60ecfde714b08d58bcc332151842b7`.
+- Actions run `45902867357`: historical A, historical B, and corrected Win32
+  startup all PASS with exit 0, all durable markers, and process session 2.
+  The corrected production build is PE I386 and uses the required Skia/SDL
+  Release configuration. The ownership fixture also emitted a durable PASS
+  record after all seven stages, but the helper marked the run FAIL because it
+  searched for stage files only inside the app directory. The files were
+  persisted in its sibling path. It verified that Launcher/tcvm hashes matched
+  the corrected startup runtime. No native crash or dump was produced.
+- Marker lookup is fixed and covered by 17 passing performance-lab contracts in
+  pushed commit `bf691c14d7c5fe807c62de98c7285f65d38de87e`. The TotalCross
+  workflow is being pinned to this commit for the final rerun.
+- Next action: commit/push the updated pin, run the final isolated Windows job,
+  then complete both reports and the evidence index from its artifact.
 - Resume protocol: read this state first, then inspect the active workflow,
   build/run scripts, minimal probe, and evidence index. Do not repeat artifact
   downloads or reopen AMD64 analysis unless the corrected I386 run requires it.

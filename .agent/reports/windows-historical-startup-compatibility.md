@@ -35,23 +35,34 @@ identity, and native bridge identity are in
 
 ## Startup comparison
 
-**Status: pending corrected Actions rerun.** Initial run
-[45901886592](https://github.com/TotalCross/totalcross/actions/runs/45901886592)
-downloaded all pinned inputs but stopped before the corrected Win32 build:
-PowerShell treated the empty output from a clean Git status as null. Historical
-A and B each started and exited 0 with a durable `PASS` result, but their
-summaries were marked INCOMPLETE because marker parsing lacked `import re` and
-the class-initialization marker was called from the static initializer. The
-run did not produce a corrected I386 startup result, so ownership was NOT
-EXECUTED. Attempt and artifact details are in the evidence index.
+**Startup status: PASS for all three I386 artifacts.** Run
+[45902867357](https://github.com/TotalCross/totalcross/actions/runs/45902867357)
+executed historical A, historical B, and corrected production Win32 startup in
+that order on one `windows-2022` runner session. All three processes started,
+recorded all six durable Java markers and a durable `PASS` file, and exited
+`0x00000000` without timing out or producing a dump.
 
-Those harness issues are corrected on the dedicated branch. The rerun will
-again execute historical A, historical B, and corrected I386 sequentially in
-one `windows-2022` job/session. It records provenance, SDK JAR and deployed TCZ
-hashes, PE machine, process creation/PID/session, elapsed time, decimal and hex
-exit codes, timeout, durable Java markers, PASS marker, DebugConsole, loaded
-modules, events, and crash evidence. Artifact preparation failures remain
-INCOMPLETE and do not stop later historical probes.
+| Runtime | Source commit | PE | PID / session | Duration | Result |
+|---|---|---:|---:|---:|---|
+| Historical A | `61034a7562e7fa43df076dcc38bcd48128605395` | I386 | 2876 / 2 | 1,558 ms | PASS |
+| Historical B | `c7cf79575602f3cc19e107643f0fa39d3e151004` | I386 | 4716 / 2 | 236 ms | PASS |
+| Corrected Win32 | `94af2b8b653cad509994b5ccf3dbb60ac28ef920` | I386 | 2600 / 2 | 232 ms | PASS |
+
+The corrected runtime was built with `cmake .. -G "Visual Studio 17 2022" -A
+Win32` and Release. CMake recorded Skia ON, SDL ON, legacy renderer OFF, native
+windowing OFF, software surface ON, and GLES OFF. Launcher SHA-256 is
+`970f09146e877141f0f4ea2a52cfb545a0e348abb8733b386b91ef05b10deba2`; tcvm SHA-256
+is `bf843e6c78ef110f9f44a41d014b327392887e42230743b8bd3b5455261973c7`.
+
+**Ownership wrapper status: rerun pending.** The native fixture reached stage 7,
+exited 0, and wrote a durable JSON `PASS` containing every required ownership,
+cache, detach/reparent, and drawing assertion. The wrapper failed to recognize
+its stage files because they were written beside `install/win32/` as
+`install/win32tcdiag-*`. Launcher/tcvm hashes matched the corrected startup
+runtime. The helper now checks both locations in performance-lab commit
+`bf691c14d7c5fe807c62de98c7285f65d38de87e`; a final Actions rerun is needed to
+produce a passing wrapper summary. Full attempt details and artifact digests
+are in the evidence index.
 
 ## Persistent ownership gate
 
@@ -60,16 +71,20 @@ The existing performance-lab lifecycle fixture is pinned to commit
 checks the deployed launcher/`tcvm.dll` architecture and hashes. Its Java
 fixture remains unchanged.
 
-The ownership workload is not run unless corrected Win32 minimal startup
-passes. When run, it verifies two consecutive screens of 1,510 controls,
+The ownership workload runs only after corrected Win32 minimal startup passes.
+In run `45902867357`, it verified two consecutive screens of 1,510 controls,
 immediate detach and complete owner release, subtree mutation and reattachment,
 active reparenting, shared ownership, pipeline replacement, raster-cache reuse
 and eviction, native draw output and red-pixel value, no owner-underflow
 diagnostic, and clean process completion. Its Launcher/VM hashes must match
 the corrected minimal-startup runtime.
 
-**Production Win32 ownership verdict: pending.** Any skipped ownership run will
-be reported as NOT EXECUTED, never PASS.
+**Production Win32 ownership verdict: functionally PASS in the fixture; final
+wrapper acceptance pending.** The durable fixture JSON reports two full screen
+cycles, 3,020 controls, 0 mismatches, highest stage 7, `drawPixelRgb=16711680`,
+zero owners after detach, and all cache/reparent/shared-owner assertions true.
+The helper's false FAIL is due only to marker-path discovery and will be
+rechecked after its dedicated fix.
 
 ## AMD64 reference and limitations
 
@@ -83,10 +98,10 @@ customer desktop environment.
 
 ## Validation and remote operations
 
-The initial Actions attempt passed both contract suites and retrieved the
-historical artifacts; focused local harness tests (12), changed-file copyright
-validation, and `git diff --check` pass for the corrections. Corrected Win32
-build/deployment/native execution and the gated ownership smoke remain pending
-the next dedicated Actions run. The I386-specific ownership helper is on the
-dedicated performance-lab branch named in the evidence index. No production
-ownership implementation changes are included.
+The initial Actions attempt exposed three harness defects and is recorded in the
+evidence index. The corrected Actions run passed both contract suites and the
+Win32 build/startup; the smoke fixture assertions passed while marker discovery
+failed. Focused local harness tests (12), ownership helper contracts (17),
+changed-file copyright validation, and `git diff --check` pass. One final
+Actions run with the corrected helper is pending. No production ownership
+implementation changes are included.
