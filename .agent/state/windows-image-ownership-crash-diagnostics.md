@@ -20,21 +20,21 @@ SPDX-License-Identifier: LGPL-2.1-only
   branch and pinned by commit in the workflow.
 - Prior runs: 45853745093, 45856087270, 45857806319, 45858785421. Logs and all
   artifacts are under /Users/flsobral/.codex/windows-crash-diagnostics-prior-runs/.
-- Latest diagnostic run: 45879820691 on branch commit
-  1728e6fae10d7e52779bdb89c23a2d3323fa4c4a. Exact baseline/fixed builds and
-  deploys passed, and both sequential probes used the same win22 image
-  20261123.376.1. Both exited 0xC0000005 before Java markers. Live CDB caught
-  second-chance invalid pointer writes in tcvm.dll at the same RVA 0xB93A52
-  with the same relative stack, but the dump command's backslash path was
-  parsed as control escapes and the local PDB directory was relative to CDB's
-  temporary working directory. Thus no dump or source-level symbol was
-  produced. Artifacts and logs are under
-  /Users/flsobral/.codex/windows-crash-diagnostics-new-runs/45879820691/.
-- Current local slice converts CDB symbol and dump paths to absolute
-  forward-slash paths and adds a contract assertion. Next: run focused local
-  checks, commit and push the diagnostic-only correction, then analyze the
-  CDB dump and matching symbols from the rerun. Progressive image work remains
-  gated on both minimal probes passing.
+- Latest diagnostic run: 45881889694 on branch commit
+  d76135bd90b3e715be7d0a1c8e42e846575ecc3a. Exact builds/deploys passed and
+  both sequential probes used win22 image 20261123.376.1. Both exited
+  0xC0000005 before Java markers. Live CDB captured 57 MB dumps and loaded
+  matching private PDBs. Baseline and fixed faulted at tcvm RVA 0xB93A52 in
+  `__entry_from_strcat_in_strcpy`, on the same relative stack through
+  `privateHeapSetJump`, `tczNewInstance`, `tczFindName`, `tczLoad`, `startVM`,
+  and `executeProgram`. The offline analyzer still used the old relative PDB
+  path and misloaded remote OS symbols; artifacts and logs are under
+  /Users/flsobral/.codex/windows-crash-diagnostics-new-runs/45881889694/.
+- Current local slice makes the offline analyzer use the absolute local PDB
+  path, removes the invalid symbol-server store, and requests source-line and
+  disassembly output around the common fault. Next: validate, commit, and rerun
+  the diagnostic workflow. Progressive image work remains gated on both
+  minimal probes passing.
 - Validation completed: downloaded full logs/artifacts for all four prior
   runs; the perf-lab instrumentation contract suite passes 14 tests. The first
   prior run failed during deploy; later runs lacked app markers, and the final
@@ -44,8 +44,8 @@ SPDX-License-Identifier: LGPL-2.1-only
   validation passed; both worktrees pass `git diff --check`. The approved
   depot-tools dependency fetch completed successfully;
   no tracked dependency files changed.
-- Deferred validation: Windows execution/debugging awaits the diagnostic
-  workflow rerun after correcting CDB paths. No Windows binary was built or
+- Deferred validation: Windows source-line and instruction analysis awaits a
+  workflow rerun with the offline PDB path fix. No Windows binary was built or
   run locally.
 - Decisions: diagnostic-only source/workflow changes; the caller triggers on
   pushes to this dedicated branch and supports manual reruns. Use two calls to the

@@ -70,6 +70,13 @@ Actions logs and downloaded artifacts are preserved under
   escapes; PDB lookup also used a relative path from CDB's temporary directory.
   The local correction resolves the PDB/cache paths absolutely and uses
   forward slashes for CDB paths. A rerun is required for the source-level stack.
+- Run 45881889694 captured 57 MB dumps for both revisions and loaded both
+  matching private PDBs in live CDB. Each stack resolves through
+  `__entry_from_strcat_in_strcpy`, `privateHeapSetJump`, `tczNewInstance`,
+  `tczFindName`, `tczLoad`, and `startVM` before Java entry. Both faults share
+  RVA 0xB93A52. The separate offline CDB pass still had the old relative PDB
+  path and a bad remote symbol store, so the next slice fixes offline symbol
+  setup and requests source-line/disassembly output from the local PDBs.
 
 ## Current Architecture and Scope
 
@@ -154,6 +161,14 @@ deployment, execution, and debugging occur through GitHub Actions.
   strongly locates the failure in pre-Java native startup, but without loaded
   matching PDBs it does not identify a source function or establish the
   ownership fix's relationship to the fault.
+- Run 45881889694's live CDB loaded private symbols and resolved the common
+  first frame as `tcvm!__entry_from_strcat_in_strcpy+0x1f`; the subsequent
+  frames are `privateHeapSetJump`, `tczNewInstance`, `tczFindName`, `tczLoad`,
+  `startVM`, and `executeProgram`. The app is still in native TCZ/constant-pool
+  loading, before the probe's first Java marker. Both dumps are 57 MB; their
+  SHA-256 hashes and matching PDB identities are in the evidence index. The
+  offline pass's symbol path remains faulty and produced a misleading wrong
+  OS-symbol bucket, so do not use that bucket for root-cause classification.
 
 ## Decision Log
 

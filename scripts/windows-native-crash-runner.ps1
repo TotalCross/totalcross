@@ -326,6 +326,8 @@ $liveDebuggerTimedOut = $false
 $liveDebuggerLog = Join-Path $out 'cdb-live-analysis.log'
 $liveDebuggerStdoutLog = Join-Path $out 'cdb-live-stdout.log'
 $liveDebuggerStderrLog = Join-Path $out 'cdb-live-stderr.log'
+$symbolDirectory = [IO.Path]::GetFullPath($PdbDirectory).Replace('\', '/')
+$symbolPath = $symbolDirectory
 $preexistingDump = Get-ChildItem -LiteralPath $dumpDirectory -Filter '*.dmp' -File `
     -ErrorAction SilentlyContinue | Select-Object -First 1
 if ($debuggerPathAvailable -and $processStartObserved -and $null -ne $exitCode -and
@@ -350,14 +352,11 @@ if ($debuggerPathAvailable -and $processStartObserved -and $null -ne $exitCode -
             throw 'Copied diagnostic executable does not match the original probe.'
         }
 
-        $symbolDirectory = [IO.Path]::GetFullPath($PdbDirectory).Replace('\', '/')
-        $symbolCache = [IO.Path]::GetFullPath(
-            (Join-Path $env:RUNNER_TEMP 'cdb-symbol-cache')).Replace('\', '/')
-        New-Item -ItemType Directory -Force -Path $symbolCache | Out-Null
-        $symbolPath = "$symbolDirectory;srv*$symbolCache*https://msdl.microsoft.com/download/symbols"
         $liveDumpPath = (Join-Path $dumpDirectory 'live-cdb.dmp').Replace('\', '/')
-        $secondChanceCommands = '.lastevent; .ecxr; kv; lm; .dump /ma ' +
-            $liveDumpPath + '; !analyze -v; q'
+        $secondChanceCommands = '.lastevent; .exr -1; .ecxr; kv; .lines; ' +
+            'ln tcvm!__entry_from_strcat_in_strcpy+0x1f; ' +
+            'u tcvm!__entry_from_strcat_in_strcpy+0x1f L8; lmvm tcvm; ' +
+            '.dump /ma ' + $liveDumpPath + '; !analyze -v; q'
         $debuggerCommands = 'sxd -c2 "' + $secondChanceCommands + '" av; g'
         $debuggerArguments = @('-logou', $liveDebuggerLog, '-y', $symbolPath,
             '-i', "$liveWorkDirectory;$workingDirectory;$env:SystemRoot\System32",
@@ -462,12 +461,11 @@ $dumpFile = Get-ChildItem -LiteralPath $dumpDirectory -Filter '*.dmp' -File `
     -ErrorAction SilentlyContinue | Select-Object -First 1
 if ($null -ne $dumpFile -and $debuggerPathAvailable) {
     try {
-        $symbolCache = Join-Path $env:RUNNER_TEMP 'cdb-symbol-cache'
-        New-Item -ItemType Directory -Force -Path $symbolCache | Out-Null
-        $symbolPath = "$PdbDirectory;srv*$symbolCache*https://msdl.microsoft.com/download/symbols"
         $debuggerArgs = @('-logou', $debuggerLog, '-y', $symbolPath,
             '-i', "$workingDirectory;$env:SystemRoot\System32", '-z', $dumpFile.FullName,
-            '-c', '.reload /f; !analyze -v; .ecxr; kv; lm; q')
+            '-c', '.reload /f; !analyze -v; .exr -1; .ecxr; .lines; ' +
+                'ln tcvm!__entry_from_strcat_in_strcpy+0x1f; ' +
+                'u tcvm!__entry_from_strcat_in_strcpy+0x1f L8; kv; lmvm tcvm; q')
         $debuggerInfo = New-CleanProcessStartInfo -FileName $DebuggerPath `
             -WorkingDirectory $out -Arguments $debuggerArgs -PathValue $cleanPath -UnicodeOutput
         $debugger = [System.Diagnostics.Process]::Start($debuggerInfo)

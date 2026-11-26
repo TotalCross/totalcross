@@ -110,6 +110,9 @@ class WindowsNativeCrashDiagnosticsTest(unittest.TestCase):
         self.assertIn("live-cdb.dmp", runner)
         self.assertIn("GetFullPath($PdbDirectory).Replace('\\', '/')", runner)
         self.assertIn(".Replace('\\', '/')", runner)
+        self.assertEqual(runner.count("'-y', $symbolPath"), 2)
+        self.assertNotIn("srv*", runner)
+        self.assertIn("ln tcvm!__entry_from_strcat_in_strcpy+0x1f", runner)
         self.assertIn("procdumpCleanupStatus", runner)
 
 
