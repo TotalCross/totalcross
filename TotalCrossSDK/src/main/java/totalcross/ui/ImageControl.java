@@ -140,8 +140,9 @@ public class ImageControl extends Control {
     }
   }
 
-  private void syncPersistentImageOwnership() {
-    Image[] desiredSlots = parent == null ? new Image[0] : new Image[] { img, img0, imgBack };
+  void syncPersistentImageOwnership() {
+    Image[] desiredSlots = parent == null || parent.isPersistentImageOwnershipSuspended()
+        ? new Image[0] : new Image[] { img, img0, imgBack };
     Image[] desired = new Image[desiredSlots.length];
     int desiredCount = 0;
     for (Image candidate : desiredSlots) {

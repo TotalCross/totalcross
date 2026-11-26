@@ -6,6 +6,7 @@ package totalcross.ui.image;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.awt.image.BufferedImage;
@@ -21,6 +22,7 @@ import org.junit.jupiter.api.Test;
 import totalcross.ui.Container;
 import totalcross.ui.ImageControl;
 import totalcross.ui.MainWindow;
+import totalcross.ui.Window;
 
 /** Regression probes for the persistent image owner registry and its UI lifecycle. */
 class ImagePersistentOwnershipScalingTest {
@@ -98,6 +100,115 @@ class ImagePersistentOwnershipScalingTest {
       ImageDrawingBridge.stopRegistryInspectionCountForTest();
       releaseOwners(image, owners);
     }
+  }
+
+  @Test
+  void suspendedSubtreeTracksMutationsAndRestoresDistinctSlotsOnReattachment() throws Exception {
+    Image original = new Image(png());
+    Image changed = new Image(png());
+    Image background = new Image(png());
+    ImagePipeline originalPipeline = original.pipelineForSmoke();
+    ImagePipeline changedPipeline = changed.pipelineForSmoke();
+    ImagePipeline backgroundPipeline = background.pipelineForSmoke();
+    Container screen = new Container();
+    Container nested = new Container();
+    ImageControl existing = new ImageControl(original);
+    existing.setBackground(changed);
+    nested.add(existing);
+    screen.add(nested);
+    mainWindow.add(screen);
+    try {
+      assertEquals(1, originalPipeline.persistentDrawingOwnerCountForSmoke());
+      assertEquals(1, changedPipeline.persistentDrawingOwnerCountForSmoke());
+
+      mainWindow.remove(screen);
+      assertEquals(0, originalPipeline.persistentDrawingOwnerCountForSmoke());
+      assertEquals(0, changedPipeline.persistentDrawingOwnerCountForSmoke());
+
+      existing.setImage(changed);
+      existing.setBackground(background);
+      ImageControl addedWhileSuspended = new ImageControl(original);
+      addedWhileSuspended.setBackground(background);
+      nested.add(addedWhileSuspended);
+      assertEquals(0, originalPipeline.persistentDrawingOwnerCountForSmoke());
+      assertEquals(0, changedPipeline.persistentDrawingOwnerCountForSmoke());
+      assertEquals(0, backgroundPipeline.persistentDrawingOwnerCountForSmoke());
+
+      mainWindow.add(screen);
+      assertEquals(1, originalPipeline.persistentDrawingOwnerCountForSmoke());
+      assertEquals(1, changedPipeline.persistentDrawingOwnerCountForSmoke());
+      assertEquals(2, backgroundPipeline.persistentDrawingOwnerCountForSmoke());
+    } finally {
+      mainWindow.remove(screen);
+      screen.removeAll();
+      nested.removeAll();
+    }
+    assertEquals(0, originalPipeline.persistentDrawingOwnerCountForSmoke());
+    assertEquals(0, changedPipeline.persistentDrawingOwnerCountForSmoke());
+    assertEquals(0, backgroundPipeline.persistentDrawingOwnerCountForSmoke());
+  }
+
+  @Test
+  void activeAndSuspendedReparentingReconcilesWithoutActiveEviction() throws Exception {
+    Image image = new Image(png());
+    ImagePipeline pipeline = image.pipelineForSmoke();
+    ImageControl control = new ImageControl(image);
+    Container firstActive = new Container();
+    Container secondActive = new Container();
+    Container suspended = new Container();
+    mainWindow.add(firstActive);
+    mainWindow.add(secondActive);
+    mainWindow.add(suspended);
+    mainWindow.remove(suspended);
+    firstActive.add(control);
+    Image cached = ImageDrawingBridge.resolveForDrawing(image, 1,
+        ImageDrawingBridge.AdmissionMode.IMMEDIATE);
+    try {
+      secondActive.add(control);
+      assertEquals(1, pipeline.persistentDrawingOwnerCountForSmoke());
+      assertSame(cached, image.cachedFinalRasterForDrawing(1));
+
+      suspended.add(control);
+      assertEquals(0, pipeline.persistentDrawingOwnerCountForSmoke());
+      assertEquals(0, pipeline.cachedVariantCountForSmoke());
+
+      secondActive.add(control);
+      assertEquals(1, pipeline.persistentDrawingOwnerCountForSmoke());
+    } finally {
+      secondActive.remove(control);
+      firstActive.remove(control);
+      suspended.remove(control);
+      mainWindow.remove(firstActive);
+      mainWindow.remove(secondActive);
+      mainWindow.remove(suspended);
+    }
+    assertEquals(0, pipeline.persistentDrawingOwnerCountForSmoke());
+  }
+
+  @Test
+  void visibilityAndPopupHidingDoNotSuspendValidOwners() throws Exception {
+    Image image = new Image(png());
+    ImagePipeline pipeline = image.pipelineForSmoke();
+    ImageControl mainControl = new ImageControl(image);
+    mainWindow.add(mainControl);
+    Window popup = new Window();
+    ImageControl popupControl = new ImageControl(image);
+    popup.add(popupControl);
+    try {
+      mainControl.setVisible(false);
+      assertEquals(2, pipeline.persistentDrawingOwnerCountForSmoke());
+      mainControl.setVisible(true);
+
+      popup.popupNonBlocking();
+      assertEquals(2, pipeline.persistentDrawingOwnerCountForSmoke());
+      popup.unpop();
+      assertEquals(2, pipeline.persistentDrawingOwnerCountForSmoke());
+    } finally {
+      popup.unpop();
+      popup.removeAll();
+      mainWindow.remove(mainControl);
+    }
+    assertEquals(0, pipeline.persistentDrawingOwnerCountForSmoke());
   }
 
   private static long registrationInspections(int count) throws Exception {
