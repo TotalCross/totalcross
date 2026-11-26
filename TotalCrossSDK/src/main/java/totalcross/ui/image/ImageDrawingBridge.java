@@ -130,9 +130,11 @@ public final class ImageDrawingBridge {
     }
   }
 
-  static void cleanupPersistentOwnersForDrawing() {
+  static void maintainPersistentOwners() {
     synchronized (OWNERS_LOCK) {
-      PERSISTENT_OWNERS.maintain();
+      if (PERSISTENT_OWNERS.hasRelations()) {
+        PERSISTENT_OWNERS.maintain();
+      }
     }
   }
 

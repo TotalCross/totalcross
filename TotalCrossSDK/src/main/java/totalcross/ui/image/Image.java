@@ -1312,7 +1312,6 @@ public class Image extends GfxSurface {
 
   /** Returns an existing materialized variant for this destination without resolving a cache miss. */
   Image cachedFinalRasterForDrawing(double destinationScale) throws ImageException {
-    ImageDrawingBridge.cleanupPersistentOwnersForDrawing();
     validateDrawingScale(destinationScale);
     return cachedMaterializedVariantForDrawing(pipeline, destinationScale);
   }
@@ -1324,7 +1323,6 @@ public class Image extends GfxSurface {
 
   Image resolveForDrawing(double destinationScale, ImageRasterAdmission admissionMode)
       throws ImageException {
-    ImageDrawingBridge.cleanupPersistentOwnersForDrawing();
     validateDrawingScale(destinationScale);
     if (admissionMode == null) {
       throw new NullPointerException("admissionMode");
