@@ -85,11 +85,11 @@ deployment, execution, and debugging occur through GitHub Actions.
    matching PDBs and expose its same-run SDK/Windows artifacts while skipping
    the existing ownership job until diagnostics complete. Document any
    temporary capability and its upstream/removal condition.
-4. Add a workflow_dispatch-only diagnostic workflow on this branch. It builds
-   both exact source SHAs with the canonical build, verifies provenance and
-   hashes, deploys and runs the minimal probe under ProcDump or WER LocalDumps,
-   and archives short-lived
-   logs, dump, module list, environment, Event Log, and hashes. Analyze dumps
+4. Add a branch-scoped push and workflow_dispatch diagnostic workflow. It
+   builds both exact source SHAs with the canonical build, verifies provenance
+   and hashes, deploys and runs the minimal probe under ProcDump or WER
+   LocalDumps, and archives short-retention logs, dumps, module lists, runner
+   environment, Event Log records, and integrity hashes. Analyze dumps
    using WinDbg/CDB where available.
 5. Run baseline and fixed minimal probes in the same Actions run. If both
    succeed, run the pinned functional fixture for both revisions with the same

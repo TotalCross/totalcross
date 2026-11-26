@@ -31,7 +31,8 @@ SPDX-License-Identifier: LGPL-2.1-only
   and passes `git diff --check`.
 - Deferred validation: Windows execution/debugging awaits the diagnostic
   workflow. No Windows binary was built or run locally.
-- Decisions: diagnostic-only source/workflow changes; use two calls to the
+- Decisions: diagnostic-only source/workflow changes; the caller triggers on
+  pushes to this dedicated branch and supports manual reruns. Use two calls to the
   canonical reusable build in one Actions run, with baseline/fixed artifact
   suffixes; gate the functional matrix on both minimal probes; do not modify
   production runtime code.

@@ -4,6 +4,9 @@
 
 name: Windows native crash diagnostics
 on:
+  push:
+    branches:
+      - codex/image-ownership-windows-crash-diagnostics
   workflow_dispatch:
 
 jobs:
