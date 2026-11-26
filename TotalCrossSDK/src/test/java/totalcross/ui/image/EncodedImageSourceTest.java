@@ -30,6 +30,7 @@ import javax.imageio.stream.ImageOutputStream;
 import org.junit.jupiter.api.Test;
 
 import totalcross.Launcher;
+import totalcross.io.FileNotFoundException;
 import totalcross.io.Stream;
 
 class EncodedImageSourceTest {
@@ -140,6 +141,31 @@ class EncodedImageSourceTest {
       assertEquals("original", source.getComment());
     } finally {
       Files.deleteIfExists(file);
+      Launcher.instance = previous;
+    }
+  }
+
+  @Test
+  void missingPathFallsThroughToTotalCrossFileValidation() throws Exception {
+    Path directory = Files.createTempDirectory("totalcross-image-missing-path");
+    Path missing = directory.resolve("missing.png");
+    tc.simulator.Launcher previous = Launcher.instance;
+    try {
+      new Launcher();
+      assertThrows(FileNotFoundException.class, () -> EncodedImageSource.fromPath(missing.toString()));
+    } finally {
+      Launcher.instance = previous;
+      Files.deleteIfExists(directory);
+    }
+  }
+
+  @Test
+  void pathCaptureStillRequiresAnInitializedSimulatorLauncher() {
+    tc.simulator.Launcher previous = Launcher.instance;
+    try {
+      Launcher.instance = null;
+      assertThrows(ImageException.class, () -> EncodedImageSource.fromPath("missing-image.png"));
+    } finally {
       Launcher.instance = previous;
     }
   }
