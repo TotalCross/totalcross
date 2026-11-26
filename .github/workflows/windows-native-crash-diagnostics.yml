@@ -1,0 +1,378 @@
+# Copyright (C) 2026 Amalgam Solucoes em TI Ltda
+#
+# SPDX-License-Identifier: LGPL-2.1-only
+
+name: Windows native crash diagnostics
+on:
+  workflow_dispatch:
+
+jobs:
+  build-baseline:
+    name: Build exact baseline artifacts
+    uses: ./.github/workflows/build.yml
+    with:
+      windows_x64_image_ownership_smoke: true
+      windows_native_crash_diagnostics: true
+      diagnostic_artifact_suffix: baseline
+      source_sha: 6b915883dd202f6db891990f6c3af26fb645ecc7
+    secrets: inherit
+
+  build-fixed:
+    name: Build exact fixed artifacts
+    uses: ./.github/workflows/build.yml
+    with:
+      windows_x64_image_ownership_smoke: true
+      windows_native_crash_diagnostics: true
+      diagnostic_artifact_suffix: fixed
+      source_sha: 94af2b8b653cad509994b5ccf3dbb60ac28ef920
+    secrets: inherit
+
+  minimal-probe:
+    name: Minimal startup / ${{ matrix.revision }}
+    needs: [build-baseline, build-fixed]
+    runs-on: windows-2022
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - revision: baseline
+            commit: 6b915883dd202f6db891990f6c3af26fb645ecc7
+            tree: 44047160610b7efcb3d49768736af95bde19f85f
+          - revision: fixed
+            commit: 94af2b8b653cad509994b5ccf3dbb60ac28ef920
+            tree: 539f5b424b6f4593c7d96074d69ff077a38ed361
+    steps:
+    - name: Checkout diagnostic harness
+      uses: actions/checkout@v6
+      with:
+        ref: ${{ github.sha }}
+
+    - name: Setup Python 3.12
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Setup JDK 17
+      uses: actions/setup-java@v5
+      with:
+        distribution: temurin
+        java-version: 17
+
+    - name: Run diagnostic contracts
+      run: python -B -m unittest discover -s tests -p test_windows_native_crash_diagnostics.py -v
+
+    - name: Create diagnostic output folder
+      shell: pwsh
+      env:
+        DIAGNOSTIC_DIRECTORY: ${{ github.workspace }}/windows-crash-results/${{ matrix.revision }}/minimal
+      run: New-Item -ItemType Directory -Force -Path $env:DIAGNOSTIC_DIRECTORY | Out-Null
+
+    - name: Download exact SDK artifact
+      uses: actions/download-artifact@v7
+      with:
+        name: ${{ format('sdk-build-{0}', matrix.revision) }}
+        path: artifacts/${{ matrix.revision }}/sdk-build
+
+    - name: Download exact Windows runtime artifact
+      uses: actions/download-artifact@v7
+      with:
+        name: ${{ format('windows-{0}', matrix.revision) }}
+        path: artifacts/${{ matrix.revision }}/windows
+
+    - name: Extract the exact SDK artifact
+      shell: pwsh
+      env:
+        REVISION: ${{ matrix.revision }}
+      run: |
+        $sdkArchive = Join-Path $env:GITHUB_WORKSPACE "artifacts/$env:REVISION/sdk-build/sdk-build.tar.gz"
+        $destination = Join-Path $env:GITHUB_WORKSPACE "artifacts/$env:REVISION/sdk-extracted"
+        New-Item -ItemType Directory -Force -Path $destination | Out-Null
+        tar -xzf $sdkArchive -C $destination
+
+    - name: Verify provenance and deploy the minimal probe
+      shell: pwsh
+      env:
+        REVISION: ${{ matrix.revision }}
+        DIAGNOSTIC_DIRECTORY: ${{ github.workspace }}/windows-crash-results/${{ matrix.revision }}/minimal
+      run: |
+        python scripts/windows-native-crash-diagnostics.py prepare `
+          --revision $env:REVISION `
+          --runtime-home "artifacts/$env:REVISION/sdk-extracted/build/TotalCross" `
+          --platform-artifact "artifacts/$env:REVISION/windows" `
+          --sdk-provenance "artifacts/$env:REVISION/sdk-extracted/build-provenance.json" `
+          --platform-provenance "artifacts/$env:REVISION/windows/build-provenance.json" `
+          --source tests/windows-crash-diagnostics/src/totalcross/ui/WindowsNativeStartupProbe.java `
+          --output $env:DIAGNOSTIC_DIRECTORY
+
+    - name: Install ProcDump and attempt WinDbg installation
+      shell: pwsh
+      env:
+        DIAGNOSTIC_DIRECTORY: ${{ github.workspace }}/windows-crash-results/${{ matrix.revision }}/minimal
+      run: |
+        $toolDirectory = Join-Path $env:RUNNER_TEMP 'windows-crash-tools'
+        New-Item -ItemType Directory -Force -Path $toolDirectory | Out-Null
+        $zipPath = Join-Path $toolDirectory 'procdump.zip'
+        $procDumpPath = Join-Path $toolDirectory 'procdump64.exe'
+        $procDumpStatus = 'unavailable'
+        try {
+          Invoke-WebRequest -Uri 'https://download.sysinternals.com/files/Procdump.zip' -OutFile $zipPath
+          Expand-Archive -LiteralPath $zipPath -DestinationPath $toolDirectory -Force
+          if (-not (Test-Path -LiteralPath $procDumpPath)) {
+            $procDumpPath = Join-Path $toolDirectory 'procdump.exe'
+          }
+          $procDumpStatus = 'downloaded'
+        } catch {
+          "ProcDump download failed: $($_.Exception.Message)" |
+            Set-Content -LiteralPath (Join-Path $env:DIAGNOSTIC_DIRECTORY 'procdump-install.log') -Encoding utf8NoBOM
+          $procDumpPath = Join-Path $toolDirectory 'procdump-unavailable.exe'
+        }
+        "PROCDUMP_PATH=$procDumpPath" >> $env:GITHUB_ENV
+        $windbgLog = Join-Path $env:DIAGNOSTIC_DIRECTORY 'windbg-install.log'
+        $winget = Get-Command winget.exe -ErrorAction SilentlyContinue
+        $windbgStatus = 'winget unavailable'
+        if ($null -ne $winget) {
+          $install = Start-Process -FilePath $winget.Source -ArgumentList @(
+            'install', '--id', 'Microsoft.WinDbg', '--exact', '--silent',
+            '--accept-package-agreements', '--accept-source-agreements') `
+            -Wait -PassThru -NoNewWindow -RedirectStandardOutput $windbgLog `
+            -RedirectStandardError (Join-Path $env:DIAGNOSTIC_DIRECTORY 'windbg-install-stderr.log')
+          $windbgStatus = "winget exit $($install.ExitCode)"
+        }
+        $toolManifest = [ordered]@{
+          procDumpStatus = $procDumpStatus
+          procDumpPath = $procDumpPath
+          procDumpZipSha256 = if (Test-Path -LiteralPath $zipPath) {
+            (Get-FileHash -LiteralPath $zipPath -Algorithm SHA256).Hash.ToLowerInvariant()
+          } else { $null }
+          windbgStatus = $windbgStatus
+        }
+        $toolManifest | ConvertTo-Json -Depth 4 |
+          Set-Content -LiteralPath (Join-Path $env:DIAGNOSTIC_DIRECTORY 'crash-tools.json') -Encoding utf8NoBOM
+
+    - name: Run startup probe with native crash capture
+      shell: pwsh
+      env:
+        REVISION: ${{ matrix.revision }}
+        SOURCE_COMMIT: ${{ matrix.commit }}
+        DIAGNOSTIC_DIRECTORY: ${{ github.workspace }}/windows-crash-results/${{ matrix.revision }}/minimal
+      run: |
+        $manifest = Get-Content -LiteralPath (Join-Path $env:DIAGNOSTIC_DIRECTORY 'diagnostic-manifest.json') -Raw | ConvertFrom-Json
+        & scripts/windows-native-crash-runner.ps1 `
+          -Executable $manifest.deployedProbe.path `
+          -OutputDirectory $env:DIAGNOSTIC_DIRECTORY `
+          -SourceCommit $env:SOURCE_COMMIT `
+          -ProcdumpPath $env:PROCDUMP_PATH `
+          -PdbDirectory (Join-Path $env:DIAGNOSTIC_DIRECTORY 'symbols') `
+          -TimeoutSeconds 45
+
+    - name: Summarize startup markers and process status
+      if: always()
+      shell: pwsh
+      env:
+        DIAGNOSTIC_DIRECTORY: ${{ github.workspace }}/windows-crash-results/${{ matrix.revision }}/minimal
+      run: python scripts/windows-native-crash-diagnostics.py summarize --output $env:DIAGNOSTIC_DIRECTORY
+
+    - name: Upload minimal probe and crash evidence
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: windows-startup-diagnostics-${{ matrix.revision }}
+        path: windows-crash-results/${{ matrix.revision }}/minimal
+        if-no-files-found: warn
+        retention-days: 7
+
+    - name: Require clean MainWindow startup
+      if: always()
+      shell: pwsh
+      env:
+        DIAGNOSTIC_DIRECTORY: ${{ github.workspace }}/windows-crash-results/${{ matrix.revision }}/minimal
+      run: python scripts/windows-native-crash-diagnostics.py require-pass --output $env:DIAGNOSTIC_DIRECTORY
+
+  image-ownership-smoke:
+    name: Progressive image workload / ${{ matrix.revision }}
+    needs: [minimal-probe]
+    if: ${{ needs.minimal-probe.result == 'success' }}
+    runs-on: windows-2022
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - revision: baseline
+            commit: 6b915883dd202f6db891990f6c3af26fb645ecc7
+            tree: 44047160610b7efcb3d49768736af95bde19f85f
+          - revision: fixed
+            commit: 94af2b8b653cad509994b5ccf3dbb60ac28ef920
+            tree: 539f5b424b6f4593c7d96074d69ff077a38ed361
+    steps:
+    - name: Checkout diagnostic harness
+      uses: actions/checkout@v6
+      with:
+        ref: ${{ github.sha }}
+
+    - name: Checkout instrumented functional fixture
+      uses: actions/checkout@v6
+      with:
+        repository: TotalCross/totalcross-performance-lab
+        ref: 9d7d548916d2b74a68ee46886104b1d0dfa96c19
+        path: performance-lab
+
+    - name: Setup Python 3.12
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Setup JDK 17
+      uses: actions/setup-java@v5
+      with:
+        distribution: temurin
+        java-version: 17
+
+    - name: Run fixture contracts
+      working-directory: performance-lab
+      run: python -B -m unittest discover -s tests -p test_image_ownership_smoke_contract.py -v
+
+    - name: Create diagnostic output folder
+      shell: pwsh
+      env:
+        DIAGNOSTIC_DIRECTORY: ${{ github.workspace }}/windows-crash-results/${{ matrix.revision }}/ownership
+      run: New-Item -ItemType Directory -Force -Path $env:DIAGNOSTIC_DIRECTORY | Out-Null
+
+    - name: Download exact SDK artifact
+      uses: actions/download-artifact@v7
+      with:
+        name: ${{ format('sdk-build-{0}', matrix.revision) }}
+        path: artifacts/${{ matrix.revision }}/sdk-build
+
+    - name: Download exact Windows runtime artifact
+      uses: actions/download-artifact@v7
+      with:
+        name: ${{ format('windows-{0}', matrix.revision) }}
+        path: artifacts/${{ matrix.revision }}/windows
+
+    - name: Extract the exact SDK artifact
+      shell: pwsh
+      env:
+        REVISION: ${{ matrix.revision }}
+      run: |
+        $sdkArchive = Join-Path $env:GITHUB_WORKSPACE "artifacts/$env:REVISION/sdk-build/sdk-build.tar.gz"
+        $destination = Join-Path $env:GITHUB_WORKSPACE "artifacts/$env:REVISION/sdk-extracted"
+        New-Item -ItemType Directory -Force -Path $destination | Out-Null
+        tar -xzf $sdkArchive -C $destination
+
+    - name: Install ProcDump and attempt WinDbg installation
+      shell: pwsh
+      env:
+        DIAGNOSTIC_DIRECTORY: ${{ github.workspace }}/windows-crash-results/${{ matrix.revision }}/ownership
+      run: |
+        $toolDirectory = Join-Path $env:RUNNER_TEMP 'windows-crash-tools'
+        New-Item -ItemType Directory -Force -Path $toolDirectory | Out-Null
+        $zipPath = Join-Path $toolDirectory 'procdump.zip'
+        $procDumpPath = Join-Path $toolDirectory 'procdump64.exe'
+        $procDumpStatus = 'unavailable'
+        try {
+          Invoke-WebRequest -Uri 'https://download.sysinternals.com/files/Procdump.zip' -OutFile $zipPath
+          Expand-Archive -LiteralPath $zipPath -DestinationPath $toolDirectory -Force
+          if (-not (Test-Path -LiteralPath $procDumpPath)) {
+            $procDumpPath = Join-Path $toolDirectory 'procdump.exe'
+          }
+          $procDumpStatus = 'downloaded'
+        } catch {
+          "ProcDump download failed: $($_.Exception.Message)" |
+            Set-Content -LiteralPath (Join-Path $env:DIAGNOSTIC_DIRECTORY 'procdump-install.log') -Encoding utf8NoBOM
+          $procDumpPath = Join-Path $toolDirectory 'procdump-unavailable.exe'
+        }
+        "PROCDUMP_PATH=$procDumpPath" >> $env:GITHUB_ENV
+        $windbgLog = Join-Path $env:DIAGNOSTIC_DIRECTORY 'windbg-install.log'
+        $winget = Get-Command winget.exe -ErrorAction SilentlyContinue
+        $windbgStatus = 'winget unavailable'
+        if ($null -ne $winget) {
+          $install = Start-Process -FilePath $winget.Source -ArgumentList @(
+            'install', '--id', 'Microsoft.WinDbg', '--exact', '--silent',
+            '--accept-package-agreements', '--accept-source-agreements') `
+            -Wait -PassThru -NoNewWindow -RedirectStandardOutput $windbgLog `
+            -RedirectStandardError (Join-Path $env:DIAGNOSTIC_DIRECTORY 'windbg-install-stderr.log')
+          $windbgStatus = "winget exit $($install.ExitCode)"
+        }
+        $toolManifest = [ordered]@{
+          procDumpStatus = $procDumpStatus
+          procDumpPath = $procDumpPath
+          procDumpZipSha256 = if (Test-Path -LiteralPath $zipPath) {
+            (Get-FileHash -LiteralPath $zipPath -Algorithm SHA256).Hash.ToLowerInvariant()
+          } else { $null }
+          windbgStatus = $windbgStatus
+        }
+        $toolManifest | ConvertTo-Json -Depth 4 |
+          Set-Content -LiteralPath (Join-Path $env:DIAGNOSTIC_DIRECTORY 'crash-tools.json') -Encoding utf8NoBOM
+
+    - name: Deploy progressive image ownership probe
+      working-directory: performance-lab
+      shell: pwsh
+      env:
+        REVISION: ${{ matrix.revision }}
+        SOURCE_COMMIT: ${{ matrix.commit }}
+        SOURCE_TREE: ${{ matrix.tree }}
+        LAB_COMMIT: 9d7d548916d2b74a68ee46886104b1d0dfa96c19
+        DIAGNOSTIC_DIRECTORY: ${{ github.workspace }}/windows-crash-results/${{ matrix.revision }}/ownership
+      run: |
+        $sdkRoot = Join-Path $env:GITHUB_WORKSPACE "artifacts/$env:REVISION/sdk-extracted/build/TotalCross"
+        $platform = Join-Path $env:GITHUB_WORKSPACE "artifacts/$env:REVISION/windows"
+        python tools/image_ownership_smoke.py prepare `
+          --target windows `
+          --runtime-home $sdkRoot `
+          --platform-artifact $platform `
+          --sdk-provenance (Join-Path $env:GITHUB_WORKSPACE "artifacts/$env:REVISION/sdk-extracted/build-provenance.json") `
+          --platform-provenance (Join-Path $platform 'build-provenance.json') `
+          --sdk-archive (Join-Path $env:GITHUB_WORKSPACE "artifacts/$env:REVISION/sdk-build/sdk-build.tar.gz") `
+          --source-commit $env:SOURCE_COMMIT `
+          --source-tree $env:SOURCE_TREE `
+          --lab-root $env:GITHUB_WORKSPACE/performance-lab `
+          --lab-commit $env:LAB_COMMIT `
+          --output $env:DIAGNOSTIC_DIRECTORY `
+          --diagnostic-mode $env:REVISION
+
+    - name: Run image ownership workload with native crash capture
+      working-directory: performance-lab
+      continue-on-error: true
+      env:
+        REVISION: ${{ matrix.revision }}
+        DIAGNOSTIC_DIRECTORY: ${{ github.workspace }}/windows-crash-results/${{ matrix.revision }}/ownership
+        CRASH_RUNNER: ${{ github.workspace }}/scripts/windows-native-crash-runner.ps1
+        PROCDUMP_PATH: ${{ env.PROCDUMP_PATH }}
+        PDB_DIRECTORY: ${{ github.workspace }}/artifacts/${{ matrix.revision }}/windows/TotalCrossVM/vc2022/Release
+      run: |
+        python tools/image_ownership_smoke.py run-host `
+          --target windows `
+          --output $env:DIAGNOSTIC_DIRECTORY `
+          --diagnostic-mode $env:REVISION `
+          --windows-crash-runner $env:CRASH_RUNNER `
+          --procdump $env:PROCDUMP_PATH `
+          --pdb-directory $env:PDB_DIRECTORY
+
+    - name: Upload image ownership and crash evidence
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: windows-image-ownership-diagnostics-${{ matrix.revision }}
+        path: windows-crash-results/${{ matrix.revision }}/ownership
+        if-no-files-found: warn
+        retention-days: 7
+
+    - name: Require the revision-specific outcome
+      if: always()
+      shell: pwsh
+      env:
+        REVISION: ${{ matrix.revision }}
+        DIAGNOSTIC_DIRECTORY: ${{ github.workspace }}/windows-crash-results/${{ matrix.revision }}/ownership
+      run: |
+        $resultPath = Join-Path $env:DIAGNOSTIC_DIRECTORY 'image-ownership-result.json'
+        if (-not (Test-Path -LiteralPath $resultPath)) { throw 'Image workload emitted no result record' }
+        $result = Get-Content -LiteralPath $resultPath -Raw | ConvertFrom-Json
+        if ($env:REVISION -eq 'baseline') {
+          if ($result.status -notin @('EXPECTED_BASELINE_DIFFERENCES', 'BASELINE_OBSERVATION')) {
+            throw "Baseline did not complete the expected diagnostic workload: $($result.status)"
+          }
+        } elseif ($result.status -ne 'PASS') {
+          throw "Fixed ownership workload did not pass: $($result.status)"
+        }

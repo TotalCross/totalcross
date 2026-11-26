@@ -28,6 +28,16 @@ on:
         required: false
         type: boolean
         default: false
+      windows_native_crash_diagnostics:
+        description: Preserve Windows PDB symbols for the isolated native crash workflow
+        required: false
+        type: boolean
+        default: false
+      diagnostic_artifact_suffix:
+        description: Optional suffix for same-run diagnostic artifacts
+        required: false
+        type: string
+        default: ''
       source_sha:
         description: Exact TotalCross commit whose artifacts will be built and tested
         required: false
@@ -225,7 +235,7 @@ jobs:
       if: ${{ steps.select_build_scope.outputs.scope != 'none' }}
       uses: actions/upload-artifact@v7
       with:
-        name: source-code
+        name: ${{ inputs.diagnostic_artifact_suffix == '' && 'source-code' || format('source-code-{0}', inputs.diagnostic_artifact_suffix) }}
         path: ${{ runner.temp }}/source-code.tar.gz
         retention-days: 1
 
@@ -239,7 +249,7 @@ jobs:
     - name: Download source code
       uses: actions/download-artifact@v7
       with:
-        name: source-code
+        name: ${{ inputs.diagnostic_artifact_suffix == '' && 'source-code' || format('source-code-{0}', inputs.diagnostic_artifact_suffix) }}
 
     - name: Extract source code
       run: tar -xzf source-code.tar.gz
@@ -309,7 +319,7 @@ jobs:
     - name: Upload prepared native dependencies
       uses: actions/upload-artifact@v7
       with:
-        name: prepared-native-dependencies
+        name: ${{ inputs.diagnostic_artifact_suffix == '' && 'prepared-native-dependencies' || format('prepared-native-dependencies-{0}', inputs.diagnostic_artifact_suffix) }}
         path: ${{ runner.temp }}/depot-tools-native-dependencies.tar.gz
         if-no-files-found: error
         retention-days: 1
@@ -324,7 +334,7 @@ jobs:
     - name: Download source code
       uses: actions/download-artifact@v7
       with:
-        name: source-code
+        name: ${{ inputs.diagnostic_artifact_suffix == '' && 'source-code' || format('source-code-{0}', inputs.diagnostic_artifact_suffix) }}
 
     - name: Extract source code
       run: tar -xzf source-code.tar.gz
@@ -349,7 +359,7 @@ jobs:
     - name: Upload generated native bridges
       uses: actions/upload-artifact@v7
       with:
-        name: native-bridges
+        name: ${{ inputs.diagnostic_artifact_suffix == '' && 'native-bridges' || format('native-bridges-{0}', inputs.diagnostic_artifact_suffix) }}
         path: TotalCrossSDK/build/generated/native-bridges
         if-no-files-found: error
         retention-days: 1
@@ -381,7 +391,7 @@ jobs:
     - name: Download source code
       uses: actions/download-artifact@v7
       with:
-        name: source-code
+        name: ${{ inputs.diagnostic_artifact_suffix == '' && 'source-code' || format('source-code-{0}', inputs.diagnostic_artifact_suffix) }}
 
     - name: Extract source code
       run: tar -xzf source-code.tar.gz
@@ -389,13 +399,13 @@ jobs:
     - name: Download generated native bridges
       uses: actions/download-artifact@v7
       with:
-        name: native-bridges
+        name: ${{ inputs.diagnostic_artifact_suffix == '' && 'native-bridges' || format('native-bridges-{0}', inputs.diagnostic_artifact_suffix) }}
         path: TotalCrossSDK/build/generated/native-bridges
 
     - name: Download prepared native dependencies
       uses: actions/download-artifact@v7
       with:
-        name: prepared-native-dependencies
+        name: ${{ inputs.diagnostic_artifact_suffix == '' && 'prepared-native-dependencies' || format('prepared-native-dependencies-{0}', inputs.diagnostic_artifact_suffix) }}
 
     - name: Extract prepared native dependencies
       shell: bash
@@ -524,7 +534,7 @@ jobs:
     - name: Download source code
       uses: actions/download-artifact@v7
       with:
-        name: source-code
+        name: ${{ inputs.diagnostic_artifact_suffix == '' && 'source-code' || format('source-code-{0}', inputs.diagnostic_artifact_suffix) }}
 
     - name: Extract source code
       run: tar -xzf source-code.tar.gz
@@ -532,13 +542,13 @@ jobs:
     - name: Download generated native bridges
       uses: actions/download-artifact@v7
       with:
-        name: native-bridges
+        name: ${{ inputs.diagnostic_artifact_suffix == '' && 'native-bridges' || format('native-bridges-{0}', inputs.diagnostic_artifact_suffix) }}
         path: TotalCrossSDK/build/generated/native-bridges
 
     - name: Download prepared native dependencies
       uses: actions/download-artifact@v7
       with:
-        name: prepared-native-dependencies
+        name: ${{ inputs.diagnostic_artifact_suffix == '' && 'prepared-native-dependencies' || format('prepared-native-dependencies-{0}', inputs.diagnostic_artifact_suffix) }}
 
     - name: Extract prepared native dependencies
       shell: bash
@@ -575,7 +585,7 @@ jobs:
     - name: Download source code
       uses: actions/download-artifact@v7
       with:
-        name: source-code
+        name: ${{ inputs.diagnostic_artifact_suffix == '' && 'source-code' || format('source-code-{0}', inputs.diagnostic_artifact_suffix) }}
 
     - name: Extract source code
       shell: bash
@@ -584,13 +594,13 @@ jobs:
     - name: Download generated native bridges
       uses: actions/download-artifact@v7
       with:
-        name: native-bridges
+        name: ${{ inputs.diagnostic_artifact_suffix == '' && 'native-bridges' || format('native-bridges-{0}', inputs.diagnostic_artifact_suffix) }}
         path: TotalCrossSDK/build/generated/native-bridges
 
     - name: Download prepared native dependencies
       uses: actions/download-artifact@v7
       with:
-        name: prepared-native-dependencies
+        name: ${{ inputs.diagnostic_artifact_suffix == '' && 'prepared-native-dependencies' || format('prepared-native-dependencies-{0}', inputs.diagnostic_artifact_suffix) }}
 
     - name: Extract prepared native dependencies
       shell: bash
@@ -628,10 +638,14 @@ jobs:
 
     - name: Build VM
       shell: cmd
+      env:
+        WINDOWS_NATIVE_CRASH_DIAGNOSTICS: ${{ inputs.windows_native_crash_diagnostics }}
       run: |
         mkdir TotalCrossVM\vc2022
         pushd TotalCrossVM\vc2022
-        cmake ..\ -G"Visual Studio 17 2022" -A x64
+        set "CMAKE_DIAGNOSTIC_SYMBOL_ARGS="
+        if "%WINDOWS_NATIVE_CRASH_DIAGNOSTICS%"=="true" set "CMAKE_DIAGNOSTIC_SYMBOL_ARGS=-DCMAKE_POLICY_DEFAULT_CMP0141=NEW -DCMAKE_MSVC_DEBUG_INFORMATION_FORMAT=ProgramDatabase"
+        cmake ..\ -G"Visual Studio 17 2022" -A x64 %CMAKE_DIAGNOSTIC_SYMBOL_ARGS%
         findstr /C:"<RuntimeLibrary>MultiThreaded</RuntimeLibrary>" tcvm.vcxproj >NUL || exit /b 1
         findstr /C:"<RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>" tcvm.vcxproj >NUL || exit /b 1
         cmake --build . --config Release
@@ -640,10 +654,11 @@ jobs:
     - name: Upload Windows build artifacts
       uses: actions/upload-artifact@v7
       with:
-        name: windows
+        name: ${{ inputs.diagnostic_artifact_suffix == '' && 'windows' || format('windows-{0}', inputs.diagnostic_artifact_suffix) }}
         path: |
           TotalCrossVM/vc2022/Release/*.dll
           TotalCrossVM/vc2022/Release/*.exe
+          TotalCrossVM/vc2022/**/*.pdb
           build-provenance.json
 
   build-windows-native-legacy:
@@ -656,7 +671,7 @@ jobs:
     - name: Download source code
       uses: actions/download-artifact@v7
       with:
-        name: source-code
+        name: ${{ inputs.diagnostic_artifact_suffix == '' && 'source-code' || format('source-code-{0}', inputs.diagnostic_artifact_suffix) }}
 
     - name: Extract source code
       shell: bash
@@ -665,13 +680,13 @@ jobs:
     - name: Download generated native bridges
       uses: actions/download-artifact@v7
       with:
-        name: native-bridges
+        name: ${{ inputs.diagnostic_artifact_suffix == '' && 'native-bridges' || format('native-bridges-{0}', inputs.diagnostic_artifact_suffix) }}
         path: TotalCrossSDK/build/generated/native-bridges
 
     - name: Download prepared native dependencies
       uses: actions/download-artifact@v7
       with:
-        name: prepared-native-dependencies
+        name: ${{ inputs.diagnostic_artifact_suffix == '' && 'prepared-native-dependencies' || format('prepared-native-dependencies-{0}', inputs.diagnostic_artifact_suffix) }}
 
     - name: Extract prepared native dependencies
       shell: bash
@@ -712,7 +727,7 @@ jobs:
     - name: Download source code
       uses: actions/download-artifact@v7
       with:
-        name: source-code
+        name: ${{ inputs.diagnostic_artifact_suffix == '' && 'source-code' || format('source-code-{0}', inputs.diagnostic_artifact_suffix) }}
 
     - name: Extract source code
       run: tar -xzf source-code.tar.gz
@@ -720,13 +735,13 @@ jobs:
     - name: Download generated native bridges
       uses: actions/download-artifact@v7
       with:
-        name: native-bridges
+        name: ${{ inputs.diagnostic_artifact_suffix == '' && 'native-bridges' || format('native-bridges-{0}', inputs.diagnostic_artifact_suffix) }}
         path: TotalCrossSDK/build/generated/native-bridges
 
     - name: Download prepared native dependencies
       uses: actions/download-artifact@v7
       with:
-        name: prepared-native-dependencies
+        name: ${{ inputs.diagnostic_artifact_suffix == '' && 'prepared-native-dependencies' || format('prepared-native-dependencies-{0}', inputs.diagnostic_artifact_suffix) }}
 
     - name: Extract prepared native dependencies
       shell: bash
@@ -788,7 +803,7 @@ jobs:
     - name: Download source code
       uses: actions/download-artifact@v7
       with:
-        name: source-code
+        name: ${{ inputs.diagnostic_artifact_suffix == '' && 'source-code' || format('source-code-{0}', inputs.diagnostic_artifact_suffix) }}
 
     - name: Extract source code
       run: tar -xzf source-code.tar.gz
@@ -834,7 +849,7 @@ jobs:
       if: always()
       uses: actions/upload-artifact@v7
       with:
-        name: sdk-gradle-logs
+        name: ${{ inputs.diagnostic_artifact_suffix == '' && 'sdk-gradle-logs' || format('sdk-gradle-logs-{0}', inputs.diagnostic_artifact_suffix) }}
         path: |
           build/logs/sdk-gradle
           TotalCrossSDK/agent-logs
@@ -846,7 +861,7 @@ jobs:
     - name: Upload SDK build artifacts
       uses: actions/upload-artifact@v7
       with:
-        name: sdk-build
+        name: ${{ inputs.diagnostic_artifact_suffix == '' && 'sdk-build' || format('sdk-build-{0}', inputs.diagnostic_artifact_suffix) }}
         path: sdk-build.tar.gz
 
   build-android:
@@ -861,7 +876,7 @@ jobs:
     - name: Download source code
       uses: actions/download-artifact@v7
       with:
-        name: source-code
+        name: ${{ inputs.diagnostic_artifact_suffix == '' && 'source-code' || format('source-code-{0}', inputs.diagnostic_artifact_suffix) }}
 
     - name: Extract source code
       run: tar -xzf source-code.tar.gz
@@ -869,13 +884,13 @@ jobs:
     - name: Download generated native bridges
       uses: actions/download-artifact@v7
       with:
-        name: native-bridges
+        name: ${{ inputs.diagnostic_artifact_suffix == '' && 'native-bridges' || format('native-bridges-{0}', inputs.diagnostic_artifact_suffix) }}
         path: TotalCrossSDK/build/generated/native-bridges
 
     - name: Download prepared native dependencies
       uses: actions/download-artifact@v7
       with:
-        name: prepared-native-dependencies
+        name: ${{ inputs.diagnostic_artifact_suffix == '' && 'prepared-native-dependencies' || format('prepared-native-dependencies-{0}', inputs.diagnostic_artifact_suffix) }}
 
     - name: Extract prepared native dependencies
       shell: bash
@@ -955,7 +970,7 @@ jobs:
     - name: Download source code
       uses: actions/download-artifact@v7
       with:
-        name: source-code
+        name: ${{ inputs.diagnostic_artifact_suffix == '' && 'source-code' || format('source-code-{0}', inputs.diagnostic_artifact_suffix) }}
 
     - name: Extract source code
       run: tar -xzf source-code.tar.gz
@@ -963,13 +978,13 @@ jobs:
     - name: Download generated native bridges
       uses: actions/download-artifact@v7
       with:
-        name: native-bridges
+        name: ${{ inputs.diagnostic_artifact_suffix == '' && 'native-bridges' || format('native-bridges-{0}', inputs.diagnostic_artifact_suffix) }}
         path: TotalCrossSDK/build/generated/native-bridges
 
     - name: Download prepared native dependencies
       uses: actions/download-artifact@v7
       with:
-        name: prepared-native-dependencies
+        name: ${{ inputs.diagnostic_artifact_suffix == '' && 'prepared-native-dependencies' || format('prepared-native-dependencies-{0}', inputs.diagnostic_artifact_suffix) }}
 
     - name: Extract prepared native dependencies
       shell: bash
@@ -1169,7 +1184,7 @@ jobs:
           build-provenance.json
 
   image-ownership-smoke:
-    if: ${{ always() && needs.checkout-source.result == 'success' && needs.build-sdk.result == 'success' && needs.build-windows.result == 'success' && (inputs.windows_x64_image_ownership_smoke || ((needs.checkout-source.outputs.image_ownership_changed == 'true' || inputs.image_ownership_smoke) && needs.build-linux.result == 'success' && needs.build-android.result == 'success')) }}
+    if: ${{ always() && !inputs.windows_native_crash_diagnostics && needs.checkout-source.result == 'success' && needs.build-sdk.result == 'success' && needs.build-windows.result == 'success' && (inputs.windows_x64_image_ownership_smoke || ((needs.checkout-source.outputs.image_ownership_changed == 'true' || inputs.image_ownership_smoke) && needs.build-linux.result == 'success' && needs.build-android.result == 'success')) }}
     name: Image ownership functional smoke / ${{ matrix.target }}
     needs: [checkout-source, build-sdk, build-linux, build-windows, build-android]
     strategy:
@@ -1216,7 +1231,7 @@ jobs:
     - name: Download SDK and target runtime artifacts
       uses: actions/download-artifact@v7
       with:
-        name: sdk-build
+        name: ${{ inputs.diagnostic_artifact_suffix == '' && 'sdk-build' || format('sdk-build-{0}', inputs.diagnostic_artifact_suffix) }}
         path: artifacts/sdk-build
 
     - name: Download target runtime artifact
