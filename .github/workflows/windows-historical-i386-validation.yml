@@ -1,0 +1,234 @@
+# Copyright (C) 2026 Amalgam Solucoes em TI Ltda
+#
+# SPDX-License-Identifier: LGPL-2.1-only
+
+name: Windows historical Win32 startup and ownership validation
+on:
+  push:
+    branches:
+      - codex/windows-historical-startup-compatibility
+    paths:
+      - .github/workflows/windows-historical-i386-validation.yml
+      - scripts/build-windows-win32-diagnostic.ps1
+      - scripts/run-windows-i386-validation.ps1
+      - scripts/windows-native-crash-diagnostics.py
+      - scripts/windows-native-crash-runner.ps1
+      - tests/test_windows_native_crash_diagnostics.py
+      - tests/windows-crash-diagnostics/src/totalcross/ui/WindowsNativeStartupProbe.java
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  windows-i386-validation:
+    if: ${{ github.ref == 'refs/heads/codex/windows-historical-startup-compatibility' }}
+    name: Historical I386 startup and gated ownership smoke
+    runs-on: windows-2022
+    timeout-minutes: 100
+    env:
+      PERFORMANCE_LAB_COMMIT: c4ba2f568df374f19a8bbc2a74dcfb598f2ac48e
+
+    steps:
+    - name: Checkout diagnostic harness
+      uses: actions/checkout@v6
+      with:
+        ref: ${{ github.sha }}
+
+    - name: Checkout fixed production source
+      uses: actions/checkout@v6
+      with:
+        ref: 94af2b8b653cad509994b5ccf3dbb60ac28ef920
+        path: fixed-source
+
+    - name: Checkout pinned persistent ownership smoke
+      uses: actions/checkout@v6
+      with:
+        repository: TotalCross/totalcross-performance-lab
+        ref: c4ba2f568df374f19a8bbc2a74dcfb598f2ac48e
+        path: performance-lab
+
+    - name: Setup Python 3.12
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Setup JDK 17
+      uses: actions/setup-java@v5
+      with:
+        distribution: temurin
+        java-version: 17
+
+    - name: Run diagnostic and ownership smoke contracts
+      shell: pwsh
+      run: |
+        python -B -m unittest discover -s tests -p test_windows_native_crash_diagnostics.py -v
+        if ($LASTEXITCODE -ne 0) { throw 'Windows diagnostic contracts failed.' }
+        Push-Location performance-lab
+        try {
+          python -B -m unittest discover -s tests -p test_image_ownership_smoke_contract.py -v
+          if ($LASTEXITCODE -ne 0) { throw 'Win32 ownership smoke contracts failed.' }
+        } finally {
+          Pop-Location
+        }
+
+    - name: Create isolated artifact and evidence folders
+      shell: pwsh
+      run: |
+        $paths = @(
+          'artifacts/historical-a/sdk-build', 'artifacts/historical-a/windows',
+          'artifacts/historical-b/sdk-build', 'artifacts/historical-b/windows',
+          'artifacts/fixed-win32/sdk-build', 'artifacts/fixed-inputs/deps',
+          'artifacts/fixed-win32-runtime', 'windows-crash-results'
+        )
+        foreach ($path in $paths) { New-Item -ItemType Directory -Force -Path $path | Out-Null }
+
+    - name: Download historical A SDK artifact
+      uses: actions/download-artifact@v7
+      continue-on-error: true
+      with:
+        name: sdk-build
+        run-id: 44414042826
+        repository: ${{ github.repository }}
+        github-token: ${{ github.token }}
+        path: artifacts/historical-a/sdk-build
+
+    - name: Download historical A Windows artifact
+      uses: actions/download-artifact@v7
+      continue-on-error: true
+      with:
+        name: windows
+        run-id: 44414042826
+        repository: ${{ github.repository }}
+        github-token: ${{ github.token }}
+        path: artifacts/historical-a/windows
+
+    - name: Download historical B SDK artifact
+      uses: actions/download-artifact@v7
+      continue-on-error: true
+      with:
+        name: sdk-build
+        run-id: 44565183218
+        repository: ${{ github.repository }}
+        github-token: ${{ github.token }}
+        path: artifacts/historical-b/sdk-build
+
+    - name: Download historical B Windows artifact
+      uses: actions/download-artifact@v7
+      continue-on-error: true
+      with:
+        name: windows
+        run-id: 44565183218
+        repository: ${{ github.repository }}
+        github-token: ${{ github.token }}
+        path: artifacts/historical-b/windows
+
+    - name: Download fixed SDK artifact
+      uses: actions/download-artifact@v7
+      continue-on-error: true
+      with:
+        name: sdk-build-fixed
+        run-id: 45884551862
+        repository: ${{ github.repository }}
+        github-token: ${{ github.token }}
+        path: artifacts/fixed-win32/sdk-build
+
+    - name: Download fixed native dependency bundle
+      uses: actions/download-artifact@v7
+      continue-on-error: true
+      with:
+        name: prepared-native-dependencies-fixed
+        run-id: 45884551862
+        repository: ${{ github.repository }}
+        github-token: ${{ github.token }}
+        path: artifacts/fixed-inputs/deps
+
+    - name: Download fixed native bridge sources
+      uses: actions/download-artifact@v7
+      continue-on-error: true
+      with:
+        name: native-bridges-fixed
+        run-id: 45884551862
+        repository: ${{ github.repository }}
+        github-token: ${{ github.token }}
+        path: fixed-source/TotalCrossSDK/build/generated/native-bridges
+
+    - name: Extract exact SDK archives
+      if: always()
+      continue-on-error: true
+      shell: pwsh
+      run: |
+        foreach ($name in @('historical-a', 'historical-b', 'fixed-win32')) {
+          $archive = "artifacts/$name/sdk-build/sdk-build.tar.gz"
+          if (-not (Test-Path -LiteralPath $archive)) { continue }
+          $destination = "artifacts/$name/sdk-extracted"
+          New-Item -ItemType Directory -Force -Path $destination | Out-Null
+          & tar -xzf $archive -C $destination *> "artifacts/$name/sdk-extract.log"
+          if ($LASTEXITCODE -ne 0) { Write-Warning "SDK extraction failed for $name" }
+        }
+
+    - name: Build corrected production Win32 runtime
+      id: build-win32-runtime
+      continue-on-error: true
+      shell: pwsh
+      run: '& scripts/build-windows-win32-diagnostic.ps1'
+
+    - name: Upload corrected Win32 runtime and build evidence
+      id: upload-win32-runtime
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: windows-fixed-win32-runtime
+        path: artifacts/fixed-win32-runtime
+        if-no-files-found: warn
+        retention-days: 7
+
+    - name: Install focused crash capture tools
+      if: always()
+      continue-on-error: true
+      shell: pwsh
+      env:
+        DIAGNOSTIC_DIRECTORY: ${{ github.workspace }}/windows-crash-results/tool-setup
+      run: |
+        & scripts/install-windows-crash-tools.ps1 -OutputDirectory $env:DIAGNOSTIC_DIRECTORY
+
+    - name: Run historical A, historical B, corrected I386, and gated ownership smoke
+      if: always()
+      id: run-i386-validation
+      continue-on-error: true
+      shell: pwsh
+      env:
+        FIXED_WIN32_ARTIFACT_ID: ${{ steps.upload-win32-runtime.outputs.artifact-id }}
+        FIXED_WIN32_ARTIFACT_DIGEST: ${{ steps.upload-win32-runtime.outputs.artifact-digest }}
+      run: '& scripts/run-windows-i386-validation.ps1'
+
+    - name: Upload Windows I386 comparison, smoke, and crash evidence
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: windows-historical-i386-validation-results
+        path: windows-crash-results
+        if-no-files-found: warn
+        retention-days: 14
+
+    - name: Require complete comparison and corrected Win32 ownership PASS
+      if: always()
+      shell: pwsh
+      run: |
+        $summaryPath = 'windows-crash-results/windows-i386-validation-summary.json'
+        if (-not (Test-Path -LiteralPath $summaryPath)) {
+          throw 'Windows I386 validation emitted no summary.'
+        }
+        $summary = Get-Content -LiteralPath $summaryPath -Raw | ConvertFrom-Json
+        $incomplete = @($summary.startup | Where-Object { $_.status -eq 'INCOMPLETE' })
+        if ($incomplete.Count -gt 0) {
+          throw "One or more exact startup comparisons were INCOMPLETE: $($incomplete.revision -join ', ')"
+        }
+        $fixed = $summary.startup | Where-Object { $_.revision -eq 'fixed-win32' }
+        if ($null -eq $fixed -or $fixed.status -ne 'PASS') {
+          throw 'Corrected production Win32 minimal startup did not PASS.'
+        }
+        if ($summary.ownership.status -ne 'PASS') {
+          throw "Persistent image ownership smoke did not PASS: $($summary.ownership.status)"
+        }

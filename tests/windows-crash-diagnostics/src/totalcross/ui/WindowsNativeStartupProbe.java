@@ -5,6 +5,7 @@
 package totalcross.ui;
 
 import totalcross.io.File;
+import totalcross.sys.Convert;
 import totalcross.sys.Settings;
 import totalcross.sys.Vm;
 
@@ -27,7 +28,9 @@ public final class WindowsNativeStartupProbe extends MainWindow {
       record("window-surface-requested");
       repaintNow();
       record("window-render-returned");
-      write("tcdiag-result.txt", "PASS\n");
+      if (!write("tcdiag-result.txt", "PASS\n")) {
+        throw new IllegalStateException("could not persist the startup PASS marker");
+      }
       record("application-complete");
       MainWindow.exit(0);
     } catch (Throwable failure) {
@@ -40,23 +43,31 @@ public final class WindowsNativeStartupProbe extends MainWindow {
 
   private static void record(String stage) {
     Vm.debug("TC_WINDOWS_STARTUP_STAGE " + stage);
-    write("tcdiag-" + stage + ".marker", stage);
+    if (!write("tcdiag-" + stage + ".marker", stage)) {
+      Vm.debug("TC_WINDOWS_STARTUP_MARKER_WRITE_FAILED " + stage);
+    }
   }
 
-  private static void write(String filename, String contents) {
+  private static boolean write(String filename, String contents) {
     File file = null;
     try {
-      file = new File(Settings.appPath + filename, File.CREATE_EMPTY);
+      file = new File(Convert.appendPath(Settings.appPath, filename), File.CREATE_EMPTY);
       byte[] bytes = contents.getBytes();
       file.writeBytes(bytes, 0, bytes.length);
-    } catch (Throwable ignored) {
-      // The host process report remains available if the app marker path fails.
+      file.close();
+      file = null;
+      return true;
+    } catch (Throwable failure) {
+      Vm.debug("TC_WINDOWS_STARTUP_MARKER_WRITE_FAILED " + filename + " "
+          + failure.getClass().getName() + ": " + failure.getMessage());
+      return false;
     } finally {
       if (file != null) {
         try {
           file.close();
-        } catch (Throwable ignored) {
-          // Keep the startup probe independent of file cleanup behavior.
+        } catch (Throwable failure) {
+          Vm.debug("TC_WINDOWS_STARTUP_MARKER_CLOSE_FAILED " + filename + " "
+              + failure.getClass().getName() + ": " + failure.getMessage());
         }
       }
     }

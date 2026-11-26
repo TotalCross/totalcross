@@ -23,12 +23,35 @@ REVISIONS = {
     "baseline": {
         "commit": "6b915883dd202f6db891990f6c3af26fb645ecc7",
         "tree": "44047160610b7efcb3d49768736af95bde19f85f",
+        "machine": "AMD64",
+        "configuration": "Visual Studio 17 2022 x64 Release",
     },
     "fixed": {
         "commit": "94af2b8b653cad509994b5ccf3dbb60ac28ef920",
         "tree": "539f5b424b6f4593c7d96074d69ff077a38ed361",
+        "machine": "AMD64",
+        "configuration": "Visual Studio 17 2022 x64 Release",
+    },
+    "historical-a": {
+        "commit": "61034a7562e7fa43df076dcc38bcd48128605395",
+        "tree": "d38a41633088464c707c04bd358b9997e3dc1af0",
+        "machine": "I386",
+        "configuration": "Visual Studio 17 2022 Win32 Release",
+    },
+    "historical-b": {
+        "commit": "c7cf79575602f3cc19e107643f0fa39d3e151004",
+        "tree": "b4ea2e626c5dcfea67953a56f52a348630551620",
+        "machine": "I386",
+        "configuration": "Visual Studio 17 2022 Win32 Release",
+    },
+    "fixed-win32": {
+        "commit": "94af2b8b653cad509994b5ccf3dbb60ac28ef920",
+        "tree": "539f5b424b6f4593c7d96074d69ff077a38ed361",
+        "machine": "I386",
+        "configuration": "Visual Studio 17 2022 Win32 Release",
     },
 }
+PE_MACHINES = {"I386": 0x014C, "AMD64": 0x8664}
 ENTRY_CLASS = "totalcross.ui.WindowsNativeStartupProbe"
 APP_NAME = "WindowsNativeStartupProbe"
 REQUIRED_APP_MARKERS = (
@@ -68,11 +91,16 @@ def pe_machine(path: Path) -> int:
         raise DiagnosticError("cannot inspect Windows executable: " + str(path)) from error
 
 
-def require_amd64(path: Path) -> None:
+def require_machine(path: Path, expected: str) -> None:
     machine = pe_machine(path)
-    if machine != 0x8664:
-        raise DiagnosticError("Windows artifact is not AMD64: " + str(path)
+    if machine != PE_MACHINES[expected]:
+        raise DiagnosticError("Windows artifact is not " + expected + ": " + str(path)
                               + " (PE machine 0x%04x)" % machine)
+
+
+def require_amd64(path: Path) -> None:
+    """Keep the previous x64 diagnostic CLI/tests compatible."""
+    require_machine(path, "AMD64")
 
 
 def read_json(path: Path) -> dict:
@@ -160,8 +188,9 @@ def prepare(arguments) -> None:
 
     launcher = locate_one(platform_artifact, "Launcher.exe")
     vm = locate_one(platform_artifact, "tcvm.dll")
-    require_amd64(launcher)
-    require_amd64(vm)
+    machine_name = expected["machine"]
+    require_machine(launcher, machine_name)
+    require_machine(vm, machine_name)
     pdbs = sorted(platform_artifact.rglob("*.pdb"))
     symbols_directory = output / "symbols"
     symbols_directory.mkdir(parents=True, exist_ok=True)
@@ -210,23 +239,43 @@ def prepare(arguments) -> None:
         raise DiagnosticError("deployer output is missing: " + str(installed))
     deployed_vm = installed.parent / "tcvm.dll"
     shutil.copy2(vm, deployed_vm)
-    require_amd64(installed)
+    require_machine(installed, machine_name)
+    require_machine(deployed_vm, machine_name)
+    if sha256(vm) != sha256(deployed_vm):
+        raise DiagnosticError("deployed tcvm.dll does not match the selected Windows artifact")
+
+    probe_tczs = sorted(path for path in (output / "install").rglob("*.tcz")
+                        if path.is_file())
+    if not probe_tczs:
+        raise DiagnosticError("deployed startup probe TCZ is missing")
 
     manifest = {
         "schemaVersion": 1,
         "revision": revision,
         "sourceCommit": expected["commit"],
         "sourceTree": expected["tree"],
-        "configuration": "Visual Studio 17 2022 x64 Release",
+        "configuration": expected["configuration"],
+        "architecture": machine_name,
         "sdkProvenance": {"path": str(sdk_manifest_path), "sha256": sha256(sdk_manifest_path)},
+        "sdkArchive": None if arguments.sdk_archive is None else {
+            "path": str(arguments.sdk_archive.resolve()),
+            "sha256": sha256(arguments.sdk_archive.resolve()),
+        },
         "windowsProvenance": {
             "path": str(platform_manifest_path), "sha256": sha256(platform_manifest_path)},
         "sdkJar": {"path": str(sdk_jar), "sha256": sha256(sdk_jar)},
         "launcher": {"path": str(launcher), "sha256": sha256(launcher),
-                     "machine": "AMD64"},
-        "tcvm": {"path": str(vm), "sha256": sha256(vm), "machine": "AMD64"},
-        "deployedLauncher": {"path": str(installed), "sha256": sha256(installed)},
-        "deployedTcvm": {"path": str(deployed_vm), "sha256": sha256(deployed_vm)},
+                     "machine": machine_name, "peMachine": "0x%04x" % pe_machine(launcher)},
+        "tcvm": {"path": str(vm), "sha256": sha256(vm), "machine": machine_name,
+                 "peMachine": "0x%04x" % pe_machine(vm)},
+        "deployedLauncher": {"path": str(installed), "sha256": sha256(installed),
+                             "machine": machine_name,
+                             "peMachine": "0x%04x" % pe_machine(installed)},
+        "deployedTcvm": {"path": str(deployed_vm), "sha256": sha256(deployed_vm),
+                          "machine": machine_name,
+                          "peMachine": "0x%04x" % pe_machine(deployed_vm)},
+        "probeTczs": [{"path": str(path), "sha256": sha256(path),
+                       "format": "TotalCross TCZ archive"} for path in probe_tczs],
         "probeJar": {"path": str(jar_path), "sha256": sha256(jar_path)},
         "deployedProbe": {"path": str(installed), "sha256": sha256(installed)},
         "symbols": [
@@ -238,6 +287,15 @@ def prepare(arguments) -> None:
             "tcvm": None if vm_pdb is None else {
                 "path": str(vm_pdb), "sha256": sha256(vm_pdb)},
         },
+        "artifactOrigins": {
+            "runId": arguments.artifact_run_id,
+            "sdk": {"id": arguments.sdk_artifact_id,
+                    "name": arguments.sdk_artifact_name,
+                    "digest": arguments.sdk_artifact_digest},
+            "windowsRuntime": {"id": arguments.platform_artifact_id,
+                               "name": arguments.platform_artifact_name,
+                               "digest": arguments.platform_artifact_digest},
+        },
     }
     (output / "diagnostic-manifest.json").write_text(
         json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
@@ -248,17 +306,22 @@ def prepare(arguments) -> None:
                       "matchingPdbs": manifest["matchingPdbs"]}, sort_keys=True))
 
 
-def assess_probe(runtime: dict, marker_names: set[str]) -> dict:
+def assess_probe(runtime: dict, marker_names: set[str], pass_marker: str | None = None,
+                 debug_stages: set[str] | None = None) -> dict:
     missing = [marker for marker in REQUIRED_APP_MARKERS if marker not in marker_names]
     exit_code = runtime.get("exitCodeUnsigned")
     errors = []
     if runtime.get("processStartObserved") is not True:
         errors.append("Launcher process start was not observed")
+    if runtime.get("timedOut") is True:
+        errors.append("Launcher process timed out")
     if exit_code != 0:
         exit_hex = runtime.get("exitCodeHex", "unavailable")
         errors.append("Launcher exited with %s" % exit_hex)
     if missing:
         errors.append("missing TotalCross startup markers: " + ", ".join(missing))
+    if pass_marker != "PASS":
+        errors.append("durable PASS marker is missing or invalid")
     return {
         "status": "PASS" if not errors else "FAIL",
         "sourceCommit": runtime.get("sourceCommit"),
@@ -268,6 +331,9 @@ def assess_probe(runtime: dict, marker_names: set[str]) -> dict:
         "exitCodeHex": runtime.get("exitCodeHex"),
         "observedAppMarkers": [m for m in REQUIRED_APP_MARKERS if m in marker_names],
         "missingAppMarkers": missing,
+        "observedDebugStages": sorted(debug_stages or set()),
+        "passMarker": {"present": pass_marker is not None,
+                       "value": pass_marker},
         "error": None if not errors else "; ".join(errors),
     }
 
@@ -279,12 +345,39 @@ def summarize(arguments) -> None:
     manifest = read_json(output / "diagnostic-manifest.json")
     app_directory = Path(manifest["deployedProbe"]["path"]).parent
     marker_names = {path.name for path in app_directory.glob("tcdiag-*.marker")}
-    summary = assess_probe(runtime, marker_names)
+    result_path = app_directory / "tcdiag-result.txt"
+    pass_marker = result_path.read_text(encoding="utf-8").strip() if result_path.is_file() else None
+    debug_paths = [app_directory / "DebugConsole.txt"]
+    for log_name in (runtime.get("stdoutLog"), runtime.get("stderrLog")):
+        if log_name:
+            debug_paths.append(output / log_name)
+    debug_text = "\n".join(path.read_text(encoding="utf-8", errors="replace")
+                             for path in debug_paths if path.is_file())
+    debug_stages = set(re.findall(r"TC_WINDOWS_STARTUP_STAGE\s+([A-Za-z0-9-]+)",
+                                  debug_text))
+    summary = assess_probe(runtime, marker_names, pass_marker, debug_stages)
     summary.update({
         "revision": manifest["revision"],
         "sourceCommit": manifest["sourceCommit"],
         "sourceTree": manifest["sourceTree"],
         "configuration": manifest["configuration"],
+        "architecture": manifest["architecture"],
+        "sdkJar": manifest["sdkJar"],
+        "sdkArchive": manifest["sdkArchive"],
+        "launcher": manifest["launcher"],
+        "tcvm": manifest["tcvm"],
+        "deployedLauncher": manifest["deployedLauncher"],
+        "deployedTcvm": manifest["deployedTcvm"],
+        "probeTczs": manifest["probeTczs"],
+        "artifactOrigins": manifest["artifactOrigins"],
+        "processId": runtime.get("processId"),
+        "processStartObserved": runtime.get("processStartObserved"),
+        "processSessionId": runtime.get("processSessionId"),
+        "durationMilliseconds": runtime.get("durationMilliseconds"),
+        "timedOut": runtime.get("timedOut"),
+        "launchError": runtime.get("launchError"),
+        "debuggerStatus": runtime.get("debuggerStatus"),
+        "dumpFiles": runtime.get("dumpFiles", []),
         "diagnosticManifest": "diagnostic-manifest.json",
         "runtimeReport": "runtime.json",
     })
@@ -310,6 +403,14 @@ def main(argv: list[str] | None = None) -> int:
     prepare_parser.add_argument("--platform-provenance", type=Path, required=True)
     prepare_parser.add_argument("--source", type=Path, required=True)
     prepare_parser.add_argument("--output", type=Path, required=True)
+    prepare_parser.add_argument("--sdk-archive", type=Path)
+    prepare_parser.add_argument("--artifact-run-id")
+    prepare_parser.add_argument("--sdk-artifact-id")
+    prepare_parser.add_argument("--sdk-artifact-name")
+    prepare_parser.add_argument("--sdk-artifact-digest")
+    prepare_parser.add_argument("--platform-artifact-id")
+    prepare_parser.add_argument("--platform-artifact-name")
+    prepare_parser.add_argument("--platform-artifact-digest")
     summarize_parser = subparsers.add_parser("summarize")
     summarize_parser.add_argument("--output", type=Path, required=True)
     pass_parser = subparsers.add_parser("require-pass")

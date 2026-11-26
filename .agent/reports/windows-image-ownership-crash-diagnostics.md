@@ -8,12 +8,14 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Finding
 
-**Classification: A — preexisting Windows TCVM startup defect.** The original
-`origin/master` revision and the ownership-fix revision both reproduce the
-same native write access violation before Java application initialization.
-Matching PDBs resolve both stacks to the same Windows CRT write instruction
-and the same TotalCross TCZ/heap-error path. The probe creates no images or
-`ImageControl`s and does not use the image ownership registry.
+**Classification: A — preexisting AMD64 TCVM startup failure on the tested
+hosted image.** The original `origin/master` revision and the ownership-fix
+revision both reproduce the same native write access violation before Java
+application initialization. Matching PDBs resolve both stacks to the same
+Windows CRT write instruction and the same TotalCross TCZ/heap-error path. The
+probe creates no images or `ImageControl`s and does not use the image ownership
+registry. This finding is architecture-specific; it does not establish a
+regression in the Windows I386 runtime distributed to customers.
 
 The failure occurs while `startVM` loads a TCZ module and looks up its
 `ConstantPool`. `tczNewInstance` calls `privateHeapSetJump`, which copies the
@@ -21,9 +23,24 @@ source-file path into `m->ex.setjmpFile`. The CRT copy instruction attempts to
 write to an invalid address. The evidence identifies this immediate failure
 site, but does not establish why the `Heap`/destination became invalid upstream.
 
-No production runtime code was changed. Both probes fail before the functional
-image workload is eligible to run, so Windows ownership and rendering results
-remain **NOT EXECUTED**.
+No production runtime code was changed. Both AMD64 probes fail before the
+functional image workload is eligible to run, so ownership and rendering
+results for AMD64 remain **NOT EXECUTED**.
+
+## Priority correction: customer target is I386
+
+The historical customer-used Windows artifacts from runs `44414042826` and
+`44565183218` have PE machine `0x014c` (I386). The probes and crash dumps
+documented below used AMD64 artifacts. Their matching x64 RVA and stack cannot
+be mapped onto Win32, and the x64 finding does not answer whether persistent
+image ownership works on the production Windows target.
+
+The corrected I386 validation is tracked in
+[`windows-historical-startup-compatibility.md`](windows-historical-startup-compatibility.md).
+Its one-run workflow will compare both historical I386 pairs with a new
+production-config Win32 build from `94af2b8b653cad509994b5ccf3dbb60ac28ef920`.
+The existing ownership smoke runs only if that corrected I386 startup passes.
+**I386 functional validation is pending the Windows Actions run.**
 
 ## Tested revisions and provenance
 
@@ -68,7 +85,7 @@ and gates the larger image workload on both minimal probes passing.
 | [45883413961](https://github.com/TotalCross/totalcross/actions/runs/45883413961) | Offline PDB loading and disassembly worked. Both revisions faulted at the same instruction and RVA. CDB's `!analyze` still emitted an invalid OS-symbol bucket, which was excluded from the conclusion. |
 | [45884551862](https://github.com/TotalCross/totalcross/actions/runs/45884551862) | Final source-line comparison. Both builds/deploys passed on `win22` image `20261116.370.1`; both minimal probes failed identically and produced matching full-memory user dumps. PDBs mapped the TCVM callers to source lines. The image ownership workload was skipped by its gate. |
 
-### Final minimal comparison: run 45884551862
+### Final AMD64 minimal comparison: run 45884551862
 
 Both builds used **Visual Studio 17 2022 x64 Release**. The `Launcher.exe` and
 `tcvm.dll` PE architecture was AMD64. The deployed `tcvm.dll` SHA matched the
@@ -193,34 +210,33 @@ or requests a surface. The failure is not evidence of a graphics limitation.
 
 ## Classification and next action
 
-**A — preexisting Windows TCVM startup defect.** The original master reproduces
-the fault. Baseline and fixed fail at the same TCVM instruction, PDB-resolved
-stack, and source call path. The crashing native files are unchanged between
-the two source commits. The probe has no image ownership operations, and
-execution stops before Java or graphics startup. This is stronger evidence
-than matching exit codes alone and points away from a regression in the
-ownership correction.
+**A — preexisting AMD64 startup failure in the tested hosted environment.** The
+original master reproduces the fault. Baseline and fixed fail at the same TCVM
+instruction, PDB-resolved stack, and source call path. The crashing native
+files are unchanged between the two source commits. The probe has no image
+ownership operations, and execution stops before Java or graphics startup.
+This is stronger evidence than matching exit codes alone and points away from
+an ownership-triggered cause of the AMD64 startup failure. It does not establish
+the behavior of production Win32/I386.
 
 The immediate mechanism is an invalid write while `privateHeapSetJump` copies
 the source path into a heap's exception-file buffer. The upstream reason the
 `Heap`/destination is invalid remains unresolved. Do not patch image ownership
 or add a CI graphics workaround based on this evidence.
 
-The smallest next diagnostic is to stop in CDB at entry to
+The next useful AMD64-only diagnostic would stop in CDB at entry to
 `privateHeapSetJump` and at `tczNewInstance` line 177, recording the x64
 arguments (`Heap *m`, `file`, and `line`) and the addresses of
-`ntcz->header->hheap` and `m->ex.setjmpFile`. Compare those values immediately
-before the copy in the baseline and fixed builds. This will establish whether
-the heap pointer is already invalid at the call or is corrupted earlier in
-TCZ header/heap setup. Only then should a minimal TCVM/heap or TCZ correction
-be proposed and implemented on a separate production-fix branch. Rerun both
-minimal probes before unblocking the image ownership workload.
+`ntcz->header->hheap` and `m->ex.setjmpFile`. That follow-up is deferred until
+the production I386 comparison and gated ownership smoke are resolved. The
+current priority is the I386 workflow referenced above; no production fix is
+proposed from the AMD64 finding alone.
 
 ## Scenario comparison
 
 | Scenario | Baseline | Fixed |
 |---|---|---|
-| Minimal native Launcher startup | **FAIL**, `0xC0000005` | **FAIL**, `0xC0000005` |
+| Minimal native AMD64 Launcher startup | **FAIL**, `0xC0000005` | **FAIL**, `0xC0000005` |
 | MainWindow initialization | **FAIL before entry** | **FAIL before entry** |
 | Basic image drawing | **NOT EXECUTED**, gated | **NOT EXECUTED**, gated |
 | Ownership lifecycle smoke | **NOT EXECUTED**, gated | **NOT EXECUTED**, gated |

@@ -10,6 +10,7 @@ param(
     [string]$ProcdumpPath = '',
     [string]$DebuggerPath = '',
     [Parameter(Mandatory = $true)][string]$PdbDirectory,
+    [ValidateSet('I386', 'AMD64')][string]$Architecture = 'AMD64',
     [int]$TimeoutSeconds = 120
 )
 
@@ -353,13 +354,18 @@ if ($debuggerPathAvailable -and $processStartObserved -and $null -ne $exitCode -
         }
 
         $liveDumpPath = (Join-Path $dumpDirectory 'live-cdb.dmp').Replace('\', '/')
-        $secondChanceCommands = '.lastevent; .exr -1; .ecxr; kv; .lines; ' +
-            'ln tcvm!__entry_from_strcat_in_strcpy+0x1f; ' +
+        $effectiveMachine = if ($Architecture -eq 'I386') { '.effmach x86; ' } else { '' }
+        $symbolCommands = if ($Architecture -eq 'I386') {
+            'lmvm tcvm; lm; '
+        } else {
+            '.lines; ln tcvm!__entry_from_strcat_in_strcpy+0x1f; ' +
             'u tcvm!__entry_from_strcat_in_strcpy+0x1f L8; lmvm tcvm; ' +
-            'ln tcvm!privateHeapSetJump+0x3c; ' +
-            'ln tcvm!tczNewInstance+0x68; ln tcvm!tczFindName+0xa9; ' +
-            'ln tcvm!tczLoad+0x8b; ln tcvm!startVM+0x1af; ' +
-            '.dump /ma ' + $liveDumpPath + '; !analyze -v; q'
+            'ln tcvm!privateHeapSetJump+0x3c; ln tcvm!tczNewInstance+0x68; ' +
+            'ln tcvm!tczFindName+0xa9; ln tcvm!tczLoad+0x8b; ln tcvm!startVM+0x1af; '
+        }
+        $secondChanceCommands = '.lastevent; .exr -1; .ecxr; ' + $effectiveMachine +
+            'kv; ' + $symbolCommands + '.dump /ma ' + $liveDumpPath + '; ' +
+            '!analyze -v; q'
         $debuggerCommands = 'sxd -c2 "' + $secondChanceCommands + '" av; g'
         $debuggerArguments = @('-logou', $liveDebuggerLog, '-y', $symbolPath,
             '-i', "$liveWorkDirectory;$workingDirectory;$env:SystemRoot\System32",
@@ -464,15 +470,15 @@ $dumpFile = Get-ChildItem -LiteralPath $dumpDirectory -Filter '*.dmp' -File `
     -ErrorAction SilentlyContinue | Select-Object -First 1
 if ($null -ne $dumpFile -and $debuggerPathAvailable) {
     try {
+        $dumpMachineCommands = if ($Architecture -eq 'I386') {
+            '.effmach x86; '
+        } else {
+            '.lines; '
+        }
         $debuggerArgs = @('-logou', $debuggerLog, '-y', $symbolPath,
             '-i', "$workingDirectory;$env:SystemRoot\System32", '-z', $dumpFile.FullName,
-            '-c', '.reload /f; !analyze -v; .exr -1; .ecxr; .lines; ' +
-                'ln tcvm!__entry_from_strcat_in_strcpy+0x1f; ' +
-                'u tcvm!__entry_from_strcat_in_strcpy+0x1f L8; ' +
-                'ln tcvm!privateHeapSetJump+0x3c; ' +
-                'ln tcvm!tczNewInstance+0x68; ln tcvm!tczFindName+0xa9; ' +
-                'ln tcvm!tczLoad+0x8b; ln tcvm!startVM+0x1af; ' +
-                'kv; lmvm tcvm; q')
+            '-c', '.reload /f; .exr -1; .ecxr; ' + $dumpMachineCommands +
+                '!analyze -v; kv; lmvm tcvm; lm; q')
         $debuggerInfo = New-CleanProcessStartInfo -FileName $DebuggerPath `
             -WorkingDirectory $out -Arguments $debuggerArgs -PathValue $cleanPath -UnicodeOutput
         $debugger = [System.Diagnostics.Process]::Start($debuggerInfo)
@@ -500,6 +506,7 @@ if ($null -ne $dumpFile -and $debuggerPathAvailable) {
 
 $runtime = [ordered]@{
     sourceCommit = $SourceCommit
+    architecture = $Architecture
     startedAtUtc = $start.ToString('o')
     processFinishedAtUtc = $processFinishedAt.ToString('o')
     durationMilliseconds = [int64]($processFinishedAt - $start).TotalMilliseconds
