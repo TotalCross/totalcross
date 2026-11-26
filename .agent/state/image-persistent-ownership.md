@@ -6,26 +6,29 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Active state: persistent image ownership
 
-- Active milestone: final acceptance and nonlocal CI preparation.
+- Active milestone: complete; local acceptance and nonlocal CI preparation are
+  recorded.
 - Branch/worktree: `fix/image-persistent-ownership-scaling` at
   `/Users/flsobral/.codex/worktrees/fix-image-persistent-ownership-scaling`.
 - Base, initial HEAD, and merge-base:
   `6b915883dd202f6db891990f6c3af26fb645ecc7` (`origin/master`).
-- Last commit: `207292bc4` `perf(image): index persistent drawing ownership`.
+- Last commit: `docs(image): record ownership acceptance status`.
 - Active paths: `TotalCrossSDK/src/main/java/totalcross/ui/image/`,
   `TotalCrossSDK/src/main/java/totalcross/ui/{Container,ScrollContainer,ImageControl,Window}.java`,
   focused tests in `TotalCrossSDK/src/test/java/`, and the ExecPlan records.
-- Next action: validate headers and diff, commit bounded maintenance, then
-  inspect canonical CI and performance-lab workflows and prepare focused
-  functional smoke coverage for nonlocal targets.
+- Next action: none. Final handoff is recorded in
+  `.agent/reports/image-persistent-ownership-editorial.md`.
 - Focused validation completed: baseline command
   `./gradlew-agent test --tests totalcross.ui.image.ImagePersistentOwnershipScalingTest`
   compiled and ran all three tests; all failed as intended with deterministic
   counts recorded in `.agent/evidence/image-persistent-ownership.jsonl`.
   Commit message and changed-file copyright validators passed before and after
   commit; `git diff --cached --check` passed.
-- Deferred: production implementation checks pending; nonlocal CI tests require
-  a remote runner and cannot be triggered without publication.
+- Nonlocal CI preparation: the reusable workflow now scopes the ownership
+  slice, consumes same-run SDK/target artifacts, and runs Linux, Windows, and
+  Android functional smokes from performance-lab commit
+  `bae23107b57390525a90669086e9fb47efaaa440`. The scope selector produced
+  `image-ownership` and `image_ownership_changed=true` for this branch.
 - Lifecycle validation passed with 10 JavaSE tests: all 6
   `ImagePersistentRasterAdmissionTest` tests and 4 selected lifecycle regressions
   passed. The detailed run is recorded in the evidence index.
@@ -50,9 +53,20 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Active decisions: retain detached-construction ownership; explicit subtree
   suspension is separate from ancestor/window presence; no Image layout or
   `ImageDrawingFeatureBridge` public surface changes.
-- Deferred: header/diff validation and stage-four commit; GitHub Actions
-  functional smokes for Android, Windows, and Linux remain pending until a
-  publication trigger is available. No remote publication is authorized.
+- Workflow YAML parsing, focused copyright validation, staged diff check,
+  commit-message validation, and post-commit checks passed for the CI slice.
+- Android uses an API 35 x86_64 emulator with ARM ABI translation for the
+  arm64-v8a-only APK. The target jobs remain PENDING until the branches are
+  published; no publication was performed.
+- The optional native macOS runtime smoke was not run. JavaSE simulator tests,
+  deployed API validation, and artifact-content validation passed. A standalone
+  JavaSE launcher attempt exceeded its 60-second limit and is not counted as a
+  passing check.
+- Implementation and CI commit: `ed026ea40c6e256335f288b7e5e39c75da857638`;
+  merge-base remains `6b915883dd202f6db891990f6c3af26fb645ecc7`.
+- Companion smoke app branch: `fix/image-persistent-ownership-smoke`, base
+  `fe23e009fa2fcdbf8c36746cea58b9946a138858`, HEAD
+  `bae23107b57390525a90669086e9fb47efaaa440`.
 - Blockers: none.
 - Preserve: 144 pre-existing untracked items in the original worktree; no files
   from that worktree are in scope.

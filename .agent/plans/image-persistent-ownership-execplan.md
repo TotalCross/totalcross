@@ -45,8 +45,11 @@ construction behavior.
   outermost repaint sweeping, artifact exclusion, and a 200-sample comparison.
   The measured paired median overhead was negligible against the observed
   variation, so the repaint hook remains.
-- [ ] Run allowed JavaSE/JUnit and macOS arm64 checks, prepare nonlocal CI smoke
-  coverage, reconcile all requirements, and write the handoff report.
+- [x] (2026-11-26) Completed focused JavaSE/JUnit acceptance, deployed API and
+  artifact checks; prepared Linux, Windows, and Android CI functional smokes
+  with exact same-run artifact provenance. Nonlocal runs remain pending until
+  publication; the optional native macOS smoke was not run.
+- [x] (2026-11-26) Reconciled requirements and wrote the handoff report.
 
 ## Current Architecture and Scope
 
@@ -119,8 +122,10 @@ validation, focused header validation, `git diff --check`, and the required
 repaint comparison. The comparison used 200 samples per configuration because
 the paired timing spread exceeded the observed median delta. A native smoke is
 optional and must follow `.agent/guides/macos-native-runtime-validation.md`.
-Android, Windows, Linux, iOS, and other nonlocal targets are CI-only and remain
-pending without a published trigger.
+Android, Windows, Linux, iOS, and other nonlocal targets are CI-only. Focused
+Linux, Windows, and Android functional smoke jobs are prepared in
+`.github/workflows/build.yml`; the manual trigger is in
+`.github/workflows/merge.yml`. They remain pending without a published trigger.
 
 ## Risks and Open Questions
 
@@ -130,8 +135,9 @@ pending without a published trigger.
   bounded sweeping remains required either way.
 - Nonlocal CI smoke jobs may require reusable workflow changes and may not be
   triggerable until publication; do not push or open a PR.
-- The performance-lab repository will be used only if heavyweight fixtures or
-  benchmarks cannot remain focused SDK tests.
+- The performance-lab repository holds the compact native lifecycle probe and
+  cross-target runner. Its exact pinned commit and status are in the final
+  report.
 
 ## Idempotence and Recovery
 
@@ -154,9 +160,25 @@ indexed registry passes collision, arbitrary-slot, weak-reclamation,
 pipeline-transfer, and near-linear registration checks. Resolution and drawing
 no longer trigger global cleanup; bounded maintenance is exercised on mutation
 and on the measured repaint cadence. Focused JavaSE tests and artifact-content
-validation pass. Android, Windows, and Linux functional smokes remain pending
-until a publication trigger is available.
+validation pass. Android, Windows, and Linux functional smokes are prepared
+with source and artifact provenance checks and remain pending until
+publication. The optional native macOS runtime smoke was not run.
+
+## Final Reconciliation
+
+The final root branch is `fix/image-persistent-ownership-scaling`, based at
+`6b915883dd202f6db891990f6c3af26fb645ecc7`; the final implementation and CI
+commit is `ed026ea40c6e256335f288b7e5e39c75da857638`. The companion branch is
+`fix/image-persistent-ownership-smoke`, based at
+`fe23e009fa2fcdbf8c36746cea58b9946a138858`, with smoke app HEAD
+`bae23107b57390525a90669086e9fb47efaaa440`. Exact commit history, changed
+files, validation results, and pending target status are in
+`.agent/reports/image-persistent-ownership-editorial.md`.
+
+No branches were published, no PR was opened, and no merge or remote write was
+performed. Read-only remote fetch/inspection was used to establish the bases.
 
 ## Revision Note
 
-Initial plan created after the fresh-base and contract gate passed.
+Initial plan created after the fresh-base and contract gate passed. Final
+acceptance was reconciled on 2026-11-26.
