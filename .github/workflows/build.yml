@@ -18,6 +18,11 @@ on:
         required: false
         type: boolean
         default: false
+      image_ownership_smoke:
+        description: Run native persistent image ownership functional smokes
+        required: false
+        type: boolean
+        default: false
 
 env:
   SQLITE3_GITHUB_TOKEN: ${{ secrets.SQLITE3_GITHUB_TOKEN }}
@@ -36,6 +41,7 @@ jobs:
     runs-on: ubuntu-22.04
     outputs:
       scope: ${{ steps.select_build_scope.outputs.scope }}
+      image_ownership_changed: ${{ steps.select_build_scope.outputs.image_ownership_changed }}
 
     steps:
     - name: Checkout source code
@@ -54,6 +60,7 @@ jobs:
       shell: bash
       env:
         SELECTIVE_BUILD: ${{ inputs.selective }}
+        RUN_IMAGE_OWNERSHIP_SMOKE: ${{ inputs.image_ownership_smoke }}
         PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
         PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
       run: |
@@ -68,6 +75,8 @@ jobs:
           if [ "${#changed_files[@]}" -gt 0 ]; then
             docs_only=true
             sdk_only=true
+            image_ownership_changed=false
+            image_ownership_scope_only=true
 
             for path in "${changed_files[@]}"; do
               case "${path}" in
@@ -85,17 +94,54 @@ jobs:
                   sdk_only=false
                   ;;
               esac
+
+              case "${path}" in
+                TotalCrossSDK/src/main/java/totalcross/ui/Container.java|\
+                TotalCrossSDK/src/main/java/totalcross/ui/ImageControl.java|\
+                TotalCrossSDK/src/main/java/totalcross/ui/ScrollContainer.java|\
+                TotalCrossSDK/src/main/java/totalcross/ui/Window.java|\
+                TotalCrossSDK/src/main/java/totalcross/ui/image/*.java|\
+                TotalCrossSDK/src/test/java/totalcross/ui/image/*Ownership*.java|\
+                TotalCrossSDK/src/test/java/tc/tools/ArtifactBoundariesTest.java|\
+                TotalCrossSDK/gradle/artifact-boundaries.gradle|\
+                .agent/*|.agents/*|.github/workflows/build.yml|.github/workflows/merge.yml)
+                  ;;
+                *)
+                  image_ownership_scope_only=false
+                  ;;
+              esac
+
+              case "${path}" in
+                TotalCrossSDK/src/main/java/totalcross/ui/Container.java|\
+                TotalCrossSDK/src/main/java/totalcross/ui/ImageControl.java|\
+                TotalCrossSDK/src/main/java/totalcross/ui/ScrollContainer.java|\
+                TotalCrossSDK/src/main/java/totalcross/ui/Window.java|\
+                TotalCrossSDK/src/main/java/totalcross/ui/image/*.java|\
+                TotalCrossSDK/src/test/java/totalcross/ui/image/*Ownership*.java|\
+                TotalCrossSDK/src/test/java/tc/tools/ArtifactBoundariesTest.java|\
+                TotalCrossSDK/gradle/artifact-boundaries.gradle)
+                  image_ownership_changed=true
+                  ;;
+              esac
             done
 
             if ${docs_only}; then
               scope=none
+            elif ${image_ownership_changed} && ${image_ownership_scope_only}; then
+              scope=image-ownership
             elif ${sdk_only}; then
               scope=sdk
             fi
           fi
         fi
 
+        if [ "${RUN_IMAGE_OWNERSHIP_SMOKE}" = "true" ]; then
+          scope=image-ownership
+          image_ownership_changed=true
+        fi
+
         printf 'scope=%s\n' "${scope}" >> "${GITHUB_OUTPUT}"
+        printf 'image_ownership_changed=%s\n' "${image_ownership_changed:-false}" >> "${GITHUB_OUTPUT}"
         printf 'Selected build scope: %s\n' "${scope}"
 
     - name: Validate commit
@@ -165,7 +211,7 @@ jobs:
         retention-days: 1
 
   prepare-native-dependencies:
-    if: ${{ needs.checkout-source.outputs.scope == 'full' }}
+    if: ${{ needs.checkout-source.outputs.scope == 'full' || needs.checkout-source.outputs.scope == 'image-ownership' }}
     name: Prepare native dependencies
     needs: checkout-source
     runs-on: ubuntu-22.04
@@ -250,7 +296,7 @@ jobs:
         retention-days: 1
 
   generate-native-bridges:
-    if: ${{ needs.checkout-source.outputs.scope == 'full' }}
+    if: ${{ needs.checkout-source.outputs.scope == 'full' || needs.checkout-source.outputs.scope == 'image-ownership' }}
     name: Generate native bridges
     needs: checkout-source
     runs-on: ubuntu-22.04
@@ -290,7 +336,7 @@ jobs:
         retention-days: 1
 
   build-linux:
-    if: ${{ needs.checkout-source.outputs.scope == 'full' }}
+    if: ${{ needs.checkout-source.outputs.scope == 'full' || needs.checkout-source.outputs.scope == 'image-ownership' }}
     name: Build '${{ matrix.project }}'
     needs: [checkout-source, prepare-native-dependencies, generate-native-bridges]
     strategy:
@@ -501,7 +547,7 @@ jobs:
         ninja
 
   build-windows:
-    if: ${{ needs.checkout-source.outputs.scope == 'full' }}
+    if: ${{ needs.checkout-source.outputs.scope == 'full' || needs.checkout-source.outputs.scope == 'image-ownership' }}
     name: Build `windows`
     needs: [checkout-source, prepare-native-dependencies, generate-native-bridges]
     runs-on: windows-2022
@@ -714,7 +760,7 @@ jobs:
           build-provenance.json
 
   build-sdk:
-    if: ${{ needs.checkout-source.outputs.scope == 'full' || needs.checkout-source.outputs.scope == 'sdk' }}
+    if: ${{ needs.checkout-source.outputs.scope == 'full' || needs.checkout-source.outputs.scope == 'sdk' || needs.checkout-source.outputs.scope == 'image-ownership' }}
     name: Build `SDK`
     needs: checkout-source
     runs-on: ubuntu-22.04
@@ -785,7 +831,7 @@ jobs:
         path: sdk-build.tar.gz
 
   build-android:
-    if: ${{ needs.checkout-source.outputs.scope == 'full' }}
+    if: ${{ needs.checkout-source.outputs.scope == 'full' || needs.checkout-source.outputs.scope == 'image-ownership' }}
     name: Build `Android`
     needs: [checkout-source, prepare-native-dependencies, generate-native-bridges]
     runs-on: ubuntu-24.04
@@ -1102,3 +1148,138 @@ jobs:
         path: |
           ios.tar.gz
           build-provenance.json
+
+  image-ownership-smoke:
+    if: ${{ needs.checkout-source.outputs.image_ownership_changed == 'true' || inputs.image_ownership_smoke }}
+    name: Image ownership functional smoke / ${{ matrix.target }}
+    needs: [checkout-source, build-sdk, build-linux, build-windows, build-android]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: linux-amd64
+            artifact: linux-amd64
+            runner: ubuntu-22.04
+          - target: windows
+            artifact: windows
+            runner: windows-2022
+          - target: android
+            artifact: android
+            runner: ubuntu-24.04
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 75
+
+    steps:
+    - name: Checkout TotalCross source
+      uses: actions/checkout@v6
+      with:
+        ref: ${{ github.sha }}
+
+    - name: Checkout pinned performance-lab smoke app
+      uses: actions/checkout@v6
+      with:
+        repository: TotalCross/totalcross-performance-lab
+        ref: bae23107b57390525a90669086e9fb47efaaa440
+        path: performance-lab
+
+    - name: Setup JDK 17
+      uses: actions/setup-java@v5
+      with:
+        distribution: temurin
+        java-version: 17
+
+    - name: Setup Python 3.12
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Verify smoke result and provenance contracts
+      working-directory: performance-lab
+      run: python -B -m unittest discover -s tests -p test_image_ownership_smoke_contract.py -v
+
+    - name: Setup Android SDK for APK deployment
+      if: ${{ matrix.target == 'android' }}
+      uses: android-actions/setup-android@v3
+      with:
+        packages: 'platform-tools build-tools;35.0.0'
+
+    - name: Download SDK and target runtime artifacts
+      uses: actions/download-artifact@v7
+      with:
+        name: sdk-build
+        path: artifacts/sdk-build
+
+    - name: Download target runtime artifact
+      uses: actions/download-artifact@v7
+      with:
+        name: ${{ matrix.artifact }}
+        path: artifacts/${{ matrix.artifact }}
+
+    - name: Extract SDK and deploy the smoke app with exact artifact provenance
+      shell: bash
+      env:
+        TARGET: ${{ matrix.target }}
+        PLATFORM_ARTIFACT: ${{ matrix.artifact }}
+        LAB_COMMIT: bae23107b57390525a90669086e9fb47efaaa440
+      run: |
+        set -euo pipefail
+        mkdir -p artifacts/sdk-extracted "image-ownership-results/${TARGET}"
+        tar -xzf artifacts/sdk-build/sdk-build.tar.gz -C artifacts/sdk-extracted
+        source_tree="$(git rev-parse "${GITHUB_SHA}^{tree}")"
+        python performance-lab/tools/image_ownership_smoke.py prepare \
+          --target "${TARGET}" \
+          --runtime-home "${PWD}/artifacts/sdk-extracted/build/TotalCross" \
+          --platform-artifact "${PWD}/artifacts/${PLATFORM_ARTIFACT}" \
+          --sdk-provenance "${PWD}/artifacts/sdk-extracted/build-provenance.json" \
+          --platform-provenance "${PWD}/artifacts/${PLATFORM_ARTIFACT}/build-provenance.json" \
+          --sdk-archive "${PWD}/artifacts/sdk-build/sdk-build.tar.gz" \
+          --source-commit "${GITHUB_SHA}" \
+          --source-tree "${source_tree}" \
+          --lab-root "${PWD}/performance-lab" \
+          --lab-commit "${LAB_COMMIT}" \
+          --output "${PWD}/image-ownership-results/${TARGET}"
+
+    - name: Run Linux native image ownership smoke
+      if: ${{ matrix.target == 'linux-amd64' }}
+      shell: bash
+      run: |
+        set -euo pipefail
+        xvfb-run -a python performance-lab/tools/image_ownership_smoke.py run-host \
+          --target linux-amd64 \
+          --output "${PWD}/image-ownership-results/linux-amd64"
+
+    - name: Run Windows native image ownership smoke
+      if: ${{ matrix.target == 'windows' }}
+      shell: bash
+      run: |
+        set -euo pipefail
+        python performance-lab/tools/image_ownership_smoke.py run-host \
+          --target windows \
+          --output "${PWD}/image-ownership-results/windows"
+
+    - name: Run Android emulator image ownership smoke
+      if: ${{ matrix.target == 'android' }}
+      uses: reactivecircus/android-emulator-runner@v2
+      with:
+        api-level: 35
+        target: google_apis
+        arch: x86_64
+        profile: pixel_6
+        cores: 2
+        ram-size: 4096M
+        heap-size: 512M
+        disk-size: 6G
+        emulator-boot-timeout: 600
+        disable-animations: true
+        script: >-
+          python performance-lab/tools/image_ownership_smoke.py run-android
+          --output "${PWD}/image-ownership-results/android"
+
+    - name: Archive machine-readable assertions, provenance, and runtime logs
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: image-ownership-smoke-${{ matrix.target }}
+        path: image-ownership-results/${{ matrix.target }}
+        retention-days: 30
+        if-no-files-found: warn

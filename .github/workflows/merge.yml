@@ -6,6 +6,12 @@
 name: Merge flow
 on:
   workflow_dispatch:
+    inputs:
+      image_ownership_smoke:
+        description: Run native persistent image ownership smokes on Android, Windows, and Linux
+        required: false
+        type: boolean
+        default: false
   push:
     branches: [ master ]
   pull_request:
@@ -15,4 +21,5 @@ jobs:
     uses: ./.github/workflows/build.yml
     with:
       selective: ${{ github.event_name == 'pull_request' }}
+      image_ownership_smoke: ${{ inputs.image_ownership_smoke }}
     secrets: inherit
