@@ -11,12 +11,9 @@ import totalcross.sys.Vm;
 
 /** Minimal native startup and text-surface probe. */
 public final class WindowsNativeStartupProbe extends MainWindow {
-  static {
-    record("tcvm-java-class-initialized");
-  }
-
   public WindowsNativeStartupProbe() {
     super();
+    record("tcvm-java-class-initialized");
     record("mainwindow-constructed");
   }
 

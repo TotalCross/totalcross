@@ -46,8 +46,9 @@ try {
     if ($tree -ne '539f5b424b6f4593c7d96074d69ff077a38ed361') {
         throw "Fixed source checkout resolved to unexpected tree $tree"
     }
-    $dirty = (& git -C $source status --porcelain=v1 --untracked-files=all).Trim()
-    if ($dirty) { throw 'Fixed source checkout contains tracked or untracked source changes.' }
+    $dirty = @(& git -C $source status --porcelain=v1 --untracked-files=no)
+    if ($LASTEXITCODE -ne 0) { throw 'Cannot verify fixed source checkout status.' }
+    if ($dirty.Count -gt 0) { throw 'Fixed source checkout contains tracked source changes.' }
     if (-not (Test-Path -LiteralPath $dependencyArchive)) {
         throw 'Pinned prepared native dependency artifact is missing.'
     }

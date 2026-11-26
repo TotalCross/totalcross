@@ -35,16 +35,23 @@ identity, and native bridge identity are in
 
 ## Startup comparison
 
-**Status: pending Windows Actions execution.** The dedicated workflow runs
-historical A, historical B, and corrected I386 sequentially in one
-`windows-2022` job/session. It records provenance, SDK JAR and deployed TCZ
+**Status: pending corrected Actions rerun.** Initial run
+[45901886592](https://github.com/TotalCross/totalcross/actions/runs/45901886592)
+downloaded all pinned inputs but stopped before the corrected Win32 build:
+PowerShell treated the empty output from a clean Git status as null. Historical
+A and B each started and exited 0 with a durable `PASS` result, but their
+summaries were marked INCOMPLETE because marker parsing lacked `import re` and
+the class-initialization marker was called from the static initializer. The
+run did not produce a corrected I386 startup result, so ownership was NOT
+EXECUTED. Attempt and artifact details are in the evidence index.
+
+Those harness issues are corrected on the dedicated branch. The rerun will
+again execute historical A, historical B, and corrected I386 sequentially in
+one `windows-2022` job/session. It records provenance, SDK JAR and deployed TCZ
 hashes, PE machine, process creation/PID/session, elapsed time, decimal and hex
 exit codes, timeout, durable Java markers, PASS marker, DebugConsole, loaded
 modules, events, and crash evidence. Artifact preparation failures remain
 INCOMPLETE and do not stop later historical probes.
-
-Actions run: pending. Run URL and per-version marker/exit results will be added
-after the run.
 
 ## Persistent ownership gate
 
@@ -76,8 +83,10 @@ customer desktop environment.
 
 ## Validation and remote operations
 
-Focused local harness/ownership contract tests and copyright/diff checks pass.
-Windows builds, deployment, native execution, and crash debugging are reserved
-for the dedicated GitHub Actions run. The I386-specific ownership helper is on
-the dedicated performance-lab branch named in the evidence index. No
-production ownership implementation changes are included.
+The initial Actions attempt passed both contract suites and retrieved the
+historical artifacts; focused local harness tests (12), changed-file copyright
+validation, and `git diff --check` pass for the corrections. Corrected Win32
+build/deployment/native execution and the gated ownership smoke remain pending
+the next dedicated Actions run. The I386-specific ownership helper is on the
+dedicated performance-lab branch named in the evidence index. No production
+ownership implementation changes are included.

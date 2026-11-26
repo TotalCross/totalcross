@@ -60,11 +60,12 @@ its existing finding as a separate architecture-specific reference.
   performance-lab branch recorded in the evidence index.
 - [x] Corrected the minimal probe to join marker paths with `Convert.appendPath`,
   report write failures through `Vm.debug`, and require a durable PASS marker.
-- [ ] Complete and statically validate the one-job Win32 workflow, build helper,
-  result harness, report/state updates, and focused tests.
-- [ ] Push the dedicated TotalCross diagnostic branch, let its one Actions run
-  build fixed Win32, execute A/B/fixed startup, conditionally run ownership,
-  and upload machine-readable evidence.
+- [x] Complete and statically validate the one-job Win32 workflow, build helper,
+  result harness, report/state updates, and focused tests. The first Actions
+  run exposed harness errors before a corrected runtime comparison completed.
+- [ ] Commit and push the focused harness corrections, then run the next
+  isolated Windows Actions job to build fixed Win32, execute A/B/fixed startup,
+  conditionally run ownership, and upload machine-readable evidence.
 - [ ] Review the uploaded artifact, record run URL/markers/exits/hashes/dumps,
   update both reports and evidence, and state the Win32 functional verdict.
 

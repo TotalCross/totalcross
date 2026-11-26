@@ -11,8 +11,10 @@ SPDX-License-Identifier: LGPL-2.1-only
   startup passes.
 - Branch/worktree: `codex/windows-historical-startup-compatibility` at
   `/Users/flsobral/.codex/worktrees/windows-historical-startup-compatibility`.
-- Base: local completed diagnostic commit `2717c47e772862f44201df1c0656c31ae5d1d2b0`;
-  dedicated TotalCross remote branch has not yet been pushed.
+- Base: local diagnostic commit `32593ba3a4ee80f3295bc9ca27bd44ca8e5fab68`
+  (`test(windows): validate historical Win32 startup ownership`), based on
+  `2717c47e772862f44201df1c0656c31ae5d1d2b0`; pushed to the dedicated
+  TotalCross remote branch.
 - User root checkout at
   `/Users/flsobral/repos/totalcross-github` remains untouched and dirty state is
   preserved. Existing AMD64 diagnostic worktree/report remains untouched.
@@ -36,17 +38,25 @@ SPDX-License-Identifier: LGPL-2.1-only
   analysis in `windows-native-crash-runner.ps1`; new Win32 build/run scripts and
   isolated workflow; the plan/state/evidence and both report updates are now
   present in this worktree.
-- Focused local validation already run: TotalCross diagnostic Python contracts
-  (11 passed), performance-lab ownership contracts (15 passed), header
-  validator (4 files, 0 changes), `git diff --check`, Ruby YAML parse (passed).
-  No Windows build, deploy, binary execution, or dump analysis has run locally.
-- No Actions run for this I386 objective has started. No TotalCross branch push
-  has occurred. The only remote writes so far are two diagnostic commits on the
-  dedicated performance-lab branch above.
-- Next action: stage the focused files and check the staged diff, validate the
-  commit title, create one focused TotalCross diagnostic commit, push the
-  dedicated branch to trigger its single Windows Actions run, then inspect the
-  uploaded result artifact and complete both reports/evidence.
+- Focused local validation: initial TotalCross diagnostic contracts (11
+  passed), performance-lab ownership contracts (15 passed), header validator
+  (8 files, 0 changes), Ruby YAML parse, and staged `git diff --check` passed.
+  Follow-up diagnostic contracts pass (12 tests); changed-file header check and
+  working-tree `git diff --check` pass. No Windows work ran locally.
+- Initial Actions run `45901886592` built no corrected runtime because the
+  PowerShell helper called `.Trim()` on the empty output from a clean Git
+  status. Historical A and B each launched and exited 0 with `tcdiag-result`
+  `PASS`, but the summary failed because the harness omitted `import re`; the
+  static initializer stage also reached `record` as null. Details and artifact
+  references are in the evidence index. This attempt does not establish the
+  corrected Win32 ownership result.
+- Current follow-up changes: handle empty PowerShell status output, import the
+  marker regex module, and emit the class-initialization marker from the
+  constructor after class initialization completes. The static contract suite
+  passes. These changes are not yet committed or pushed.
+- Next action: commit and push the harness corrections to the same isolated
+  branch, run the next single Windows Actions job, then complete both reports
+  and the evidence index from its uploaded artifact.
 - Resume protocol: read this state first, then inspect the active workflow,
   build/run scripts, minimal probe, and evidence index. Do not repeat artifact
   downloads or reopen AMD64 analysis unless the corrected I386 run requires it.

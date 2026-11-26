@@ -112,6 +112,9 @@ class WindowsNativeCrashDiagnosticsTest(unittest.TestCase):
         self.assertIn("repaintNow()", source)
         self.assertIn("Convert.appendPath(Settings.appPath, filename)", source)
         self.assertIn("TC_WINDOWS_STARTUP_MARKER_WRITE_FAILED", source)
+        self.assertNotIn("static {", source)
+        self.assertLess(source.index('record("tcvm-java-class-initialized")'),
+                        source.index('record("mainwindow-constructed")'))
         self.assertIn("MainWindow.exit(0)", source)
         self.assertIn("MainWindow.exit(1)", source)
         for forbidden in ("ImageControl", "ImagePipeline", "new Image(", "ImageDrawingBridge"):
@@ -137,6 +140,9 @@ class WindowsNativeCrashDiagnosticsTest(unittest.TestCase):
         self.assertIn("ValidateSet('I386', 'AMD64')", runner)
         self.assertIn(".effmach x86", runner)
         self.assertIn("architecture = $Architecture", runner)
+
+    def test_regex_module_is_available_for_debug_marker_summarization(self):
+        self.assertTrue(hasattr(DIAGNOSTICS, "re"))
 
 
 if __name__ == "__main__":
