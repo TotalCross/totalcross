@@ -100,6 +100,9 @@ Actions logs and downloaded artifacts are preserved under
   diagnostic runs, dump hashes, symbolized call path, runner findings, category
   A classification, comparison matrix, remaining uncertainty, and next
   diagnostic action. Final checks and a report-only handoff commit remain.
+- Committed the validated handoff report locally as `231eb8deb`. No additional
+  production changes or Windows workflow run are needed for this diagnostic
+  milestone. The report-only commit was not pushed, avoiding a redundant build.
 
 ## Current Architecture and Scope
 

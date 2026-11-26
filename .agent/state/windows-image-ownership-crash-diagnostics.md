@@ -6,8 +6,8 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Active state: Windows image ownership crash diagnostics
 
-- Active milestone: finalize the Windows crash handoff after symbolized
-  baseline-versus-fixed evidence.
+- Active milestone: complete; the baseline-versus-fixed Windows crash
+  investigation and handoff report are recorded.
 - Branch/worktree: codex/image-ownership-windows-crash-diagnostics at
   /Users/flsobral/.codex/worktrees/image-ownership-windows-crash-diagnostics.
 - Base: f417e2513ffdf024d83885498cc68e9ed9fb60d5, the existing dedicated
@@ -32,12 +32,15 @@ SPDX-License-Identifier: LGPL-2.1-only
   invalid heap destination's upstream corruption remains unknown. Artifacts
   and logs are under
   /Users/flsobral/.codex/windows-crash-diagnostics-new-runs/45884551862/.
-- Handoff draft: `.agent/reports/windows-image-ownership-crash-diagnostics.md`
-  now includes the original failures, all diagnostic runs, provenance and dump
-  hashes, symbolized source path, category A assessment, scenario matrix, and
-  remote-operation record. Final report validation and commit remain.
+- Handoff report: `.agent/reports/windows-image-ownership-crash-diagnostics.md`
+  is committed locally at `231eb8deb`. Copyright validation, staged diff
+  checks, and the report commit-message validator passed. That report-only
+  commit was not pushed, to avoid triggering a redundant Windows build.
 - Do not modify production runtime code. The progressive image workload remains
   gated because neither minimal probe passes.
+- Next action: none for this investigation. Windows ownership acceptance stays
+  blocked on a separately reviewed fix for the preexisting TCVM heap/TCZ
+  startup failure.
 - Validation completed: downloaded full logs/artifacts for all four prior
   runs; the perf-lab instrumentation contract suite passes 14 tests. The first
   prior run failed during deploy; later runs lacked app markers, and the final
