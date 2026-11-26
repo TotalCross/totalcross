@@ -2318,7 +2318,7 @@ tasks.register('compileEncodedImageSourceSmoke', Sync) {
     dependsOn sourceSets.smokeTest.classesTaskName
 
     from(smokeTestClassesDir) {
-        include 'totalcross/ui/image/EncodedImageSourceSmokeApp.class'
+        include 'totalcross/ui/image/EncodedImageSourceSmokeApp*.class'
     }
     from(smokeTestResourcesDir) {
         include 'image-abi/**'
@@ -2404,6 +2404,23 @@ tasks.register('runEncodedImageSourceSmokeMacOS', Exec) {
             'pngValidation=true',
             'fcMetadataParity=true',
             'jpegValidation=true',
+            'filesystemPng=true',
+            'filesystemJpeg=true',
+            'filesystemPngFile=true',
+            'filesystemPngPath=true',
+            'filesystemJpegFile=true',
+            'filesystemJpegPath=true',
+            'tczOnlyPng=true',
+            'tczOnlyJpeg=true',
+            'tczPrecedence=true',
+            'tczInvalidNoFallback=true',
+            'tczEmptyNoFallback=true',
+            'missingFile=true',
+            'invalidFilesystemFile=true',
+            'absoluteFilesystemPath=true',
+            'deviceFilesystemPath=true',
+            'pathLengthBoundary=true',
+            'runtimeFixturesNotPackaged=true',
             'lifetime=true',
             'overallPass=true'
         ]
@@ -2414,6 +2431,8 @@ tasks.register('runEncodedImageSourceSmokeMacOS', Exec) {
         }
     }
 }
+
+configureImageMacSmokeSdk('EncodedImageSourceSmoke', 'encoded-image-source-smoke')
 
 def imageLazyMaterializationSmokeClassesDir = layout.buildDirectory.dir('image-lazy-materialization-smoke/classes')
 
