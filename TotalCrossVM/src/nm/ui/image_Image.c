@@ -121,15 +121,24 @@ TC_API void tuiEIS_captureNative_Bi(NMParams p) // totalcross/ui/image/EncodedIm
    captureEncodedBag(p->currentContext, p->obj[0], (uint8*)ARRAYOBJ_START(input), length);
 }
 
-TC_API void tuiEIS_captureNativePath_s(NMParams p) // totalcross/ui/image/EncodedImageSource private void captureNativePath(String path);
+TC_API void tuiEIS_captureNativePath_s(NMParams p) // totalcross/ui/image/EncodedImageSource private boolean captureNativePath(String path);
 {
    char path[256];
    TCObject pathObj = p->obj[1];
    TCZFile tcz;
+   int32 pathLength;
+   p->retI = false;
+   if (!pathObj) {
+      throwException(p->currentContext, ImageException, "ERROR: can't open image file null");
+      return;
+   }
+   pathLength = String_charsLen(pathObj);
+   if (pathLength >= (int32)sizeof(path)) {
+      return;
+   }
    String2CharPBuf(pathObj, path);
    tcz = tczGetFile(path, false);
    if (!tcz) {
-      throwException(p->currentContext, ImageException, "Could not open encoded image");
       return;
    }
    if (tcz->uncompressedSize <= 0) {
@@ -187,6 +196,7 @@ TC_API void tuiEIS_captureNativePath_s(NMParams p) // totalcross/ui/image/Encode
       EncodedImageSource_nativeBag(p->obj[0]) = (int64)bag;
       EncodedImageSource_bytes(p->obj[0]) = null;
    }
+   p->retI = true;
 }
 
 TC_API void tuiEIS_releaseNativeBag(NMParams p) // totalcross/ui/image/EncodedImageSource private void releaseNativeBag();
