@@ -86,6 +86,20 @@ Actions logs and downloaded artifacts are preserved under
   registers/disassembly, but `!analyze` still emits a wrong OS-symbol bucket.
   The current slice explicitly asks `ln` for the TotalCross caller and TCZ
   frames to capture their source lines before classification and handoff.
+- Run 45884551862 resolved the complete source path in matching private PDBs
+  for both revisions. `privateHeapSetJump+0x3c` maps to `mem.c:353` (the source
+  `xstrcpy(m->ex.setjmpFile, ...)` is at line 350), called by
+  `tczNewInstance` at `tcz.c:177` while `tczLoad` searches the ConstantPool at
+  line 385 during `startVM`'s module loop at `startup.c:653`. The fault remains
+  at the same CRT write instruction/RVA in baseline/master and fixed. Classify
+  as A, a preexisting Windows TCVM startup defect; the invalid heap destination
+  is the confirmed immediate mechanism, while the upstream source of that
+  invalid pointer remains unisolated. The functional fixture remains gated.
+- Drafted `.agent/reports/windows-image-ownership-crash-diagnostics.md` with
+  the four historical failures, exact source/artifact provenance, all
+  diagnostic runs, dump hashes, symbolized call path, runner findings, category
+  A classification, comparison matrix, remaining uncertainty, and next
+  diagnostic action. Final checks and a report-only handoff commit remain.
 
 ## Current Architecture and Scope
 
@@ -184,6 +198,15 @@ deployment, execution, and debugging occur through GitHub Actions.
   target is invalid in both processes. The `!analyze` OS-symbol bucket remains
   wrong, so classify from the exception record, direct instruction, matching
   TotalCross PDBs, and identical baseline/fixed stack instead.
+- Run 45884551862 resolves the native caller lines in both exact builds:
+  `privateHeapSetJump` at `TotalCrossVM/src/util/mem.c:353` (copy expression at
+  line 350), `tczNewInstance` at `TotalCrossVM/src/util/tcz.c:177`,
+  `tczFindName` at line 254, `tczLoad` ConstantPool lookup at line 385, and
+  `startVM` module loading at `TotalCrossVM/src/init/startup.c:653`. The same
+  invalid heap exception-file destination is therefore reached on the original
+  master and fixed revisions before any Java or graphics startup stage.
+  Classification A is supported; retain the uncertainty about what corrupted
+  or invalidated the heap pointer upstream.
 
 ## Decision Log
 

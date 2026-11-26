@@ -6,8 +6,8 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Active state: Windows image ownership crash diagnostics
 
-- Active milestone: validate and execute the isolated baseline-versus-fixed
-  Windows diagnostics workflow.
+- Active milestone: finalize the Windows crash handoff after symbolized
+  baseline-versus-fixed evidence.
 - Branch/worktree: codex/image-ownership-windows-crash-diagnostics at
   /Users/flsobral/.codex/worktrees/image-ownership-windows-crash-diagnostics.
 - Base: f417e2513ffdf024d83885498cc68e9ed9fb60d5, the existing dedicated
@@ -20,20 +20,24 @@ SPDX-License-Identifier: LGPL-2.1-only
   branch and pinned by commit in the workflow.
 - Prior runs: 45853745093, 45856087270, 45857806319, 45858785421. Logs and all
   artifacts are under /Users/flsobral/.codex/windows-crash-diagnostics-prior-runs/.
-- Latest diagnostic run: 45883413961 on branch commit
-  31d6c15032e56b1238616f03b2432fb1ce55a929. Both exact builds/deploys passed
+- Latest diagnostic run: 45884551862 on branch commit
+  9ca20fa3c3de9bc97c5ec7f0b130db4ff1b7e6d0. Both exact builds/deploys passed
   on the same win22 image 20261116.370.1; both probes exited 0xC0000005 before
-  Java markers. CDB captured 55 MB dumps and resolved matching private PDBs.
-  Both revisions fault at tcvm RVA 0xB93A52 in CRT `strcat.asm:180`, instruction
-  `mov qword ptr [rdx+rcx],rax`, writing into an invalid 0x4f... address. The
-  identical stack goes through `privateHeapSetJump`, `tczNewInstance`,
-  `tczFindName`, `tczLoad`, and `startVM`. Offline symbols now load, but
-  `!analyze` still emits a wrong-OS-symbol bucket; artifacts and logs are under
-  /Users/flsobral/.codex/windows-crash-diagnostics-new-runs/45883413961/.
-- Current local slice asks CDB to map each relevant native stack frame to a
-  caller source line. Next: validate, commit, and rerun once to confirm the
-  `privateHeapSetJump` source line and compare the exact caller. Progressive
-  image work remains gated on both minimal probes passing.
+  Java markers and CDB captured 57 MB dumps with the matching private PDBs.
+  The same CRT write instruction at tcvm RVA 0xB93A52 resolves through
+  `privateHeapSetJump` (`mem.c:353`, with the `xstrcpy` at line 350),
+  `tczNewInstance` (`tcz.c:177`), `tczFindName`, `tczLoad`'s ConstantPool path,
+  and `startVM` (`startup.c:653`). The baseline/master and fixed paths match.
+  The error is classified A: a preexisting native TCVM startup defect; the
+  invalid heap destination's upstream corruption remains unknown. Artifacts
+  and logs are under
+  /Users/flsobral/.codex/windows-crash-diagnostics-new-runs/45884551862/.
+- Handoff draft: `.agent/reports/windows-image-ownership-crash-diagnostics.md`
+  now includes the original failures, all diagnostic runs, provenance and dump
+  hashes, symbolized source path, category A assessment, scenario matrix, and
+  remote-operation record. Final report validation and commit remain.
+- Do not modify production runtime code. The progressive image workload remains
+  gated because neither minimal probe passes.
 - Validation completed: downloaded full logs/artifacts for all four prior
   runs; the perf-lab instrumentation contract suite passes 14 tests. The first
   prior run failed during deploy; later runs lacked app markers, and the final
@@ -43,10 +47,9 @@ SPDX-License-Identifier: LGPL-2.1-only
   validation passed; both worktrees pass `git diff --check`. The approved
   depot-tools dependency fetch completed successfully;
   no tracked dependency files changed.
-- Deferred validation: source mapping for the TotalCross caller awaits a
-  workflow rerun with explicit `ln` queries for the PDB-resolved stack frames.
-  The faulting CRT instruction and write access are confirmed. No Windows
-  binary was built or run locally.
+- Deferred validation: the root reason the heap exception-field destination is
+  invalid remains unresolved; the required next diagnostic is documented in
+  the handoff report. No Windows binary was built or run locally.
 - Decisions: diagnostic-only source/workflow changes; the caller triggers on
   pushes to this dedicated branch and supports manual reruns. Use two calls to the
   canonical reusable build in one Actions run, with baseline/fixed artifact
