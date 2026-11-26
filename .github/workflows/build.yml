@@ -23,6 +23,16 @@ on:
         required: false
         type: boolean
         default: false
+      windows_x64_image_ownership_smoke:
+        description: Run only the native Windows x64 persistent image ownership smoke
+        required: false
+        type: boolean
+        default: false
+      source_sha:
+        description: Exact TotalCross commit whose artifacts will be built and tested
+        required: false
+        type: string
+        default: ''
 
 env:
   SQLITE3_GITHUB_TOKEN: ${{ secrets.SQLITE3_GITHUB_TOKEN }}
@@ -42,12 +52,19 @@ jobs:
     outputs:
       scope: ${{ steps.select_build_scope.outputs.scope }}
       image_ownership_changed: ${{ steps.select_build_scope.outputs.image_ownership_changed }}
+      source_sha: ${{ steps.source_identity.outputs.source_sha }}
 
     steps:
     - name: Checkout source code
       uses: actions/checkout@v6
       with:
         fetch-depth: 0
+        ref: ${{ inputs.source_sha || github.sha }}
+
+    - name: Record checked out source revision
+      id: source_identity
+      shell: bash
+      run: echo "source_sha=$(git rev-parse HEAD)" >> "${GITHUB_OUTPUT}"
 
     - name: Validate provenance scripts
       run: |
@@ -60,7 +77,7 @@ jobs:
       shell: bash
       env:
         SELECTIVE_BUILD: ${{ inputs.selective }}
-        RUN_IMAGE_OWNERSHIP_SMOKE: ${{ inputs.image_ownership_smoke }}
+        RUN_IMAGE_OWNERSHIP_SMOKE: ${{ inputs.image_ownership_smoke || inputs.windows_x64_image_ownership_smoke }}
         PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
         PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
       run: |
@@ -149,13 +166,15 @@ jobs:
       with:
         event-name: ${{ github.event_name }}
         push-before: ${{ github.event.before }}
-        push-after: ${{ github.sha }}
+        push-after: ${{ steps.source_identity.outputs.source_sha }}
         pr-base-sha: ${{ github.event.pull_request.base.sha }}
         pr-head-sha: ${{ github.event.pull_request.head.sha }}
 
     - name: Record build provenance
       if: ${{ steps.select_build_scope.outputs.scope != 'none' }}
       shell: bash
+      env:
+        SOURCE_SHA: ${{ steps.source_identity.outputs.source_sha }}
       run: |
         python3 scripts/provenance/validate-compatibility.py --repository-root .
         python3 - <<'PY'
@@ -177,7 +196,7 @@ jobs:
                 "schemaVersion": 1,
                 "repository": os.environ["GITHUB_REPOSITORY"],
                 "source": {
-                    "commit": os.environ["GITHUB_SHA"],
+                    "commit": os.environ["SOURCE_SHA"],
                     "tree": subprocess.check_output(
                         ["git", "rev-parse", "HEAD^{tree}"], text=True
                     ).strip(),
@@ -336,7 +355,7 @@ jobs:
         retention-days: 1
 
   build-linux:
-    if: ${{ needs.checkout-source.outputs.scope == 'full' || needs.checkout-source.outputs.scope == 'image-ownership' }}
+    if: ${{ !inputs.windows_x64_image_ownership_smoke && (needs.checkout-source.outputs.scope == 'full' || needs.checkout-source.outputs.scope == 'image-ownership') }}
     name: Build '${{ matrix.project }}'
     needs: [checkout-source, prepare-native-dependencies, generate-native-bridges]
     strategy:
@@ -612,7 +631,7 @@ jobs:
       run: |
         mkdir TotalCrossVM\vc2022
         pushd TotalCrossVM\vc2022
-        cmake ..\ -G"Visual Studio 17 2022" -A Win32
+        cmake ..\ -G"Visual Studio 17 2022" -A x64
         findstr /C:"<RuntimeLibrary>MultiThreaded</RuntimeLibrary>" tcvm.vcxproj >NUL || exit /b 1
         findstr /C:"<RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>" tcvm.vcxproj >NUL || exit /b 1
         cmake --build . --config Release
@@ -831,7 +850,7 @@ jobs:
         path: sdk-build.tar.gz
 
   build-android:
-    if: ${{ needs.checkout-source.outputs.scope == 'full' || needs.checkout-source.outputs.scope == 'image-ownership' }}
+    if: ${{ !inputs.windows_x64_image_ownership_smoke && (needs.checkout-source.outputs.scope == 'full' || needs.checkout-source.outputs.scope == 'image-ownership') }}
     name: Build `Android`
     needs: [checkout-source, prepare-native-dependencies, generate-native-bridges]
     runs-on: ubuntu-24.04
@@ -1150,22 +1169,13 @@ jobs:
           build-provenance.json
 
   image-ownership-smoke:
-    if: ${{ needs.checkout-source.outputs.image_ownership_changed == 'true' || inputs.image_ownership_smoke }}
+    if: ${{ always() && needs.checkout-source.result == 'success' && needs.build-sdk.result == 'success' && needs.build-windows.result == 'success' && (inputs.windows_x64_image_ownership_smoke || ((needs.checkout-source.outputs.image_ownership_changed == 'true' || inputs.image_ownership_smoke) && needs.build-linux.result == 'success' && needs.build-android.result == 'success')) }}
     name: Image ownership functional smoke / ${{ matrix.target }}
     needs: [checkout-source, build-sdk, build-linux, build-windows, build-android]
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - target: linux-amd64
-            artifact: linux-amd64
-            runner: ubuntu-22.04
-          - target: windows
-            artifact: windows
-            runner: windows-2022
-          - target: android
-            artifact: android
-            runner: ubuntu-24.04
+        include: ${{ fromJSON(inputs.windows_x64_image_ownership_smoke && '[{"target":"windows","artifact":"windows","runner":"windows-2022"}]' || '[{"target":"linux-amd64","artifact":"linux-amd64","runner":"ubuntu-22.04"},{"target":"windows","artifact":"windows","runner":"windows-2022"},{"target":"android","artifact":"android","runner":"ubuntu-24.04"}]') }}
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 75
 
@@ -1173,13 +1183,13 @@ jobs:
     - name: Checkout TotalCross source
       uses: actions/checkout@v6
       with:
-        ref: ${{ github.sha }}
+        ref: ${{ needs.checkout-source.outputs.source_sha }}
 
     - name: Checkout pinned performance-lab smoke app
       uses: actions/checkout@v6
       with:
         repository: TotalCross/totalcross-performance-lab
-        ref: bae23107b57390525a90669086e9fb47efaaa440
+        ref: f806dfde642605b9bfa1def1dd88a65c9de86753
         path: performance-lab
 
     - name: Setup JDK 17
@@ -1220,12 +1230,12 @@ jobs:
       env:
         TARGET: ${{ matrix.target }}
         PLATFORM_ARTIFACT: ${{ matrix.artifact }}
-        LAB_COMMIT: bae23107b57390525a90669086e9fb47efaaa440
+        LAB_COMMIT: f806dfde642605b9bfa1def1dd88a65c9de86753
       run: |
         set -euo pipefail
         mkdir -p artifacts/sdk-extracted "image-ownership-results/${TARGET}"
         tar -xzf artifacts/sdk-build/sdk-build.tar.gz -C artifacts/sdk-extracted
-        source_tree="$(git rev-parse "${GITHUB_SHA}^{tree}")"
+        source_tree="$(git rev-parse "${{ needs.checkout-source.outputs.source_sha }}^{tree}")"
         python performance-lab/tools/image_ownership_smoke.py prepare \
           --target "${TARGET}" \
           --runtime-home "${PWD}/artifacts/sdk-extracted/build/TotalCross" \
@@ -1233,7 +1243,7 @@ jobs:
           --sdk-provenance "${PWD}/artifacts/sdk-extracted/build-provenance.json" \
           --platform-provenance "${PWD}/artifacts/${PLATFORM_ARTIFACT}/build-provenance.json" \
           --sdk-archive "${PWD}/artifacts/sdk-build/sdk-build.tar.gz" \
-          --source-commit "${GITHUB_SHA}" \
+          --source-commit "${{ needs.checkout-source.outputs.source_sha }}" \
           --source-tree "${source_tree}" \
           --lab-root "${PWD}/performance-lab" \
           --lab-commit "${LAB_COMMIT}" \

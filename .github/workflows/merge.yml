@@ -12,6 +12,16 @@ on:
         required: false
         type: boolean
         default: false
+      windows_x64_image_ownership_smoke:
+        description: Run only the native Windows x64 persistent image ownership smoke
+        required: false
+        type: boolean
+        default: false
+      source_sha:
+        description: Exact TotalCross commit whose artifacts will be built and tested
+        required: false
+        type: string
+        default: ''
   push:
     branches: [ master ]
   pull_request:
@@ -22,4 +32,6 @@ jobs:
     with:
       selective: ${{ github.event_name == 'pull_request' }}
       image_ownership_smoke: ${{ inputs.image_ownership_smoke }}
+      windows_x64_image_ownership_smoke: ${{ inputs.windows_x64_image_ownership_smoke }}
+      source_sha: ${{ inputs.source_sha }}
     secrets: inherit
