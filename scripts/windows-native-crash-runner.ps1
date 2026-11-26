@@ -7,7 +7,8 @@ param(
     [Parameter(Mandatory = $true)][string]$Executable,
     [Parameter(Mandatory = $true)][string]$OutputDirectory,
     [Parameter(Mandatory = $true)][string]$SourceCommit,
-    [Parameter(Mandatory = $true)][string]$ProcdumpPath,
+    [string]$ProcdumpPath = '',
+    [string]$DebuggerPath = '',
     [Parameter(Mandatory = $true)][string]$PdbDirectory,
     [int]$TimeoutSeconds = 120
 )
@@ -15,7 +16,8 @@ param(
 $ErrorActionPreference = 'Stop'
 
 function Write-JsonFile([string]$Path, $Value) {
-    $Value | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $Path -Encoding utf8NoBOM
+    ConvertTo-Json -InputObject $Value -Depth 10 |
+        Set-Content -LiteralPath $Path -Encoding utf8NoBOM
 }
 
 function Get-UserObjectName([IntPtr]$Handle) {
@@ -29,7 +31,8 @@ function Get-UserObjectName([IntPtr]$Handle) {
 }
 
 function New-CleanProcessStartInfo([string]$FileName, [string]$WorkingDirectory,
-                                   [string[]]$Arguments, [string]$PathValue) {
+                                   [string[]]$Arguments, [string]$PathValue,
+                                   [switch]$UnicodeOutput) {
     $info = [System.Diagnostics.ProcessStartInfo]::new()
     $info.FileName = $FileName
     $info.WorkingDirectory = $WorkingDirectory
@@ -37,6 +40,10 @@ function New-CleanProcessStartInfo([string]$FileName, [string]$WorkingDirectory,
     $info.CreateNoWindow = $true
     $info.RedirectStandardOutput = $true
     $info.RedirectStandardError = $true
+    if ($UnicodeOutput) {
+        $info.StandardOutputEncoding = [Text.Encoding]::Unicode
+        $info.StandardErrorEncoding = [Text.Encoding]::Unicode
+    }
     $info.EnvironmentVariables.Clear()
     foreach ($name in @('SystemRoot', 'WINDIR', 'SystemDrive', 'COMSPEC',
                          'HOMEDRIVE', 'HOMEPATH', 'USERPROFILE')) {
@@ -142,22 +149,58 @@ $cleanPath = @($workingDirectory, "$env:SystemRoot\System32", $env:SystemRoot,
 $procdump = $null
 $procdumpOutputTask = $null
 $procdumpErrorTask = $null
+$procdumpMode = 'unavailable'
+$procdumpInstallExitCode = $null
+$procdumpCleanupStatus = 'not-installed'
+$procdumpPathAvailable = -not [string]::IsNullOrWhiteSpace($ProcdumpPath) -and
+    (Test-Path -LiteralPath $ProcdumpPath)
 $procdumpLog = Join-Path $out 'procdump.log'
 $procdumpErrorLog = Join-Path $out 'procdump-stderr.log'
-if (Test-Path -LiteralPath $ProcdumpPath) {
+if ($procdumpPathAvailable) {
     try {
-        $procdumpArguments = @('-accepteula', '-ma', '-e', '-n', '1', '-w',
-            [IO.Path]::GetFileNameWithoutExtension($exe))
+        $procdumpArguments = @('-accepteula', '-ma', '-i', $dumpDirectory)
         $procdumpInfo = New-CleanProcessStartInfo -FileName $ProcdumpPath `
-            -WorkingDirectory $dumpDirectory -Arguments $procdumpArguments -PathValue $cleanPath
+            -WorkingDirectory $dumpDirectory -Arguments $procdumpArguments `
+            -PathValue $cleanPath -UnicodeOutput
         $procdump = [System.Diagnostics.Process]::Start($procdumpInfo)
         $procdumpOutputTask = $procdump.StandardOutput.ReadToEndAsync()
         $procdumpErrorTask = $procdump.StandardError.ReadToEndAsync()
-        Start-Sleep -Milliseconds 1200
+        if ($procdump.WaitForExit(30000)) {
+            $procdumpInstallExitCode = $procdump.ExitCode
+            $procdumpOutputTask.GetAwaiter().GetResult() |
+                Set-Content -LiteralPath $procdumpLog -Encoding utf8NoBOM
+            $procdumpErrorTask.GetAwaiter().GetResult() |
+                Set-Content -LiteralPath $procdumpErrorLog -Encoding utf8NoBOM
+            if ($procdumpInstallExitCode -eq 0) {
+                $procdumpMode = 'postmortem'
+            }
+        } else {
+            $procdump.Kill($true)
+            [void]$procdump.WaitForExit(10000)
+            $procdumpMode = 'install-timeout'
+        }
     } catch {
         "ProcDump start failed: $($_.Exception.Message)" |
             Set-Content -LiteralPath $procdumpLog -Encoding utf8NoBOM
-        $procdump = $null
+        $procdumpMode = 'install-failed'
+    }
+    if ($procdumpMode -ne 'postmortem') {
+        try {
+            $procdumpArguments = @('-accepteula', '-ma', '-e', '-n', '1', '-w',
+                [IO.Path]::GetFileNameWithoutExtension($exe))
+            $procdumpInfo = New-CleanProcessStartInfo -FileName $ProcdumpPath `
+                -WorkingDirectory $dumpDirectory -Arguments $procdumpArguments `
+                -PathValue $cleanPath -UnicodeOutput
+            $procdump = [System.Diagnostics.Process]::Start($procdumpInfo)
+            $procdumpOutputTask = $procdump.StandardOutput.ReadToEndAsync()
+            $procdumpErrorTask = $procdump.StandardError.ReadToEndAsync()
+            $procdumpMode = 'monitor-fallback'
+        } catch {
+            "ProcDump monitor start failed: $($_.Exception.Message)" |
+                Add-Content -LiteralPath $procdumpLog -Encoding utf8NoBOM
+            $procdump = $null
+            $procdumpMode = 'unavailable'
+        }
     }
 } else {
     'ProcDump executable unavailable; WER LocalDumps remains configured' |
@@ -230,13 +273,38 @@ try {
 } catch {
     $launchError = $_.Exception.Message
 }
+$processFinishedAt = [DateTime]::UtcNow
 
-if ($null -ne $procdump) {
-    if (-not $procdump.HasExited -and -not $timedOut -and $processStartObserved) {
-        [void]$procdump.WaitForExit(30000)
+if ($procdumpMode -eq 'postmortem') {
+    $uninstallLog = Join-Path $out 'procdump-uninstall.log'
+    try {
+        $uninstallInfo = New-CleanProcessStartInfo -FileName $ProcdumpPath `
+            -WorkingDirectory $dumpDirectory -Arguments @('-accepteula', '-u') `
+            -PathValue $cleanPath -UnicodeOutput
+        $uninstaller = [System.Diagnostics.Process]::Start($uninstallInfo)
+        $uninstallOutTask = $uninstaller.StandardOutput.ReadToEndAsync()
+        $uninstallErrTask = $uninstaller.StandardError.ReadToEndAsync()
+        if ($uninstaller.WaitForExit(30000)) {
+            $uninstallOutTask.GetAwaiter().GetResult() |
+                Set-Content -LiteralPath $uninstallLog -Encoding utf8NoBOM
+            $uninstallErrTask.GetAwaiter().GetResult() |
+                Add-Content -LiteralPath $uninstallLog -Encoding utf8NoBOM
+            $procdumpCleanupStatus = if ($uninstaller.ExitCode -eq 0) { 'restored' } else { 'failed' }
+        } else {
+            $uninstaller.Kill($true)
+            $procdumpCleanupStatus = 'timeout'
+        }
+    } catch {
+        "ProcDump uninstall failed: $($_.Exception.Message)" |
+            Set-Content -LiteralPath $uninstallLog -Encoding utf8NoBOM
+        $procdumpCleanupStatus = 'failed'
     }
+} elseif ($null -ne $procdump -and -not $procdump.HasExited) {
+    if (-not $timedOut -and $processStartObserved) { [void]$procdump.WaitForExit(5000) }
     if (-not $procdump.HasExited) { $procdump.Kill($true) }
     [void]$procdump.WaitForExit(10000)
+}
+if ($null -ne $procdump -and $procdumpMode -eq 'monitor-fallback') {
     if ($null -ne $procdumpOutputTask) {
         $procdumpOutputTask.GetAwaiter().GetResult() |
             Set-Content -LiteralPath $procdumpLog -Encoding utf8NoBOM
@@ -249,9 +317,8 @@ if ($null -ne $procdump) {
 
 $stdout | Set-Content -LiteralPath (Join-Path $out 'runtime-stdout.log') -Encoding utf8NoBOM
 $stderr | Set-Content -LiteralPath (Join-Path $out 'runtime-stderr.log') -Encoding utf8NoBOM
-@($moduleMap.Values | Sort-Object name) |
-    ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $out 'loaded-modules.json') `
-        -Encoding utf8NoBOM
+ConvertTo-Json -InputObject @($moduleMap.Values | Sort-Object name) -Depth 6 |
+    Set-Content -LiteralPath (Join-Path $out 'loaded-modules.json') -Encoding utf8NoBOM
 if ($null -ne $windowSnapshot) {
     Write-JsonFile (Join-Path $out 'window-snapshot.json') $windowSnapshot
 }
@@ -279,20 +346,21 @@ try {
 Write-JsonFile (Join-Path $out 'application-events.json') $eventRecords
 
 $debuggerStatus = 'unavailable'
-$debuggerLog = Join-Path $out 'windbg-analysis.log'
+$debuggerLog = Join-Path $out 'cdb-analysis.log'
 $dumpFile = Get-ChildItem -LiteralPath $dumpDirectory -Filter '*.dmp' -File `
     -ErrorAction SilentlyContinue | Select-Object -First 1
-$windbg = Get-Command WinDbgX.exe -ErrorAction SilentlyContinue
-if ($null -ne $dumpFile -and $null -ne $windbg) {
+$debuggerPathAvailable = -not [string]::IsNullOrWhiteSpace($DebuggerPath) -and
+    (Test-Path -LiteralPath $DebuggerPath)
+if ($null -ne $dumpFile -and $debuggerPathAvailable) {
     try {
-        $symbolCache = Join-Path $env:RUNNER_TEMP 'windbg-symbol-cache'
+        $symbolCache = Join-Path $env:RUNNER_TEMP 'cdb-symbol-cache'
         New-Item -ItemType Directory -Force -Path $symbolCache | Out-Null
         $symbolPath = "$PdbDirectory;srv*$symbolCache*https://msdl.microsoft.com/download/symbols"
-        $debuggerArgs = @('-Q', '-logo', $debuggerLog, '-y', $symbolPath,
+        $debuggerArgs = @('-logo', $debuggerLog, '-y', $symbolPath,
             '-i', "$workingDirectory;$env:SystemRoot\System32", '-z', $dumpFile.FullName,
             '-c', '.reload /f; !analyze -v; .ecxr; kv; lm; q')
-        $debuggerInfo = New-CleanProcessStartInfo -FileName $windbg.Source `
-            -WorkingDirectory $out -Arguments $debuggerArgs -PathValue $cleanPath
+        $debuggerInfo = New-CleanProcessStartInfo -FileName $DebuggerPath `
+            -WorkingDirectory $out -Arguments $debuggerArgs -PathValue $cleanPath -UnicodeOutput
         $debugger = [System.Diagnostics.Process]::Start($debuggerInfo)
         $debuggerOutTask = $debugger.StandardOutput.ReadToEndAsync()
         $debuggerErrTask = $debugger.StandardError.ReadToEndAsync()
@@ -307,19 +375,20 @@ if ($null -ne $dumpFile -and $null -ne $windbg) {
             $debuggerStatus = 'timed-out'
         }
     } catch {
-        "WinDbg analysis failed: $($_.Exception.Message)" |
+        "CDB analysis failed: $($_.Exception.Message)" |
             Set-Content -LiteralPath $debuggerLog -Encoding utf8NoBOM
         $debuggerStatus = 'failed'
     }
 } elseif ($null -ne $dumpFile) {
-    'WinDbgX.exe unavailable; dump retained for external analysis' |
+    'CDB unavailable; dump retained for external analysis' |
         Set-Content -LiteralPath $debuggerLog -Encoding utf8NoBOM
 }
 
 $runtime = [ordered]@{
     sourceCommit = $SourceCommit
     startedAtUtc = $start.ToString('o')
-    durationMilliseconds = [int64]([DateTime]::UtcNow - $start).TotalMilliseconds
+    processFinishedAtUtc = $processFinishedAt.ToString('o')
+    durationMilliseconds = [int64]($processFinishedAt - $start).TotalMilliseconds
     processStartObserved = $processStartObserved
     processId = $processId
     processSessionId = $processSessionId
@@ -332,12 +401,16 @@ $runtime = [ordered]@{
     stderrLog = 'runtime-stderr.log'
     loadedModulesLog = 'loaded-modules.json'
     windowSnapshotLog = if ($null -ne $windowSnapshot) { 'window-snapshot.json' } else { $null }
-    procdumpAvailable = Test-Path -LiteralPath $ProcdumpPath
+    procdumpAvailable = $procdumpPathAvailable
+    procdumpCaptureMode = $procdumpMode
+    procdumpInstallExitCode = $procdumpInstallExitCode
+    procdumpCleanupStatus = $procdumpCleanupStatus
     localDumpsConfigured = $true
     dumpFiles = $dumps
     applicationEventsLog = 'application-events.json'
     debuggerStatus = $debuggerStatus
-    debuggerLog = if (Test-Path -LiteralPath $debuggerLog) { 'windbg-analysis.log' } else { $null }
+    debuggerPath = if ($debuggerPathAvailable) { $DebuggerPath } else { $null }
+    debuggerLog = if (Test-Path -LiteralPath $debuggerLog) { 'cdb-analysis.log' } else { $null }
 }
 Write-JsonFile (Join-Path $out 'runtime.json') $runtime
 Remove-Item -LiteralPath $werKey -Recurse -Force -ErrorAction SilentlyContinue

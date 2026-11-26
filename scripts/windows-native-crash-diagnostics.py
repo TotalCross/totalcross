@@ -104,6 +104,19 @@ def locate_one(root: Path, name: str) -> Path:
     return matches[0]
 
 
+def matching_pdb(binary: Path, pdbs: list[Path]) -> Path | None:
+    candidates = [path for path in pdbs if path.stem.lower() == binary.stem.lower()]
+    hashes: dict[str, list[Path]] = {}
+    for candidate in candidates:
+        hashes.setdefault(sha256(candidate), []).append(candidate)
+    if len(hashes) > 1:
+        raise DiagnosticError("ambiguous matching PDB for " + str(binary))
+    adjacent = binary.with_suffix(".pdb")
+    if adjacent in candidates:
+        return adjacent
+    return next(iter(hashes.values()))[0] if hashes else None
+
+
 def deploy_sdk_jar(runtime_home: Path) -> Path:
     jar = runtime_home / "dist/totalcross-sdk.jar"
     if not jar.is_file():
@@ -153,12 +166,16 @@ def prepare(arguments) -> None:
     symbols_directory = output / "symbols"
     symbols_directory.mkdir(parents=True, exist_ok=True)
     copied_pdbs = []
-    for pdb in pdbs:
+    launcher_pdb_source = matching_pdb(launcher, pdbs)
+    vm_pdb_source = matching_pdb(vm, pdbs)
+    for pdb in (launcher_pdb_source, vm_pdb_source):
+        if pdb is None:
+            continue
         copied = symbols_directory / pdb.name
         shutil.copy2(pdb, copied)
         copied_pdbs.append(copied)
-    launcher_pdb = next((p for p in copied_pdbs if p.stem.lower() == "launcher"), None)
-    vm_pdb = next((p for p in copied_pdbs if p.stem.lower() == "tcvm"), None)
+    launcher_pdb = next((p for p in copied_pdbs if p.stem.lower() == launcher.stem.lower()), None)
+    vm_pdb = next((p for p in copied_pdbs if p.stem.lower() == vm.stem.lower()), None)
 
     launcher_destination = runtime_home / "etc/launchers/win32/Launcher.exe"
     vm_destination = runtime_home / "dist/vm/win32/tcvm.dll"

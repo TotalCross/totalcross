@@ -108,50 +108,13 @@ jobs:
           --source tests/windows-crash-diagnostics/src/totalcross/ui/WindowsNativeStartupProbe.java `
           --output $env:DIAGNOSTIC_DIRECTORY
 
-    - name: Install ProcDump and attempt WinDbg installation
+    - name: Install ProcDump and CDB
       shell: pwsh
       env:
         DIAGNOSTIC_DIRECTORY: ${{ github.workspace }}/windows-crash-results/${{ matrix.revision }}/minimal
       run: |
-        $toolDirectory = Join-Path $env:RUNNER_TEMP 'windows-crash-tools'
-        New-Item -ItemType Directory -Force -Path $toolDirectory | Out-Null
-        $zipPath = Join-Path $toolDirectory 'procdump.zip'
-        $procDumpPath = Join-Path $toolDirectory 'procdump64.exe'
-        $procDumpStatus = 'unavailable'
-        try {
-          Invoke-WebRequest -Uri 'https://download.sysinternals.com/files/Procdump.zip' -OutFile $zipPath
-          Expand-Archive -LiteralPath $zipPath -DestinationPath $toolDirectory -Force
-          if (-not (Test-Path -LiteralPath $procDumpPath)) {
-            $procDumpPath = Join-Path $toolDirectory 'procdump.exe'
-          }
-          $procDumpStatus = 'downloaded'
-        } catch {
-          "ProcDump download failed: $($_.Exception.Message)" |
-            Set-Content -LiteralPath (Join-Path $env:DIAGNOSTIC_DIRECTORY 'procdump-install.log') -Encoding utf8NoBOM
-          $procDumpPath = Join-Path $toolDirectory 'procdump-unavailable.exe'
-        }
-        "PROCDUMP_PATH=$procDumpPath" >> $env:GITHUB_ENV
-        $windbgLog = Join-Path $env:DIAGNOSTIC_DIRECTORY 'windbg-install.log'
-        $winget = Get-Command winget.exe -ErrorAction SilentlyContinue
-        $windbgStatus = 'winget unavailable'
-        if ($null -ne $winget) {
-          $install = Start-Process -FilePath $winget.Source -ArgumentList @(
-            'install', '--id', 'Microsoft.WinDbg', '--exact', '--silent',
-            '--accept-package-agreements', '--accept-source-agreements') `
-            -Wait -PassThru -NoNewWindow -RedirectStandardOutput $windbgLog `
-            -RedirectStandardError (Join-Path $env:DIAGNOSTIC_DIRECTORY 'windbg-install-stderr.log')
-          $windbgStatus = "winget exit $($install.ExitCode)"
-        }
-        $toolManifest = [ordered]@{
-          procDumpStatus = $procDumpStatus
-          procDumpPath = $procDumpPath
-          procDumpZipSha256 = if (Test-Path -LiteralPath $zipPath) {
-            (Get-FileHash -LiteralPath $zipPath -Algorithm SHA256).Hash.ToLowerInvariant()
-          } else { $null }
-          windbgStatus = $windbgStatus
-        }
-        $toolManifest | ConvertTo-Json -Depth 4 |
-          Set-Content -LiteralPath (Join-Path $env:DIAGNOSTIC_DIRECTORY 'crash-tools.json') -Encoding utf8NoBOM
+        & scripts/install-windows-crash-tools.ps1 `
+          -OutputDirectory $env:DIAGNOSTIC_DIRECTORY
 
     - name: Run startup probe with native crash capture
       shell: pwsh
@@ -166,6 +129,7 @@ jobs:
           -OutputDirectory $env:DIAGNOSTIC_DIRECTORY `
           -SourceCommit $env:SOURCE_COMMIT `
           -ProcdumpPath $env:PROCDUMP_PATH `
+          -DebuggerPath $env:DEBUGGER_PATH `
           -PdbDirectory (Join-Path $env:DIAGNOSTIC_DIRECTORY 'symbols') `
           -TimeoutSeconds 45
 
@@ -264,50 +228,13 @@ jobs:
         New-Item -ItemType Directory -Force -Path $destination | Out-Null
         tar -xzf $sdkArchive -C $destination
 
-    - name: Install ProcDump and attempt WinDbg installation
+    - name: Install ProcDump and CDB
       shell: pwsh
       env:
         DIAGNOSTIC_DIRECTORY: ${{ github.workspace }}/windows-crash-results/${{ matrix.revision }}/ownership
       run: |
-        $toolDirectory = Join-Path $env:RUNNER_TEMP 'windows-crash-tools'
-        New-Item -ItemType Directory -Force -Path $toolDirectory | Out-Null
-        $zipPath = Join-Path $toolDirectory 'procdump.zip'
-        $procDumpPath = Join-Path $toolDirectory 'procdump64.exe'
-        $procDumpStatus = 'unavailable'
-        try {
-          Invoke-WebRequest -Uri 'https://download.sysinternals.com/files/Procdump.zip' -OutFile $zipPath
-          Expand-Archive -LiteralPath $zipPath -DestinationPath $toolDirectory -Force
-          if (-not (Test-Path -LiteralPath $procDumpPath)) {
-            $procDumpPath = Join-Path $toolDirectory 'procdump.exe'
-          }
-          $procDumpStatus = 'downloaded'
-        } catch {
-          "ProcDump download failed: $($_.Exception.Message)" |
-            Set-Content -LiteralPath (Join-Path $env:DIAGNOSTIC_DIRECTORY 'procdump-install.log') -Encoding utf8NoBOM
-          $procDumpPath = Join-Path $toolDirectory 'procdump-unavailable.exe'
-        }
-        "PROCDUMP_PATH=$procDumpPath" >> $env:GITHUB_ENV
-        $windbgLog = Join-Path $env:DIAGNOSTIC_DIRECTORY 'windbg-install.log'
-        $winget = Get-Command winget.exe -ErrorAction SilentlyContinue
-        $windbgStatus = 'winget unavailable'
-        if ($null -ne $winget) {
-          $install = Start-Process -FilePath $winget.Source -ArgumentList @(
-            'install', '--id', 'Microsoft.WinDbg', '--exact', '--silent',
-            '--accept-package-agreements', '--accept-source-agreements') `
-            -Wait -PassThru -NoNewWindow -RedirectStandardOutput $windbgLog `
-            -RedirectStandardError (Join-Path $env:DIAGNOSTIC_DIRECTORY 'windbg-install-stderr.log')
-          $windbgStatus = "winget exit $($install.ExitCode)"
-        }
-        $toolManifest = [ordered]@{
-          procDumpStatus = $procDumpStatus
-          procDumpPath = $procDumpPath
-          procDumpZipSha256 = if (Test-Path -LiteralPath $zipPath) {
-            (Get-FileHash -LiteralPath $zipPath -Algorithm SHA256).Hash.ToLowerInvariant()
-          } else { $null }
-          windbgStatus = $windbgStatus
-        }
-        $toolManifest | ConvertTo-Json -Depth 4 |
-          Set-Content -LiteralPath (Join-Path $env:DIAGNOSTIC_DIRECTORY 'crash-tools.json') -Encoding utf8NoBOM
+        & scripts/install-windows-crash-tools.ps1 `
+          -OutputDirectory $env:DIAGNOSTIC_DIRECTORY
 
     - name: Deploy progressive image ownership probe
       working-directory: performance-lab
@@ -316,7 +243,7 @@ jobs:
         REVISION: ${{ matrix.revision }}
         SOURCE_COMMIT: ${{ matrix.commit }}
         SOURCE_TREE: ${{ matrix.tree }}
-        LAB_COMMIT: 9d7d548916d2b74a68ee46886104b1d0dfa96c19
+        LAB_COMMIT: 804803a243db61a2ed54756e1f63cfc42ff4412b
         DIAGNOSTIC_DIRECTORY: ${{ github.workspace }}/windows-crash-results/${{ matrix.revision }}/ownership
       run: |
         $sdkRoot = Join-Path $env:GITHUB_WORKSPACE "artifacts/$env:REVISION/sdk-extracted/build/TotalCross"
@@ -342,16 +269,22 @@ jobs:
         REVISION: ${{ matrix.revision }}
         DIAGNOSTIC_DIRECTORY: ${{ github.workspace }}/windows-crash-results/${{ matrix.revision }}/ownership
         CRASH_RUNNER: ${{ github.workspace }}/scripts/windows-native-crash-runner.ps1
-        PROCDUMP_PATH: ${{ env.PROCDUMP_PATH }}
         PDB_DIRECTORY: ${{ github.workspace }}/artifacts/${{ matrix.revision }}/windows/TotalCrossVM/vc2022/Release
       run: |
-        python tools/image_ownership_smoke.py run-host `
-          --target windows `
-          --output $env:DIAGNOSTIC_DIRECTORY `
-          --diagnostic-mode $env:REVISION `
-          --windows-crash-runner $env:CRASH_RUNNER `
-          --procdump $env:PROCDUMP_PATH `
-          --pdb-directory $env:PDB_DIRECTORY
+        $smokeArguments = @(
+          'run-host', '--target', 'windows',
+          '--output', $env:DIAGNOSTIC_DIRECTORY,
+          '--diagnostic-mode', $env:REVISION,
+          '--windows-crash-runner', $env:CRASH_RUNNER,
+          '--pdb-directory', $env:PDB_DIRECTORY
+        )
+        if (-not [string]::IsNullOrWhiteSpace($env:PROCDUMP_PATH)) {
+          $smokeArguments += @('--procdump', $env:PROCDUMP_PATH)
+        }
+        if (-not [string]::IsNullOrWhiteSpace($env:DEBUGGER_PATH)) {
+          $smokeArguments += @('--debugger', $env:DEBUGGER_PATH)
+        }
+        python tools/image_ownership_smoke.py @smokeArguments
 
     - name: Upload image ownership and crash evidence
       if: always()

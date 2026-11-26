@@ -66,6 +66,31 @@ class WindowsNativeCrashDiagnosticsTest(unittest.TestCase):
             with self.assertRaisesRegex(DIAGNOSTICS.DiagnosticError, "does not match baseline"):
                 DIAGNOSTICS.verify_build_manifest(path, "baseline", "Windows")
 
+    def test_selects_only_the_matching_native_symbol_file(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            launcher = root / "Launcher.exe"
+            launcher.touch()
+            launcher_pdb = root / "Launcher.pdb"
+            launcher_pdb.write_bytes(b"launcher symbols")
+            vm_pdb = root / "tcvm.pdb"
+            vm_pdb.write_bytes(b"vm symbols")
+            self.assertEqual(DIAGNOSTICS.matching_pdb(
+                launcher, [launcher_pdb, vm_pdb]), launcher_pdb)
+
+    def test_rejects_conflicting_matching_symbol_files(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            launcher = root / "Launcher.exe"
+            launcher.touch()
+            first = root / "Launcher.pdb"
+            second = root / "other" / "Launcher.pdb"
+            second.parent.mkdir()
+            first.write_bytes(b"symbols A")
+            second.write_bytes(b"symbols B")
+            with self.assertRaisesRegex(DIAGNOSTICS.DiagnosticError, "ambiguous matching PDB"):
+                DIAGNOSTICS.matching_pdb(launcher, [first, second])
+
     def test_minimal_probe_is_independent_of_image_ownership(self):
         source = (SCRIPT.parents[1] / "tests/windows-crash-diagnostics/src/totalcross/ui/"
                   "WindowsNativeStartupProbe.java").read_text(encoding="utf-8")

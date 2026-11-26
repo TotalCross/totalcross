@@ -17,7 +17,7 @@ handoff report. Do not change production runtime code.
 The tested TotalCross revisions are baseline
 6b915883dd202f6db891990f6c3af26fb645ecc7 and fixed
 94af2b8b653cad509994b5ccf3dbb60ac28ef920. The instrumented performance-lab
-functional fixture is commit 9d7d548916d2b74a68ee46886104b1d0dfa96c19.
+functional fixture is commit 804803a243db61a2ed54756e1f63cfc42ff4412b.
 
 ## Working Set and Resume Protocol
 
@@ -42,10 +42,19 @@ Actions logs and downloaded artifacts are preserved under
   runtime artifact hashes in the evidence index.
 - Added and contract-checked the minimal startup probe, Windows crash runner,
   provenance collector, and progressive ownership fixture. The fixture
-  contract suite passes 14 tests; Windows execution remains pending Actions.
+  contract suite passes 14 tests; the first Actions run now shows the crash
+  occurs in the no-image probe before TCVM loads, but the native stack is still
+  missing.
 - Pinned the progressive fixture at
-  9d7d548916d2b74a68ee46886104b1d0dfa96c19 and added the caller workflow with
+  804803a243db61a2ed54756e1f63cfc42ff4412b and added the caller workflow with
   separate artifact suffixes for exact baseline/fixed canonical builds.
+- The first isolated baseline/fixed run, 45871774434, built and deployed both
+  exact revisions. Both minimal probes exited 0xC0000005 before Java markers;
+  neither loaded tcvm.dll. The runner exposed an interactive WinSta0\Default
+  desktop with Explorer/DWM and a Hyper-V 1024x768 display. ProcDump's wait
+  monitor captured no dump, and the artifacts had no matching Launcher/tcvm
+  PDBs. The current slice adds AeDebug postmortem capture, CDB installation and
+  analysis, Release linker symbols, and matching-PDB selection.
 
 ## Current Architecture and Scope
 
@@ -115,8 +124,15 @@ deployment, execution, and debugging occur through GitHub Actions.
   recorded in the evidence index.
 - The existing final Windows artifact proved the binary is AMD64, but the
   smoke job did not capture an unhandled-exception dump or native stack.
-- Current Actions evidence does not establish whether the runner has a usable
-  interactive graphics desktop; collect this empirically in the new job.
+- Run 45871774434 establishes that the runner has an interactive desktop and
+  display adapter, but does not establish whether native rendering or SDL
+  surface creation works. The minimal probes fail before loading TCVM.
+- ProcDump's `-w` monitor missed short-lived crashes. Use its AeDebug
+  postmortem registration and uninstall it after each run; retain WER
+  LocalDumps as a fallback. The next run must verify capture and cleanup.
+- The first Release artifact contained toolchain PDBs but no Launcher/tcvm
+  PDBs. Diagnostic builds now set Release linker debug flags and artifact
+  preparation copies only unambiguous matching PDBs.
 
 ## Decision Log
 
@@ -128,6 +144,10 @@ deployment, execution, and debugging occur through GitHub Actions.
 - Keep the integration fixture commit pinned. Never infer regression from
   temporal correlation; require the baseline run, fixed run, and crash
   location/stage evidence.
+- Prefer ProcDump postmortem dumps for pre-TCVM failures; install CDB from the
+  Windows SDK when it is absent and analyze with local matching PDBs plus the
+  Microsoft symbol server. WER LocalDumps and the module/Event Log reports
+  remain fallback evidence.
 - Preserve crash dumps only as short-retention CI artifacts and record hashes;
   do not commit binaries, dumps, SDK packages, or raw logs.
 
@@ -155,11 +175,11 @@ is exclusively via Actions; no local Windows cross-compilation or execution.
 - Does the Windows-2022 runner provide an interactive desktop, working SDL
   window/surface creation, and required DLLs? Treat workflow measurements as
   authoritative for this runner image.
-- Are matching MSVC PDBs emitted by the current Release configuration? If not,
-  enable diagnostic-only symbol output without changing runtime sources.
-- Can ProcDump, CDB, or WinDbg be installed/launched in the hosted runner's
-  service session? If not, report the exact limitation and preserve WER/event
-  evidence as the fallback.
+- Does Release `/DEBUG:FULL` emit matching Launcher/tcvm PDBs in the next
+  canonical build artifact?
+- Can ProcDump register as the AeDebug postmortem handler, and can the Windows
+  SDK install CDB silently on the hosted runner? If not, report the exact
+  limitation and preserve WER/Event Log evidence as the fallback.
 - Baseline ownership behavior is known incorrect; the full fixture may stop on
   an early assertion. Adapt only diagnostic fixture checks so it can report
   reached stages without suppressing fixed-revision assertions.
