@@ -4,9 +4,6 @@
 
 package totalcross.ui.image;
 
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-
 import totalcross.ui.gfx.Graphics;
 import totalcross.util.concurrent.Lock;
 
@@ -18,22 +15,8 @@ import totalcross.util.concurrent.Lock;
  */
 @Deprecated
 public final class ImageDrawingBridge {
-  private static final ArrayList<PersistentOwnerEntry> PERSISTENT_OWNERS = new ArrayList<>();
   private static final Lock OWNERS_LOCK = new Lock();
-  private static boolean countRegistryInspectionsForTest;
-  private static long registryInspectionsForTest;
-
-  private static final class PersistentOwnerEntry {
-    final WeakReference<Object> owner;
-    final WeakReference<Image> image;
-    WeakReference<ImagePipeline> pipeline;
-
-    PersistentOwnerEntry(Object owner, Image image, ImagePipeline pipeline) {
-      this.owner = new WeakReference<>(owner);
-      this.image = new WeakReference<>(image);
-      this.pipeline = new WeakReference<>(pipeline);
-    }
-  }
+  private static final PersistentImageOwnershipRegistry PERSISTENT_OWNERS = new PersistentImageOwnershipRegistry();
 
   /** Internal admission policy; IMMEDIATE is reserved for persistently owned UI consumers. */
   public enum AdmissionMode {
@@ -46,26 +29,6 @@ public final class ImageDrawingBridge {
 
   static Lock ownersLock() {
     return OWNERS_LOCK;
-  }
-
-  static void startRegistryInspectionCountForTest() {
-    synchronized (OWNERS_LOCK) {
-      registryInspectionsForTest = 0;
-      countRegistryInspectionsForTest = true;
-    }
-  }
-
-  static long stopRegistryInspectionCountForTest() {
-    synchronized (OWNERS_LOCK) {
-      countRegistryInspectionsForTest = false;
-      return registryInspectionsForTest;
-    }
-  }
-
-  private static void recordRegistryInspectionForTest() {
-    if (countRegistryInspectionsForTest) {
-      registryInspectionsForTest++;
-    }
   }
 
   /** @hidden */
@@ -131,24 +94,9 @@ public final class ImageDrawingBridge {
     if (image == null) {
       throw new NullPointerException("image");
     }
-    retainPersistentOwnerWithLock(owner, image);
-  }
-
-  private static void retainPersistentOwnerWithLock(Object owner, Image image) {
     synchronized (OWNERS_LOCK) {
-      cleanPersistentOwners();
-      if (findPersistentOwner(owner, image) == null) {
-        addPersistentOwner(owner, image);
-      }
+      PERSISTENT_OWNERS.retain(owner, image);
     }
-  }
-
-  private static void addPersistentOwner(Object owner, Image image) {
-    ImagePipeline pipeline = image.pipelineForDrawingOwnership();
-    if (pipeline != null) {
-      pipeline.retainPersistentDrawingOwner();
-    }
-    PERSISTENT_OWNERS.add(new PersistentOwnerEntry(owner, image, pipeline));
   }
 
   /**
@@ -165,77 +113,74 @@ public final class ImageDrawingBridge {
     if (image == null) {
       throw new NullPointerException("image");
     }
-    releasePersistentOwnerWithLock(owner, image);
-  }
-
-  private static void releasePersistentOwnerWithLock(Object owner, Image image) {
     synchronized (OWNERS_LOCK) {
-      cleanPersistentOwners();
-      PersistentOwnerEntry entry = findPersistentOwner(owner, image);
-      if (entry == null) {
-        throw new IllegalStateException("Persistent image drawing owner underflow");
-      }
-      ImagePipeline pipeline = image.pipelineForDrawingOwnership();
-      if (pipeline != null) {
-        pipeline.releasePersistentDrawingOwner();
-      }
-      PERSISTENT_OWNERS.remove(entry);
+      PERSISTENT_OWNERS.release(owner, image);
     }
   }
 
   static int persistentOwnerCount(Image image) {
     synchronized (OWNERS_LOCK) {
-      cleanPersistentOwners();
-      int count = 0;
-      for (PersistentOwnerEntry entry : PERSISTENT_OWNERS) {
-        recordRegistryInspectionForTest();
-        if (entry.image.get() == image) {
-          count++;
-        }
-      }
-      return count;
+      return PERSISTENT_OWNERS.ownerCount(image);
     }
   }
 
-  static void updatePersistentOwnerPipeline(Image image, ImagePipeline pipeline) {
+  static void transferPersistentOwnerPipeline(Image image, ImagePipeline previous, ImagePipeline replacement) {
     synchronized (OWNERS_LOCK) {
-      cleanPersistentOwners();
-      for (PersistentOwnerEntry entry : PERSISTENT_OWNERS) {
-        recordRegistryInspectionForTest();
-        if (entry.image.get() == image) {
-          entry.pipeline = new WeakReference<>(pipeline);
-        }
-      }
+      PERSISTENT_OWNERS.transferPipeline(image, previous, replacement);
     }
   }
 
   static void cleanupPersistentOwnersForDrawing() {
     synchronized (OWNERS_LOCK) {
-      cleanPersistentOwners();
+      PERSISTENT_OWNERS.maintain();
     }
   }
 
-  private static PersistentOwnerEntry findPersistentOwner(Object owner, Image image) {
-    for (PersistentOwnerEntry entry : PERSISTENT_OWNERS) {
-      recordRegistryInspectionForTest();
-      if (entry.owner.get() == owner && entry.image.get() == image) {
-        return entry;
-      }
+  static void startRegistryInspectionCountForTest() {
+    synchronized (OWNERS_LOCK) {
+      PERSISTENT_OWNERS.startInspectionCountForTest();
     }
-    return null;
   }
 
-  private static void cleanPersistentOwners() {
-    for (int i = PERSISTENT_OWNERS.size() - 1; i >= 0; i--) {
-      PersistentOwnerEntry entry = PERSISTENT_OWNERS.get(i);
-      recordRegistryInspectionForTest();
-      if (entry.owner.get() == null || entry.image.get() == null) {
-        PERSISTENT_OWNERS.remove(i);
-        ImagePipeline pipeline = entry.pipeline.get();
-        if (pipeline != null) {
-          pipeline.releasePersistentDrawingOwner();
-        }
-      }
+  static long stopRegistryInspectionCountForTest() {
+    synchronized (OWNERS_LOCK) {
+      return PERSISTENT_OWNERS.stopInspectionCountForTest();
+    }
+  }
+
+  static int completePersistentOwnerSweepForTest() {
+    synchronized (OWNERS_LOCK) {
+      return PERSISTENT_OWNERS.completeSweepForTest();
+    }
+  }
+
+  static int maintainPersistentOwnersForTest() {
+    synchronized (OWNERS_LOCK) {
+      return PERSISTENT_OWNERS.maintain();
+    }
+  }
+
+  static int persistentOwnerRelationCountForTest() {
+    synchronized (OWNERS_LOCK) {
+      return PERSISTENT_OWNERS.relationCountForTest();
+    }
+  }
+
+  static void setPersistentOwnerSweepCursorForTest(Object owner, Image image) {
+    synchronized (OWNERS_LOCK) {
+      PERSISTENT_OWNERS.setSweepCursorToOwnerForTest(owner, image);
+    }
+  }
+
+  static void useIdentityHashOverrideForTest(int hash) {
+    synchronized (OWNERS_LOCK) {
+      PERSISTENT_OWNERS.useIdentityHashOverrideForTest(hash);
+    }
+  }
+
+  static void restoreIdentityHashForTest() {
+    synchronized (OWNERS_LOCK) {
+      PERSISTENT_OWNERS.restoreIdentityHashForTest();
     }
   }
 
@@ -247,5 +192,4 @@ public final class ImageDrawingBridge {
     }
     return image.drawPlanForDrawing(destinationScale);
   }
-
 }

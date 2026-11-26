@@ -956,19 +956,8 @@ public class Image extends GfxSurface {
       if (previous == replacement) {
         return;
       }
-      int ownerCount = ImageDrawingBridge.persistentOwnerCount(this);
-      for (int i = 0; i < ownerCount; i++) {
-        if (previous != null) {
-          previous.releasePersistentDrawingOwner();
-        }
-      }
+      ImageDrawingBridge.transferPersistentOwnerPipeline(this, previous, replacement);
       pipeline = replacement;
-      for (int i = 0; i < ownerCount; i++) {
-        if (replacement != null) {
-          replacement.retainPersistentDrawingOwner();
-        }
-      }
-      ImageDrawingBridge.updatePersistentOwnerPipeline(this, replacement);
     }
   }
 
