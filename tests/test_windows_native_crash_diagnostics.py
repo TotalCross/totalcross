@@ -108,6 +108,8 @@ class WindowsNativeCrashDiagnosticsTest(unittest.TestCase):
         self.assertIn("sxd -c2", runner)
         self.assertIn(".dump /ma ", runner)
         self.assertIn("live-cdb.dmp", runner)
+        self.assertIn("GetFullPath($PdbDirectory).Replace('\\', '/')", runner)
+        self.assertIn(".Replace('\\', '/')", runner)
         self.assertIn("procdumpCleanupStatus", runner)
 
 

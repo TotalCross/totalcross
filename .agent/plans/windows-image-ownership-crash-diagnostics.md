@@ -62,6 +62,14 @@ Actions logs and downloaded artifacts are preserved under
   or Windows Error Event appeared. Baseline and fixed used different hosted
   image versions, so their runner environments were not identical. Add a CDB
   live-debug rerun to capture the second-chance exception and stack.
+- Run 45879820691 built/deployed both exact revisions and ran them sequentially
+  on the same win22 image 20261123.376.1. Both exited 0xC0000005 before Java
+  markers. Live CDB caught the same invalid-pointer write at tcvm RVA 0xB93A52
+  and the same relative native stack for baseline and fixed. The full dump was
+  not created because CDB parsed backslashes in its command path as control
+  escapes; PDB lookup also used a relative path from CDB's temporary directory.
+  The local correction resolves the PDB/cache paths absolutely and uses
+  forward slashes for CDB paths. A rerun is required for the source-level stack.
 
 ## Current Architecture and Scope
 
@@ -140,6 +148,12 @@ deployment, execution, and debugging occur through GitHub Actions.
 - The first Release artifact contained toolchain PDBs but no Launcher/tcvm
   PDBs. Diagnostic builds now set Release linker debug flags and artifact
   preparation copies only unambiguous matching PDBs.
+- Run 45879820691's CDB `!analyze -v` classified both exceptions as
+  `INVALID_POINTER_WRITE_c0000005_tcvm.dll!Unknown`. Baseline and fixed faulted
+  at the same module-relative offset (0xB93A52) before any Java marker. This
+  strongly locates the failure in pre-Java native startup, but without loaded
+  matching PDBs it does not identify a source function or establish the
+  ownership fix's relationship to the fault.
 
 ## Decision Log
 

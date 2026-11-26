@@ -20,20 +20,21 @@ SPDX-License-Identifier: LGPL-2.1-only
   branch and pinned by commit in the workflow.
 - Prior runs: 45853745093, 45856087270, 45857806319, 45858785421. Logs and all
   artifacts are under /Users/flsobral/.codex/windows-crash-diagnostics-prior-runs/.
-- Latest diagnostic run: 45876788788. Both exact source builds/deploys passed;
-  both probes exited 0xC0000005 with no Java markers. This time tcvm.dll was
-  loaded; measured process durations were 130 ms baseline and 241 ms fixed.
-  ProcDump registered and unregistered AeDebug successfully, CDB was present,
-  and matching Launcher/tcvm PDBs were retained, but no dump was produced.
-  Baseline and fixed received different hosted image versions (20261123.376.1
-  and 20261116.370.1), so the runner environment was not identical. Artifacts
-  and logs are under /Users/flsobral/.codex/windows-crash-diagnostics-new-runs/45876788788/.
-- Current local slice adds a second, isolated CDB launch after a failed direct
-  probe, with a copied runtime directory, second-chance AV commands, and a full
-  dump attempt. The minimal workflow now runs baseline and fixed sequentially
-  on one Windows host because the previous matrix received different hosted
-  image versions. Next: validate and push these updates, then inspect the next
-  run's CDB stack/dump.
+- Latest diagnostic run: 45879820691 on branch commit
+  1728e6fae10d7e52779bdb89c23a2d3323fa4c4a. Exact baseline/fixed builds and
+  deploys passed, and both sequential probes used the same win22 image
+  20261123.376.1. Both exited 0xC0000005 before Java markers. Live CDB caught
+  second-chance invalid pointer writes in tcvm.dll at the same RVA 0xB93A52
+  with the same relative stack, but the dump command's backslash path was
+  parsed as control escapes and the local PDB directory was relative to CDB's
+  temporary working directory. Thus no dump or source-level symbol was
+  produced. Artifacts and logs are under
+  /Users/flsobral/.codex/windows-crash-diagnostics-new-runs/45879820691/.
+- Current local slice converts CDB symbol and dump paths to absolute
+  forward-slash paths and adds a contract assertion. Next: run focused local
+  checks, commit and push the diagnostic-only correction, then analyze the
+  CDB dump and matching symbols from the rerun. Progressive image work remains
+  gated on both minimal probes passing.
 - Validation completed: downloaded full logs/artifacts for all four prior
   runs; the perf-lab instrumentation contract suite passes 14 tests. The first
   prior run failed during deploy; later runs lacked app markers, and the final
@@ -44,7 +45,8 @@ SPDX-License-Identifier: LGPL-2.1-only
   depot-tools dependency fetch completed successfully;
   no tracked dependency files changed.
 - Deferred validation: Windows execution/debugging awaits the diagnostic
-  workflow. No Windows binary was built or run locally.
+  workflow rerun after correcting CDB paths. No Windows binary was built or
+  run locally.
 - Decisions: diagnostic-only source/workflow changes; the caller triggers on
   pushes to this dedicated branch and supports manual reruns. Use two calls to the
   canonical reusable build in one Actions run, with baseline/fixed artifact

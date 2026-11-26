@@ -350,10 +350,12 @@ if ($debuggerPathAvailable -and $processStartObserved -and $null -ne $exitCode -
             throw 'Copied diagnostic executable does not match the original probe.'
         }
 
-        $symbolCache = Join-Path $env:RUNNER_TEMP 'cdb-symbol-cache'
+        $symbolDirectory = [IO.Path]::GetFullPath($PdbDirectory).Replace('\', '/')
+        $symbolCache = [IO.Path]::GetFullPath(
+            (Join-Path $env:RUNNER_TEMP 'cdb-symbol-cache')).Replace('\', '/')
         New-Item -ItemType Directory -Force -Path $symbolCache | Out-Null
-        $symbolPath = "$PdbDirectory;srv*$symbolCache*https://msdl.microsoft.com/download/symbols"
-        $liveDumpPath = Join-Path $dumpDirectory 'live-cdb.dmp'
+        $symbolPath = "$symbolDirectory;srv*$symbolCache*https://msdl.microsoft.com/download/symbols"
+        $liveDumpPath = (Join-Path $dumpDirectory 'live-cdb.dmp').Replace('\', '/')
         $secondChanceCommands = '.lastevent; .ecxr; kv; lm; .dump /ma ' +
             $liveDumpPath + '; !analyze -v; q'
         $debuggerCommands = 'sxd -c2 "' + $secondChanceCommands + '" av; g'
