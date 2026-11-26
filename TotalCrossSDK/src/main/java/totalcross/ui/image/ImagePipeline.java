@@ -399,17 +399,37 @@ final class ImagePipeline {
   }
 
   void retainPersistentDrawingOwner() {
-    if (persistentDrawingOwnerCount == Integer.MAX_VALUE) {
-      throw new IllegalStateException("Too many persistent image drawing owners");
-    }
-    persistentDrawingOwnerCount++;
+    retainPersistentDrawingOwners(1);
   }
 
   void releasePersistentDrawingOwner() {
-    if (persistentDrawingOwnerCount <= 0) {
+    releasePersistentDrawingOwners(1);
+  }
+
+  void checkPersistentDrawingOwnerRetain(int count) {
+    if (count < 0 || count > Integer.MAX_VALUE - persistentDrawingOwnerCount) {
+      throw new IllegalStateException("Too many persistent image drawing owners");
+    }
+  }
+
+  void checkPersistentDrawingOwnerRelease(int count) {
+    if (count < 0 || count > persistentDrawingOwnerCount) {
       throw new IllegalStateException("Persistent image drawing owner underflow");
     }
-    if (--persistentDrawingOwnerCount == 0) {
+  }
+
+  void retainPersistentDrawingOwners(int count) {
+    checkPersistentDrawingOwnerRetain(count);
+    persistentDrawingOwnerCount += count;
+  }
+
+  void releasePersistentDrawingOwners(int count) {
+    checkPersistentDrawingOwnerRelease(count);
+    if (count == 0) {
+      return;
+    }
+    persistentDrawingOwnerCount -= count;
+    if (persistentDrawingOwnerCount == 0) {
       clearCachedMaterializedVariantAndPending();
     }
   }
