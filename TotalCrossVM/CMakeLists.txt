@@ -942,6 +942,39 @@ set(LIBRARY_ARGS ${SOURCES} ${TC_WCE_SOURCES} ${TC_MSVC_SOURCES} ${TC_NOT_MSVC_S
 target_sources(tcvm PUBLIC ${LIBRARY_ARGS})
 
 if(TC_BUILD_NATIVE_STARTUP_TEST)
+  if(CMAKE_SYSTEM_NAME STREQUAL "Linux" OR CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+    enable_testing()
+    add_executable(copy_resolved_path_native_test
+      ${TC_SRCDIR}/tests/copy_resolved_path_native_test.c
+    )
+    target_include_directories(copy_resolved_path_native_test PRIVATE
+      "${TC_SRCDIR}"
+    )
+    target_compile_definitions(copy_resolved_path_native_test PRIVATE
+      TC_COPY_RESOLVED_PATH_TEST_ONLY=1
+    )
+    target_compile_options(copy_resolved_path_native_test PRIVATE
+      $<$<OR:$<C_COMPILER_ID:GNU>,$<C_COMPILER_ID:Clang>,$<C_COMPILER_ID:AppleClang>>:-Wall;-Wextra;-Werror>
+    )
+    if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+      target_compile_options(copy_resolved_path_native_test PRIVATE -O2)
+      target_compile_definitions(copy_resolved_path_native_test PRIVATE
+        _FORTIFY_SOURCE=2
+      )
+    endif()
+    set_target_properties(copy_resolved_path_native_test PROPERTIES
+      C_STANDARD 11
+      C_STANDARD_REQUIRED YES
+      C_EXTENSIONS NO
+    )
+    add_test(NAME copy-resolved-path-contract
+      COMMAND copy_resolved_path_native_test --run-cases
+    )
+    add_test(NAME copy-resolved-path-startup-safe
+      COMMAND copy_resolved_path_native_test --expect-safe
+    )
+  endif()
+
   add_executable(window_startup_native_test
     ${TC_SRCDIR}/tests/window_startup_native_test.c
     ${TC_SRCDIR}/nm/ui/WindowStartup.c
