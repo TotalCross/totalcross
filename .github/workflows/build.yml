@@ -23,6 +23,11 @@ on:
         required: false
         type: boolean
         default: false
+      source-ref:
+        description: Optional source revision for focused diagnostic builds
+        required: false
+        type: string
+        default: ""
 
 env:
   SQLITE3_GITHUB_TOKEN: ${{ secrets.SQLITE3_GITHUB_TOKEN }}
@@ -46,6 +51,7 @@ jobs:
     - name: Checkout source code
       uses: actions/checkout@v6
       with:
+        ref: ${{ inputs.source-ref || github.sha }}
         fetch-depth: 0
 
     - name: Validate provenance scripts
@@ -104,6 +110,7 @@ jobs:
         printf 'Selected build scope: %s\n' "${scope}"
 
     - name: Validate commit
+      if: ${{ inputs.source-ref == '' || inputs.source-ref == github.sha }}
       uses: ./.github/actions/validate-commit
       with:
         event-name: ${{ github.event_name }}
@@ -136,7 +143,9 @@ jobs:
                 "schemaVersion": 1,
                 "repository": os.environ["GITHUB_REPOSITORY"],
                 "source": {
-                    "commit": os.environ["GITHUB_SHA"],
+                    "commit": subprocess.check_output(
+                        ["git", "rev-parse", "HEAD"], text=True
+                    ).strip(),
                     "tree": subprocess.check_output(
                         ["git", "rev-parse", "HEAD^{tree}"], text=True
                     ).strip(),

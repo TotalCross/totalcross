@@ -4,6 +4,15 @@
 
 name: Native startup regression
 on:
+  push:
+    branches: [fix/linux-png-decoding]
+    paths:
+      - '.github/workflows/build.yml'
+      - '.github/workflows/native-startup-regression.yml'
+      - 'TotalCrossSDK/**'
+      - 'TotalCrossSDK/src/test/resources/native-startup/**'
+      - 'TotalCrossVM/**'
+      - 'scripts/validate-native-startup-*.py'
   pull_request:
     branches: [master]
     paths:
@@ -15,10 +24,44 @@ on:
       - 'TotalCrossVM/src/tests/copy_resolved_path_native_test.c'
       - 'scripts/validate-native-startup-*.py'
 jobs:
+  select-build-source:
+    name: Select the baseline source revision
+    runs-on: ubuntu-22.04
+    outputs:
+      source-ref: ${{ steps.source.outputs.source-ref }}
+    steps:
+    - name: Check out branch history
+      uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
+
+    - name: Use master while production build inputs match it
+      id: source
+      shell: bash
+      env:
+        EVENT_NAME: ${{ github.event_name }}
+        CURRENT_REVISION: ${{ github.sha }}
+        BASELINE_REVISION: 6beef491f28c63aa364d3661dd5c37ccff01fb0d
+      run: |
+        set -euo pipefail
+        source_ref="$CURRENT_REVISION"
+        if [ "$EVENT_NAME" = "push" ]; then
+          if git merge-base --is-ancestor "$BASELINE_REVISION" "$CURRENT_REVISION" \
+            && git diff --quiet "$BASELINE_REVISION" "$CURRENT_REVISION" -- \
+              TotalCrossSDK TotalCrossVM scripts config
+          then
+            source_ref="$BASELINE_REVISION"
+          fi
+        fi
+        printf 'source-ref=%s\n' "$source_ref" >> "$GITHUB_OUTPUT"
+        printf 'selected_source_ref=%s\n' "$source_ref"
+
   canonical-native-build:
     uses: ./.github/workflows/build.yml
+    needs: select-build-source
     with:
       native-startup-validation: true
+      source-ref: ${{ needs.select-build-source.outputs.source-ref }}
     secrets: inherit
 
   linux-helper-regression:
@@ -76,12 +119,14 @@ jobs:
 
   linux-native-runtime:
     name: Linux x86_64 deployed startup and controls
-    needs: canonical-native-build
+    needs: [canonical-native-build, select-build-source]
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
     - name: Checkout source
       uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
 
     - name: Checkout pinned investigation harness and fixture
       uses: actions/checkout@v6
@@ -89,6 +134,14 @@ jobs:
         repository: TotalCross/totalcross-performance-lab
         ref: 6ce6c8fa0b2bbd8fdb6ac81a423ab332f9342483
         path: validation/performance-lab
+
+    - name: Check out original ownership probe revision
+      uses: actions/checkout@v6
+      with:
+        repository: TotalCross/totalcross-performance-lab
+        ref: d084949d106f9606a7639d851ad66b97734df1ec
+        path: validation/ownership-original
+        fetch-depth: 1
 
     - name: Set up JDK 17
       uses: actions/setup-java@v5
@@ -107,6 +160,12 @@ jobs:
       with:
         name: sdk-build
         path: validation/artifacts/sdk-build
+
+    - name: Download generated native bridge inputs
+      uses: actions/download-artifact@v7
+      with:
+        name: native-bridges
+        path: validation/artifacts/native-bridges
 
     - name: Extract SDK artifact and inspect canonical compiler output
       shell: bash
@@ -142,7 +201,7 @@ jobs:
         PY
 
     - name: Install Linux graphics runtime libraries
-      run: sudo apt-get update && sudo apt-get install --yes libegl1 libgles2 libgl1-mesa-dri
+      run: sudo apt-get update && sudo apt-get install --yes xvfb libegl1 libgles2 libgl1-mesa-dri libglu1-mesa libx11-6 libxext6 libxrender1 libfontconfig1
 
     - name: Check Linux native runtime dependencies
       shell: bash
@@ -168,6 +227,189 @@ jobs:
           --java-source TotalCrossSDK/src/test/resources/native-startup/LinuxStartupProbe.java \
           --jpeg-fixture validation/performance-lab/investigations/7.3.0-functional/cases/image-ownership/fixtures/red-8x8.jpg \
           --output "${RUNNER_TEMP}/native-startup-linux"
+
+    - name: Run focused PNG decoder probe without a startup shim
+      env:
+        RESULT_DIR: ${{ runner.temp }}/native-startup-linux/png-baseline
+      shell: bash
+      run: |
+        set -euo pipefail
+        unset LD_PRELOAD || true
+        test -z "${LD_PRELOAD:-}"
+        fixture_dir=".agent/investigations/linux-png-decoding/fixtures"
+        (cd "$fixture_dir" && sha256sum -c SHA256SUMS)
+        mkdir -p "$RESULT_DIR/fixtures"
+        cp -a validation/performance-lab/investigations/7.3.0-functional/cases/png-decoding/fixtures/. \
+          "$RESULT_DIR/fixtures/"
+        cp "$fixture_dir/ownership-red-2x2.png" "$RESULT_DIR/fixtures/"
+        cmp "$fixture_dir/historical-rgba-36x36.png" \
+          validation/performance-lab/investigations/7.3.0-functional/cases/png-decoding/fixtures/comparison-png.png
+        cmp "$fixture_dir/alpha-2x2.png" \
+          validation/performance-lab/investigations/7.3.0-functional/cases/png-decoding/fixtures/alpha.png
+        cmp "$fixture_dir/tcz-2x2.png" \
+          validation/performance-lab/investigations/7.3.0-functional/cases/png-decoding/fixtures/tcz-png.png
+        cmp "$fixture_dir/indexed-transparent-2x2.png" \
+          validation/performance-lab/investigations/7.3.0-functional/cases/png-decoding/fixtures/indexed.png
+        cmp "$fixture_dir/known-good-512x512.jpg" \
+          validation/performance-lab/investigations/7.3.0-functional/cases/png-decoding/fixtures/comparison-control.jpg
+        cmp "$fixture_dir/invalid.bin" \
+          validation/performance-lab/investigations/7.3.0-functional/cases/png-decoding/fixtures/invalid.bin
+        native_library="$(find validation/artifacts/linux-amd64 -type f -name libtcvm.so -print -quit)"
+        test -n "$native_library"
+        native_dir="$(dirname "$native_library")"
+        test -f "$native_dir/Launcher"
+        probe_dir="$RESULT_DIR/probe"
+        python3 validation/performance-lab/tools/functional_validation_730.py build-probe \
+          --kind png \
+          --sdk-root validation/artifacts/sdk-build/build/TotalCross \
+          --native-dir "$native_dir" \
+          --out "$probe_dir"
+        python3 validation/performance-lab/tools/functional_validation_730.py run-png \
+          --install-dir "$probe_dir/deployed/install/linux" \
+          --out "$RESULT_DIR/unmodified"
+        python3 - "$RESULT_DIR/unmodified/result.json" <<'PY'
+        import json
+        import sys
+        from pathlib import Path
+
+        result = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+        observed = result["observed"]
+        cases = observed["pngCases"]
+        required = {"png-file", "png-bytes", "tcz-png", "alpha-png", "indexed-png",
+                    "jpeg-file", "jpeg-bytes", "invalid-file", "invalid-bytes"}
+        names = {line.split("case=", 1)[1].split(",", 1)[0] for line in cases}
+        if observed["processReturnCode"] != 0 or not observed["pngCompletionMarker"]:
+            raise SystemExit("PNG probe did not complete normally; preserve capture as inconclusive")
+        if names != required:
+            raise SystemExit("PNG probe case set is incomplete: " + repr(sorted(names)))
+        for line in cases:
+            print(line)
+        print("PNG probe captured all nine cases without LD_PRELOAD")
+        PY
+
+    - name: Run original ownership drawing sequence without a startup shim
+      env:
+        RESULT_DIR: ${{ runner.temp }}/native-startup-linux/png-baseline
+        EXPECTED_SOURCE_COMMIT: ${{ needs.select-build-source.outputs.source-ref }}
+        PROBE_SOURCE_COMMIT: d084949d106f9606a7639d851ad66b97734df1ec
+      shell: bash
+      run: |
+        set -euo pipefail
+        unset LD_PRELOAD || true
+        test -z "${LD_PRELOAD:-}"
+        mkdir -p "$RESULT_DIR/I06"
+        python3 - "$EXPECTED_SOURCE_COMMIT" "$RESULT_DIR" <<'PY'
+        import hashlib
+        import json
+        import subprocess
+        import sys
+        from pathlib import Path
+
+        source_commit, output = sys.argv[1], Path(sys.argv[2])
+        sdk_manifest = json.loads(Path("validation/artifacts/sdk-build/build-provenance.json").read_text())
+        native_manifest = json.loads(Path("validation/artifacts/linux-amd64/build-provenance.json").read_text())
+        if sdk_manifest["source"] != native_manifest["source"]:
+            raise SystemExit("SDK and Linux runtime source provenance differs")
+        if sdk_manifest["source"]["commit"] != source_commit:
+            raise SystemExit("build artifacts do not match the selected baseline revision")
+        source_tree = sdk_manifest["source"]["tree"]
+        vm_tree = subprocess.check_output(
+            ["git", "rev-parse", source_commit + ":TotalCrossVM"], text=True
+        ).strip()
+        root = Path("validation/artifacts/native-bridges")
+        digest = hashlib.sha256()
+        files = sorted(path for path in root.rglob("*") if path.is_file())
+        if not files:
+            raise SystemExit("canonical build did not provide native bridge inputs")
+        for path in files:
+            relative = path.relative_to(root).as_posix().encode("utf-8")
+            digest.update(relative + b"\0")
+            digest.update(hashlib.sha256(path.read_bytes()).digest())
+        (output / "I06" / "artifact-identities.json").write_text(
+            json.dumps({"sourceCommit": source_commit, "sourceTree": source_tree,
+                        "runtimeSourceSubtree": vm_tree,
+                        "generatedNativeBridgesSha256": digest.hexdigest()}, indent=2) + "\n"
+        )
+        PY
+        mapfile -t identity_values < <(python3 - "$RESULT_DIR/I06/artifact-identities.json" <<'PY'
+        import json
+        import sys
+        from pathlib import Path
+
+        identity = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+        print(identity["sourceTree"])
+        print(identity["runtimeSourceSubtree"])
+        print(identity["generatedNativeBridgesSha256"])
+        PY
+        )
+        source_tree="${identity_values[0]}"
+        vm_tree="${identity_values[1]}"
+        bridge_hash="${identity_values[2]}"
+        native_library="$(find validation/artifacts/linux-amd64 -type f -name libtcvm.so -print -quit)"
+        native_dir="$(dirname "$native_library")"
+        ownership_tool="validation/ownership-original/tools/linux_image_ownership_730.py"
+        ownership_out="$RESULT_DIR/I06/original-png"
+        python3 "$ownership_tool" prepare \
+          --sdk-root validation/artifacts/sdk-build/build/TotalCross \
+          --native-dir "$native_dir" --mode fixed \
+          --source-commit "$EXPECTED_SOURCE_COMMIT" --source-tree "$source_tree" \
+          --runtime-source-commit "$EXPECTED_SOURCE_COMMIT" --runtime-source-tree "$source_tree" \
+          --runtime-source-subtree "$vm_tree" \
+          --runtime-native-bridges-sha256 "$bridge_hash" \
+          --runtime-subtree-matches-candidate \
+          --probe-source-commit "$PROBE_SOURCE_COMMIT" --out "$ownership_out"
+        python3 - "$ownership_out" "$RESULT_DIR/fixtures/ownership-red-2x2.png" <<'PY'
+        import hashlib
+        import re
+        import sys
+        from pathlib import Path
+
+        source = Path("validation/ownership-original/tests/functional-validation/totalcross/ui/image/ImageOwnershipLifecycleProbe.java").read_text()
+        body = source.split("private static final byte[] RED_PNG = {", 1)[1].split("};", 1)[0]
+        data = bytes(int(value, 16) for value in re.findall(r"0x([0-9a-fA-F]{2})", body))
+        fixture = Path(sys.argv[2]).read_bytes()
+        if data != fixture or hashlib.sha256(data).hexdigest() != \
+                "d28c139bba718d60154960eaca75535a5cc5b59fe2153e998a29251e8e5f4667":
+            raise SystemExit("ownership probe no longer embeds the retained original PNG")
+        print("Original 2x2 PNG bytes match the preserved ownership fixture")
+        PY
+        set +e
+        python3 "$ownership_tool" run --mode fixed --timeout 180 --out "$ownership_out" \
+          > "$RESULT_DIR/I06/run-command.log" 2>&1
+        tool_status=$?
+        set -e
+        printf '%s\n' "$tool_status" > "$RESULT_DIR/I06/tool-exit-code.txt"
+        python3 - "$ownership_out" "$tool_status" <<'PY'
+        import json
+        import sys
+        from pathlib import Path
+
+        root, tool_status = Path(sys.argv[1]), int(sys.argv[2])
+        log = root / "runtime.log"
+        output = log.read_text(encoding="utf-8", errors="replace") if log.exists() else ""
+        started = ("TC_IMAGE_OWNERSHIP_START" in output
+                   or "stage-1-mainwindow-entered" in output)
+        stage_three = "stage-3-native-drawing-entered" in output
+        failure = next((line for line in output.splitlines()
+                        if line.startswith("TC_IMAGE_OWNERSHIP_FAIL ")), None)
+        complete = ("stage-7-large-screen-complete" in output
+                    and any(line.startswith("TC_IMAGE_OWNERSHIP_JSON ")
+                            for line in output.splitlines()))
+        if failure and "stage-3-native-drawing" in failure:
+            status = "REPRODUCED"
+        elif complete and tool_status == 0:
+            status = "NOT_REPRODUCED"
+        elif not started:
+            status = "BLOCKED"
+        else:
+            status = "INCONCLUSIVE"
+        record = {"status": status, "toolExitCode": tool_status,
+                  "startupMarker": started, "stageThreeEntered": stage_three,
+                  "failureMarker": failure, "ownershipStagesComplete": complete,
+                  "runtimeLog": "runtime.log"}
+        (root / "classification.json").write_text(json.dumps(record, indent=2) + "\n")
+        print(json.dumps(record, sort_keys=True))
+        PY
 
     - name: Preserve Linux runtime evidence
       if: always()
