@@ -29,8 +29,8 @@ jobs:
           printf 'runner=%s\n' "${ImageOS:-unknown}"
           printf 'architecture=%s\n' "$(uname -m)"
           printf 'path_max='; getconf PATH_MAX /
-          ldd --version | head -n 1
-          cc --version | head -n 1
+          ldd --version | sed -n '1p'
+          cc --version | sed -n '1p'
         } | tee "${test_dir}/environment.txt"
         cc -std=c11 -O2 -Wall -Wextra -Werror \
           -D_FORTIFY_SOURCE=2 \

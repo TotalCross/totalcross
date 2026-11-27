@@ -193,10 +193,14 @@ static int runContractCases(void)
       depth += componentLength;
       if (mkdir(deepDirectory, 0700) != 0)
          return fail("could not create deep path fixture");
-      snprintf(deepDirectories[index], sizeof(deepDirectories[index]),
-               "%s", deepDirectory);
+      memcpy(deepDirectories[index], deepDirectory, (size_t)depth + 1);
    }
-   snprintf(deepPath, sizeof(deepPath), "%s/deep.txt", deepDirectory);
+   if (depth + (int)sizeof("/deep.txt") > (int)sizeof(deepPath))
+      return fail("deep file path exceeded its local buffer");
+   memcpy(deepPath, deepDirectory, (size_t)depth);
+   memcpy(deepPath + depth, "/deep.txt", sizeof("/deep.txt"));
+   if (strlen(deepPath) >= 512)
+      return fail("deep path exceeded the bounded long-path target");
    if (!writeFile(deepPath) || !realpath(deepPath, expected))
       return fail("could not create or resolve deep fixture");
    memset(small, 0x7f, sizeof(small));
