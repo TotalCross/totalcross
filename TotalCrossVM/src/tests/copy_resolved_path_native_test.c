@@ -14,11 +14,19 @@
 #define linux 1
 #endif
 
-#include "../util/xtypes.h"
+#ifndef MAX_PATHNAME
+#if defined(__APPLE__)
+#define MAX_PATHNAME FILENAME_MAX
+#else
+#define MAX_PATHNAME 1024
+#endif
+#endif
 
 #ifndef _FORTIFY_SOURCE
 #define _FORTIFY_SOURCE 0
 #endif
+
+#define null NULL
 
 static char *xstrncpy(char *target, const char *source, size_t length)
 {
