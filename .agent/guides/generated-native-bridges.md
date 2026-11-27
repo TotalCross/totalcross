@@ -22,8 +22,9 @@ bridge for it.
 In the PR #502 image path, `Image.createJpg` materializes its canonical backing
 and calls the replacement method `createJpgImpl`; the generated symbol is
 `tuiI_createJpgImpl_si`, implemented in `TotalCrossVM/src/nm/ui/image_Image.c`.
-The old `tuiI_createJpgNative_si` name has no compatibility alias. The JavaSE
-ImageIO implementation lives inside replacement method
+The old `tuiI_createJpgNative_si` symbol remains as a compatibility bridge for
+SDK TCZs built before the rename and forwards to the current implementation.
+The JavaSE ImageIO implementation lives inside replacement method
 `decodeEncodedSourceDirect`, while its device implementation keeps the existing
 `tuiI_decodeEncodedSourceDirect_e` symbol. `Class4D.getSigners()` is ordinary
 Java code returning `null`, so it creates no bridge. These methods do not need
