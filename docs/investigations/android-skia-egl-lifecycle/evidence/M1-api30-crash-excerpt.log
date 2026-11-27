@@ -1,0 +1,39 @@
+# Sanitized excerpt; PIDs, UIDs, package install paths, and register dump omitted.
+# Exact unmodified customer APK, grant-in-place return, 2026-11-27 local time:
+17:12:58.108 EGL_emulation: replacement EGL context created
+17:12:58.151 TotalCross: initSkia
+17:12:58.166 emuglGLESv2_enc: glBufferData GL error 0x502
+17:12:58.169 emuglGLESv2_enc: glUseProgram GL error 0x501
+17:12:58.179 libc: Fatal signal 11 (SIGSEGV), SEGV_MAPERR, fault addr 0x0
+
+# Marker-only variant: directory operations completed before the same callback:
+17:14:02.451 TC_CLIENT_MAIN BEGIN /sdcard/asd
+17:14:10.242 TC_CLIENT_MAIN CREATED /sdcard/asd
+17:14:10.360 TC_CLIENT_MAIN DELETED /sdcard/asd
+17:14:11.113 EGL_emulation: replacement EGL context created
+17:14:11.130 TotalCross: initSkia
+17:14:11.139 emuglGLESv2_enc: glBufferData GL error 0x502
+17:14:11.140 emuglGLESv2_enc: glUseProgram GL error 0x501
+17:14:11.147 libc: Fatal signal 11 (SIGSEGV), SEGV_MAPERR, fault addr 0x0
+
+# Native backtrace from the marker-only tombstone:
+#00 libGLESv2_enc.so: GL2Encoder::calcIndexRange
+#01 libGLESv2_enc.so: GL2Encoder::s_glDrawRangeElements
+#02 libtcvm.so: FillRectOp::onExecute
+#03 libtcvm.so: GrOp::execute
+#04 libtcvm.so: GrOpsTask::onExecute
+#05 libtcvm.so: GrDrawingManager::executeRenderTasks
+#06 libtcvm.so: GrDrawingManager::flush
+#07 libtcvm.so: GrDirectContext::~GrDirectContext
+#08 libtcvm.so: GrDirectContext::~GrDirectContext
+#09 libtcvm.so: SkGpuDevice::~SkGpuDevice
+#10 libtcvm.so: SkCanvas::internalRestore
+#11 libtcvm.so: SkCanvas::~SkCanvas
+#12 libtcvm.so: SkCanvas::~SkCanvas
+#13 libtcvm.so: SkSurface_Gpu::~SkSurface_Gpu
+#14 libtcvm.so: initSkia
+#15 libtcvm.so: initGLES
+#16 libtcvm.so: Java_totalcross_Launcher4A_nativeSurfaceChanged
+
+# libtcvm.so Build ID: d9015557ee8a9432481be50af2cf101384e0b0d1
+# Full sanitized logcats and the tombstone remain outside Git.

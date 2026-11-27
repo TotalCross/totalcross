@@ -7,7 +7,7 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Current milestone
 
-Milestone 1 — preparation and current-master baseline reproduction.
+Milestone 1 complete — mandatory pause before Milestone 2.
 
 ## Completed sub-milestones
 
@@ -23,21 +23,36 @@ Milestone 1 — preparation and current-master baseline reproduction.
   revision.
 - Booted the installed API 30 ARM64 AVD with host GPU acceleration and
   confirmed API 30, ARM64, and the Apple M1 Pro OpenGL ES renderer.
-- Built the current-source SDK and Android ARM64 release bundle. The six-phase
-  customer harness attempt stopped at an unrelated SDK resource initialization
-  error before reaching any permission or filesystem scenario.
+- Built the current-source SDK and Android ARM64 release bundle. The first
+  harness attempt stopped at missing Android UI resources before any
+  permission or filesystem scenario.
+- Confirmed the Android resource directory is missing floatingFrg.png and
+  outlined_edit.png, both available by the same names in the Material folder.
+  Added these only to a disposable TCUI archive for testing; the repository
+  source assets were removed immediately after generation.
+- Rebuilt the exact customer and marker-only APKs from baseline SDK/runtime
+  artifacts and ran all six permission phases on the API 30 ARM64 AVD.
+- Reproduced SIGSEGV on return from the in-place permission screen in both
+  customer and marker-only APK logcats. The trace variant confirmed successful
+  directory create/delete before the surface callback crash.
+- Preserved compact crash evidence, scenario assertions, artifact hashes, and
+  the post-crash emulator screenshot in evidence/M1-api30-reproduction.md.
 
 ## Baseline revision
 
 52a947b5295321d7350350bd618c55fb26304c00
 
 This is the initial source baseline and was equal to origin/master and
-origin/fix/android-skia-egl-surface-lifecycle after fetch on 2026-11-27.
+origin/fix/android-skia-egl-surface-lifecycle after fetch on 2026-11-27. On
+resume, origin/master advanced to 6beef491f28c63aa364d3661dd5c37ccff01fb0d;
+the intervening commits did not modify the Android EGL/Skia code or SDK
+resource/build paths relevant to this result. The investigation branch remains
+on its recorded baseline.
 
 ## Last completed commit
 
-e298f864fb3894126ae0f51ea506f0ec635b6c4f — initial investigation
-documentation. The current M1 result is in the pending checkpoint commit.
+This checkpoint's reproduction evidence follows 0bb06b0959a3e00425de793d75f22bb0c4e53f2b,
+the prior startup-blocker evidence commit.
 
 ## Current hypothesis
 
@@ -51,11 +66,20 @@ been destroyed during native surface replacement. This is not established.
 - Current master preserves the historical Android teardown ordering in the
   inspected GLES and Skia files.
 - An API 30 ARM64 emulator is installed and can run with host GPU acceleration.
-- The current-source APK opens an unhandled FileNotFoundException for
-  totalcross/res/android/floatingFrg.png before entering the customer test.
-  No permission prompt or customer File operation marker was observed.
-- The current-source run is inconclusive for the graphics defect; the app
-  never reached the Activity transition that historically reproduced it.
+- The current-source APK opens unhandled FileNotFoundExceptions for two
+  missing Android UI resources before entering the customer test. A disposable
+  overlay with the existing Material floatingFrg.png and outlined_edit.png
+  allowed startup without changing customer Java or production source.
+- The exact customer APK and marker-only APK show SIGSEGV after the in-place
+  permission grant and return to the app. The trace variant recorded successful
+  directory creation and deletion before the crash.
+- The native backtrace includes GL2Encoder::s_glDrawRangeElements,
+  FillRectOp::onExecute, GrDirectContext::~GrDirectContext,
+  SkGpuDevice::~SkGpuDevice, initSkia, initGLES, and
+  Java_totalcross_Launcher4A_nativeSurfaceChanged.
+- This confirms reproduction on the recorded source baseline. It does not
+  establish whether Skia resources were released with a valid/current old EGL
+  context.
 
 ## Rejected hypotheses
 
@@ -63,12 +87,10 @@ None.
 
 ## Pending experiments
 
-- Build an SDK and Android ARM64 VM from the baseline source.
-- Run the existing customer reproducer and diagnostic variant on API 30.
-- Assert permission state, app markers/completion, rendering, and crash
-  signature.
-- Exercise background/foreground and surface recreation with the available
-  diagnostic application.
+No further Milestone 1 experiments are pending. Manual rotation and standalone
+background/foreground controls were not run; the permission Settings return
+already reproduced the surface callback crash. Milestone 2 instrumentation is
+the next action only after explicit authorization.
 
 ## Test environment
 
@@ -79,27 +101,31 @@ None.
 - Renderer: Google (Apple), Android Emulator OpenGL ES Translator (Apple M1 Pro),
   OpenGL ES 3.0 (4.1 Metal - 91.7).
 - Emulator is launched read-only with -gpu host and -accel on.
-- Runtime test not yet performed.
+- Runtime result: current-baseline API 30 reproduction; see
+  evidence/M1-api30-reproduction.md.
 
 ## Available build artifacts
 
 The current SDK jar, AAB, arm64-v8a libtcvm.so, exact APK, and trace APK were
-built from the recorded baseline. Their hashes and the bounded run summary are
-in evidence/M1-api30-run.md. Generated APKs and full logs remain outside Git.
+built from the recorded baseline. The test-only package overlays two UI image
+assets; hashes, six phase assertions, sanitized native stack, and screenshot are
+in evidence/M1-api30-reproduction.md. Generated APKs and full logs remain
+outside Git.
 
 ## Remaining blockers
 
-The current-source deployment is missing the Android UI resource
-floatingFrg.png. Determine whether this comes from SDK packaging or the source
-baseline before retrying the reproducer. The SDK manager's stale AVD warning is
-not blocking; the emulator booted successfully.
+The current Android resource tree is missing two assets eagerly loaded by
+Android UI startup. The disposable overlay is sufficient for this reproduced
+flow; no production resource fix is in scope for the graphics correction. The
+remaining technical uncertainty is the actual Skia/EGL resource ownership and
+context state at teardown. No lifecycle instrumentation or production change
+has been made.
 
 ## Exact next concrete action
 
-Compare the source tree and canonical SDK packaging path for the missing
-floatingFrg.png runtime asset. Identify a test-input correction that preserves
-the customer Java operations, then rerun the API 30 baseline only after
-explicit authorization to continue.
+Stop at the Milestone 1 review pause. After explicit authorization, begin
+Milestone 2 by inspecting lifecycle ownership and preparing minimal ordered
+Android EGL/Skia diagnostics in an isolated patch.
 
 ## Resume protocol
 

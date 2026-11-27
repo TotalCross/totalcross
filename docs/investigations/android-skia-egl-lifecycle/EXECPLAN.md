@@ -26,9 +26,10 @@ FINAL-REPORT.md is completed only at final consolidation.
 
 - [x] (2026-11-27) Establish the current master baseline and inspect existing
   investigation evidence. See CHECKPOINT.md and FINDINGS.md.
-- [ ] Resolve the documented current-source startup blocker and complete
-  Milestone 1, then commit and push a valid API 30 reproduction result. Do not
-  begin Milestone 2 before explicit authorization.
+- [x] (2026-11-27) Reproduce the current-baseline API 30 native crash using
+  the customer app and marker-only variant. A disposable UI-resource overlay
+  was needed to pass two missing SDK image assets. See
+  evidence/M1-api30-reproduction.md. Stop at Milestone 1 pending authorization.
 - [ ] Milestone 2: instrument only the relevant Android EGL and Skia lifecycle.
 - [ ] Milestone 3: causally validate the lifecycle ordering before production
   changes; stop for review before implementation.
@@ -88,8 +89,13 @@ pause for explicit user authorization to continue.
   when requested on the emulator command line, although its AVD config has
   GPU acceleration disabled.
 - The current-source customer APK aborts during UI-style resource loading
-  because floatingFrg.png is missing from its deployed Android resource path.
-  The API 30 attempt is inconclusive for the target graphics lifecycle.
+  because floatingFrg.png and outlined_edit.png are absent from its Android
+  resource path. Both have same-name Material assets. A temporary test-only
+  overlay allowed the reproducer to reach its Activity transition.
+- On API 30, returning from the in-place storage permission screen reproduces
+  the native SIGSEGV in both the exact customer app and marker-only variant.
+  The captured stack reaches initSkia, initGLES, and nativeSurfaceChanged.
+  This establishes current-baseline reproduction, not resource-lifetime cause.
 
 ## Decision Log
 
@@ -99,6 +105,10 @@ pause for explicit user authorization to continue.
 - Build runtime artifacts from this source baseline. Historical 7.3.0 APKs
   are evidence only and cannot establish current master behavior.
 - Runtime tests remain local, hardware-accelerated ARM64 emulators only.
+- Keep the missing Android UI assets as a test-input issue for this campaign:
+  add only their same-name Material counterparts to a disposable TCUI archive.
+  Do not change production resources or customer Java as part of the graphics
+  correction.
 
 ## Validation and Acceptance
 
@@ -126,8 +136,9 @@ or build fails, preserve logs and classify the result before retrying.
 
 ## Outcomes & Retrospective
 
-Milestone 1 is in progress. No current-master runtime result or production
-change is recorded yet.
+Milestone 1 is complete: API 30 reproduction was captured on the recorded
+baseline and pushed. The exact lifecycle cause is still unproven. No production
+change has been made. Stop here until explicit authorization for Milestone 2.
 
 ## Revision Note
 

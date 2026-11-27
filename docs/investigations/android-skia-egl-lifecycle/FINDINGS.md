@@ -58,21 +58,40 @@ The current source sequence on native surface replacement is:
 This sequence matches the historical hypothesis but does not show whether the
 old context was valid or current at Skia resource destruction.
 
-## Current-master runtime result
+## Current-baseline runtime result
 
-The current-source SDK and ARM64 release bundle built successfully. The
-PR 7 exact and marker-only APKs also compiled. The six bounded API 30 phases
-did not reach the customer permission or filesystem operations: the app showed
-an unhandled FileNotFoundException for
-/data/user/0/totalcross.appzmtw/totalcross/res/android/floatingFrg.png in
-Resources.uiStyleChanged / MainWindow.setUIStyle, followed by “Aborting
-program.” MANAGE_EXTERNAL_STORAGE remained ignore in denied and grant-in-place
-phases and was allow in pregranted phases. No permission prompt, customer
-operation marker, or historical native crash signature was observed.
+The current-source SDK and Android ARM64 runtime were built from baseline
+52a947b5295321d7350350bd618c55fb26304c00. The PR 7 exact customer source and
+marker-only variant were deployed to the installed API 30 ARM64 emulator.
 
-This is a blocked reproduction, not evidence that the graphics defect is
-absent. The application never entered the Activity transition under test.
-The current Android EGL and Skia source still matches the historical source in
-the relevant paths. Build and emulator provenance are recorded in
-evidence/M1-api30-run.md; the visible startup error is
+The first attempt stopped before permission handling because the Android UI
+resource path lacks floatingFrg.png and outlined_edit.png. Both files exist in
+the same source tree's Material resource folder. For the reproduction only,
+those two assets were added under the expected Android names while generating
+a disposable TCUI.tcz; the temporary source aliases were removed immediately.
+The customer Java source and production graphics code were unchanged. This
+overlay is test provenance, not a production resource correction.
+
+All six bounded phases then reached permission handling. In the trace
+grant-in-place phase, MANAGE_EXTERNAL_STORAGE changed from ignore to allow,
+the customer operation recorded successful create and delete markers, and the
+process then received SIGSEGV while returning through
+Java_totalcross_Launcher4A_nativeSurfaceChanged. The unmodified exact APK's
+grant-in-place logcat also contains Fatal signal 11 immediately after
+`initSkia`. The marker-only tombstone contains
+GL2Encoder::s_glDrawRangeElements and the Skia cleanup frames seen historically.
+The pregranted trace control created/deleted the directory and stayed alive;
+the denied trace reported the expected Operation not permitted error.
+
+The automation returned failure because the grant-in-place trace process did
+not remain alive. That is the reproduced defect. The exact variant's summary
+sampled the original PID as still present, but its logcat contains a fatal
+signal for that PID; process liveness alone is not a valid pass criterion.
+This confirms that the defect remains on the recorded current-source baseline
+and that the Settings return reaches the failing surface callback. It does not
+prove why Skia cleanup issues graphics work in the observed state.
+
+The full assertions, provenance, native stack excerpt, screenshot, and command
+details are in evidence/M1-api30-reproduction.md. The initial startup-blocked
+attempt remains recorded in evidence/M1-api30-run.md and
 evidence/M1-api30-startup-error.png.

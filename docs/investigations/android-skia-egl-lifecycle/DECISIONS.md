@@ -27,3 +27,11 @@ comparison must establish causality before any production correction.
 All runtime execution is local on hardware-accelerated ARM64 emulators. No
 physical device, GitHub Actions runtime, remote emulator, or other platform
 test is in scope.
+
+## Use a disposable UI-resource overlay for the baseline run
+
+The current Android resource path lacks floatingFrg.png and outlined_edit.png,
+which are eagerly loaded before the customer flow. For M1 only, use the
+same-name Material assets in a temporary TCUI archive so the unchanged
+customer app can reach the permission transition. Keep the overlay out of
+production source and treat the result as qualified by this test input.

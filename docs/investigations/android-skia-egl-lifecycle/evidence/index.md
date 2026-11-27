@@ -16,10 +16,17 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 Baseline source revision: 52a947b5295321d7350350bd618c55fb26304c00.
 
-M1 current-source build and API 30 attempt: M1-api30-run.md,
-M1-api30-log-excerpt.log, and M1-api30-startup-error.png. The test was blocked
-before the permission and filesystem scenarios by a missing UI resource. No
-current-source graphics conclusion is established.
+M1 initial startup-blocked attempt: M1-api30-run.md,
+M1-api30-log-excerpt.log, and M1-api30-startup-error.png.
+
+M1 current-baseline API 30 reproduction: M1-api30-reproduction.md,
+M1-api30-crash-excerpt.log, and M1-api30-reproduced-home.png. The exact
+customer APK and marker-only variant both recorded the historical native
+SIGSEGV after return from the grant-in-place permission screen. The trace
+variant recorded successful directory create/delete before the surface
+callback crash. The test-only TCUI asset overlay and artifact hashes are
+documented in the reproduction report.
 
 Generated APKs, native binaries, emulator images, full SDK archives, caches,
-and full tombstones remain outside Git.
+full logcats, and tombstones remain outside Git. The committed stack excerpt
+is sanitized and compact.
