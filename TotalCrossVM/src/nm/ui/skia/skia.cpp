@@ -10,6 +10,9 @@
 #if defined(ANDROID)
 #include <jni.h>
 #include <android/bitmap.h>
+#if defined(TC_ANDROID_EGL_LIFECYCLE_TESTS)
+#include <sys/system_properties.h>
+#endif
 #endif
 
 #if TC_GRAPHICS_GLES
@@ -45,6 +48,8 @@
 #include "include/core/SkPathEffect.h"
 #include "include/core/SkGraphics.h"
 #include "include/core/SkSurface.h"
+#include "include/gpu/GrDirectContext.h"
+#include "include/gpu/GrRecordingContext.h"
 #include "include/core/SkString.h"
 #include "include/core/SkTime.h"
 #include "include/core/SkCanvas.h"
@@ -62,6 +67,16 @@
 
 #include <vector>
 #include <map>
+
+#if defined(ANDROID) && defined(TC_ANDROID_EGL_LIFECYCLE_TESTS)
+static bool androidSkiaLifecycleRenderProbeEnabled()
+{
+    char value[PROP_VALUE_MAX];
+    return __system_property_get("debug.tcvm.renderSkiaProbe", value) > 0
+        && value[0] == '1' && value[1] == '\0';
+}
+
+#endif
 
 #if defined(ANDROID) && defined(TC_ANDROID_EGL_LIFECYCLE_DIAGNOSTICS)
 #include <android/log.h>
@@ -284,6 +299,21 @@ void initSkia(int w, int h, void * pixels, int pitch, uint32_t pixelformat)
 
     backPaint.setAntiAlias(true);
     canvas->clear(SK_ColorWHITE);
+#if defined(ANDROID) && defined(TC_ANDROID_EGL_LIFECYCLE_TESTS)
+    if (androidSkiaLifecycleRenderProbeEnabled()) {
+        SkPaint probePaint;
+        probePaint.setAntiAlias(false);
+        probePaint.setStyle(SkPaint::kFill_Style);
+        probePaint.setColor(SK_ColorRED);
+        canvas->drawRect(SkRect::MakeXYWH(12, 12, 96, 96), probePaint);
+        probePaint.setColor(SK_ColorGREEN);
+        canvas->drawRect(SkRect::MakeXYWH(120, 12, 96, 96), probePaint);
+        probePaint.setColor(SK_ColorBLUE);
+        canvas->drawRect(SkRect::MakeXYWH(228, 12, 96, 96), probePaint);
+        TC_ANDROID_EGL_DIAG_SKIA("skia.test.render-probe", androidSkiaContextIdentity,
+                androidSkiaSurfaceIdentity, androidSkiaCanvasIdentity, 3);
+    }
+#endif
     flushSkia();
 #if defined(ANDROID) && defined(TC_ANDROID_EGL_LIFECYCLE_DIAGNOSTICS)
     TC_ANDROID_EGL_DIAG_SKIA("skia.init.end", androidSkiaContextIdentity,
@@ -291,7 +321,14 @@ void initSkia(int w, int h, void * pixels, int pitch, uint32_t pixelformat)
 #endif
 }
 
-void destroySkiaScreen()
+enum SkiaScreenCleanupMode
+{
+    kReleaseSkiaScreenWrappers,
+    kReleaseSkiaScreenGpuResources,
+    kAbandonSkiaScreenGpuResources
+};
+
+static void cleanupSkiaScreen(enum SkiaScreenCleanupMode mode)
 {
 #if defined(ANDROID) && defined(TC_ANDROID_EGL_LIFECYCLE_DIAGNOSTICS)
     TC_ANDROID_EGL_DIAG_SKIA("skia.destroy.begin", androidSkiaContextIdentity,
@@ -300,6 +337,14 @@ void destroySkiaScreen()
 #endif
 #if TC_GRAPHICS_SOFTWARE
     delete canvas;
+#endif
+#if TC_GRAPHICS_GLES
+    GrDirectContext *directContext = surface
+        ? GrAsDirectContext(surface->recordingContext()) : nullptr;
+    if (directContext && mode == kReleaseSkiaScreenGpuResources)
+        directContext->releaseResourcesAndAbandonContext();
+    else if (directContext && mode == kAbandonSkiaScreenGpuResources)
+        directContext->abandonContext();
 #endif
     canvas = nullptr;
     bitmap.reset();
@@ -316,6 +361,21 @@ void destroySkiaScreen()
     androidSkiaCanvasIdentity = nullptr;
     TC_ANDROID_EGL_DIAG_SKIA("skia.destroy.end", nullptr, nullptr, nullptr, 0);
 #endif
+}
+
+void destroySkiaScreen()
+{
+    cleanupSkiaScreen(kReleaseSkiaScreenWrappers);
+}
+
+void releaseSkiaScreenBeforeEglTeardown()
+{
+    cleanupSkiaScreen(kReleaseSkiaScreenGpuResources);
+}
+
+void abandonSkiaScreenBeforeEglTeardown()
+{
+    cleanupSkiaScreen(kAbandonSkiaScreenGpuResources);
 }
 
 void flushSkia()

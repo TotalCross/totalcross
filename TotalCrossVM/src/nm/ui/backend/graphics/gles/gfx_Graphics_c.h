@@ -10,11 +10,15 @@
 #if defined(ANDROID) || (defined(TC_OS_ANDROID) && TC_OS_ANDROID)
  #define TC_GLES_ANDROID 1
  #include "../skia/skia.h"
+ #include "../../../android_skia_egl_lifecycle.h"
  #include <android/native_window.h>
  #include <android/native_window_jni.h>
  #include <GLES2/gl2.h>
  #include <GLES2/gl2ext.h>
  #include <EGL/egl.h>
+#if defined(TC_ANDROID_EGL_LIFECYCLE_TESTS)
+ #include <sys/system_properties.h>
+#endif
 #else
  #define TC_GLES_ANDROID 0
  #include <OpenGLES/ES2/gl.h>
@@ -104,6 +108,31 @@ static void androidLogEglLifecycle(const char *event,
 #define androidLogEglLifecycleAtGeneration(...) ((void)0)
 #endif
 
+#if defined(TC_ANDROID_EGL_LIFECYCLE_TESTS)
+static bool androidEglLifecycleTestProperty(const char *name)
+{
+   char value[PROP_VALUE_MAX];
+   return __system_property_get(name, value) > 0 && strcmp(value, "1") == 0;
+}
+
+static void androidEglLifecycleTestLoseOldContext(ScreenSurfaceEx extension)
+{
+   if (extension == null || extension->display == EGL_NO_DISPLAY
+         || extension->context == EGL_NO_CONTEXT
+         || !androidEglLifecycleTestProperty("debug.tcvm.loseEglContext"))
+      return;
+
+   eglMakeCurrent(extension->display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+   eglDestroyContext(extension->display, extension->context);
+   extension->context = EGL_NO_CONTEXT;
+   androidLogEglLifecycle("test.context.destroyed.before.cleanup", extension,
+         extension->window, null, extension->display,
+         extension->surface, extension->context);
+}
+#else
+#define androidEglLifecycleTestLoseOldContext(extension) ((void)0)
+#endif
+
 static void androidDestroyEGL(ScreenSurfaceEx extension)
 {
    if (extension == null)
@@ -146,6 +175,104 @@ static void androidDestroyEGL(ScreenSurfaceEx extension)
    androidLogEglLifecycle("egl.destroy.end", extension,
          extension->window, null, extension->display,
          extension->surface, extension->context);
+}
+
+static int androidEglContextValidForSkiaCleanup(void *userData)
+{
+   ScreenSurfaceEx extension = (ScreenSurfaceEx)userData;
+   EGLint configId;
+   EGLint width;
+   EGLint height;
+   EGLint error;
+
+   if (extension == null || extension->display == EGL_NO_DISPLAY
+         || extension->surface == EGL_NO_SURFACE
+         || extension->context == EGL_NO_CONTEXT)
+      return false;
+   if (!eglQueryContext(extension->display, extension->context,
+            EGL_CONFIG_ID, &configId))
+   {
+      error = eglGetError();
+      androidLogEglLifecycle("skia.cleanup.context.invalid", extension,
+            extension->window, null, extension->display,
+            extension->surface, extension->context);
+      debug("eglQueryContext() failed before Skia cleanup: %d", error);
+      return false;
+   }
+   if (!eglQuerySurface(extension->display, extension->surface, EGL_WIDTH, &width)
+         || !eglQuerySurface(extension->display, extension->surface, EGL_HEIGHT, &height))
+   {
+      error = eglGetError();
+      androidLogEglLifecycle("skia.cleanup.surface.unavailable", extension,
+            extension->window, null, extension->display,
+            extension->surface, extension->context);
+      debug("eglQuerySurface() failed before Skia cleanup: %d", error);
+      return false;
+   }
+   return true;
+}
+
+static int androidEglContextCurrentForSkiaCleanup(void *userData)
+{
+   ScreenSurfaceEx extension = (ScreenSurfaceEx)userData;
+   return extension != null
+         && eglGetCurrentDisplay() == extension->display
+         && eglGetCurrentContext() == extension->context
+         && eglGetCurrentSurface(EGL_DRAW) == extension->surface
+         && eglGetCurrentSurface(EGL_READ) == extension->surface;
+}
+
+static int androidMakeEglContextCurrentForSkiaCleanup(void *userData)
+{
+   ScreenSurfaceEx extension = (ScreenSurfaceEx)userData;
+   EGLint error;
+   if (extension == null || !eglMakeCurrent(extension->display,
+            extension->surface, extension->surface, extension->context))
+   {
+      error = eglGetError();
+      androidLogEglLifecycle("skia.cleanup.makecurrent.failed", extension,
+            extension != null ? extension->window : null, null,
+            extension != null ? extension->display : EGL_NO_DISPLAY,
+            extension != null ? extension->surface : EGL_NO_SURFACE,
+            extension != null ? extension->context : EGL_NO_CONTEXT);
+      debug("eglMakeCurrent() failed before Skia cleanup: %d", error);
+      return false;
+   }
+   return true;
+}
+
+static void androidPrepareSkiaForEglTeardown(ScreenSurfaceEx extension)
+{
+   TAndroidSkiaEglCleanupOps operations;
+   operations.userData = extension;
+   operations.contextIsValid = androidEglContextValidForSkiaCleanup;
+   operations.contextIsCurrent = androidEglContextCurrentForSkiaCleanup;
+   operations.makeContextCurrent = androidMakeEglContextCurrentForSkiaCleanup;
+
+   if (androidSkiaEglContextReadyForCleanup(&operations))
+   {
+      androidLogEglLifecycle("skia.cleanup.valid-current.begin", extension,
+            extension->window, null, extension->display,
+            extension->surface, extension->context);
+      releaseSkiaScreenBeforeEglTeardown();
+      androidLogEglLifecycle("skia.cleanup.valid-current.end", extension,
+            extension->window, null, extension->display,
+            extension->surface, extension->context);
+   }
+   else
+   {
+      androidLogEglLifecycle("skia.cleanup.abandon.begin", extension,
+            extension != null ? extension->window : null, null,
+            extension != null ? extension->display : EGL_NO_DISPLAY,
+            extension != null ? extension->surface : EGL_NO_SURFACE,
+            extension != null ? extension->context : EGL_NO_CONTEXT);
+      abandonSkiaScreenBeforeEglTeardown();
+      androidLogEglLifecycle("skia.cleanup.abandon.end", extension,
+            extension != null ? extension->window : null, null,
+            extension != null ? extension->display : EGL_NO_DISPLAY,
+            extension != null ? extension->surface : EGL_NO_SURFACE,
+            extension != null ? extension->context : EGL_NO_CONTEXT);
+   }
 }
 
 static void androidReleaseNativeWindow(ScreenSurfaceEx extension)
@@ -223,10 +350,16 @@ static bool androidApplySurfaceChange(JNIEnv *env, jobject javaSurface,
          extension->surface, extension->context);
 
    nativeSurfaceChanged = extension->window != newWindow;
+#if defined(TC_ANDROID_EGL_LIFECYCLE_TESTS)
+   if (androidEglLifecycleTestProperty("debug.tcvm.forceEglReplacement"))
+      nativeSurfaceChanged = true;
+#endif
    hadGraphics = extension->graphicsInitialized;
 
    if (nativeSurfaceChanged)
    {
+      androidEglLifecycleTestLoseOldContext(extension);
+      androidPrepareSkiaForEglTeardown(extension);
       if (hadGraphics)
          androidDestroyEGL(extension);
       androidReleaseNativeWindow(extension);
@@ -266,7 +399,8 @@ static bool androidApplySurfaceChange(JNIEnv *env, jobject javaSurface,
    surfaceWillChange = false;
    realAppH = (*env)->CallStaticIntMethod(env, applicationClass, jgetHeight);
 
-   if (nativeSurfaceChanged && hadGraphics)
+   if ((nativeSurfaceChanged && hadGraphics)
+         || (!extension->graphicsInitialized && screen.pixels != null))
    {
       androidLogEglLifecycleAtGeneration("surface.change.initgles.begin", generation, extension,
             extension->window, null, extension->display,
@@ -430,6 +564,15 @@ int32 initGLES(ScreenSurface screenSurface)
       debug("window is null");
       return false;
    }
+#if defined(TC_ANDROID_EGL_LIFECYCLE_TESTS)
+   if (androidEglLifecycleTestProperty("debug.tcvm.failEglInit"))
+   {
+      androidLogEglLifecycle("test.replacement.egl.init.failed", extension,
+            extension->window, null, extension->display,
+            extension->surface, extension->context);
+      return false;
+   }
+#endif
    if ((display = eglGetDisplay(EGL_DEFAULT_DISPLAY)) == EGL_NO_DISPLAY)
    {
       debug("eglGetDisplay() returned error %d", eglGetError());
@@ -595,6 +738,7 @@ void graphicsDestroy(ScreenSurface screenSurface, int32 isScreenChange)
          extension != null ? extension->context : EGL_NO_CONTEXT);
    if (!isScreenChange)
    {
+      androidPrepareSkiaForEglTeardown(extension);
       androidDestroyEGL(extension);
       androidReleaseNativeWindow(extension);
       xfree(screenSurface->extension);

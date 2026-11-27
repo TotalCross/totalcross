@@ -29,6 +29,8 @@ int32 colorType(uint32 pixelformat);
 #endif
 void initSkia(int w, int h, void * pixels, int pitch, uint32 pixelformat);
 void destroySkiaScreen();
+void releaseSkiaScreenBeforeEglTeardown();
+void abandonSkiaScreenBeforeEglTeardown();
 void flushSkia();
 
 int skia_makeTypeface(char* name, void *data, int32 size);
