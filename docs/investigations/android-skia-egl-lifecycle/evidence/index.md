@@ -16,8 +16,10 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 Baseline source revision: 52a947b5295321d7350350bd618c55fb26304c00.
 
-No current-source APK, native library, test log, screenshot, or crash evidence
-has been produced yet. Store compact sanitized runtime excerpts, JSON
-assertions, and artifact hashes here or in a milestone subdirectory. Keep
-generated APKs, native binaries, emulator images, full SDK archives, caches,
-and full tombstones outside Git.
+M1 current-source build and API 30 attempt: M1-api30-run.md,
+M1-api30-log-excerpt.log, and M1-api30-startup-error.png. The test was blocked
+before the permission and filesystem scenarios by a missing UI resource. No
+current-source graphics conclusion is established.
+
+Generated APKs, native binaries, emulator images, full SDK archives, caches,
+and full tombstones remain outside Git.

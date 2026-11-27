@@ -26,8 +26,9 @@ FINAL-REPORT.md is completed only at final consolidation.
 
 - [x] (2026-11-27) Establish the current master baseline and inspect existing
   investigation evidence. See CHECKPOINT.md and FINDINGS.md.
-- [ ] Complete Milestone 1 with a local API 30 baseline reproduction or a
-  documented blocker, then commit and push the evidence.
+- [ ] Resolve the documented current-source startup blocker and complete
+  Milestone 1, then commit and push a valid API 30 reproduction result. Do not
+  begin Milestone 2 before explicit authorization.
 - [ ] Milestone 2: instrument only the relevant Android EGL and Skia lifecycle.
 - [ ] Milestone 3: causally validate the lifecycle ordering before production
   changes; stop for review before implementation.
@@ -86,6 +87,9 @@ pause for explicit user authorization to continue.
 - The installed API 30 ARM64 system image boots with host GPU acceleration
   when requested on the emulator command line, although its AVD config has
   GPU acceleration disabled.
+- The current-source customer APK aborts during UI-style resource loading
+  because floatingFrg.png is missing from its deployed Android resource path.
+  The API 30 attempt is inconclusive for the target graphics lifecycle.
 
 ## Decision Log
 

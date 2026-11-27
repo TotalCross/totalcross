@@ -12,11 +12,14 @@ cases remain not run until a result and its assertions are recorded.
 
 | App / case | Permission and lifecycle | Expected assertions | Status |
 | --- | --- | --- | --- |
-| Original customer app | Denied, then return from Settings | Startup, actual denied state, expected error, app completion or native crash | Not run |
-| Original customer app | Grant while Settings is open | Permission granted, create/delete markers or equivalent, app completion, no native crash | Not run |
-| Original customer app | Permission pregranted | Create/delete succeeds and app remains functional | Not run |
-| Diagnostic variant | Denied and grant-in-place | Markers, permission state, completion, native stack | Not run |
-| Diagnostic variant | Background/foreground and surface recreation | Surface recreation, visible rendering, process completion | Not run |
+| Original customer app | Denied, then return from Settings | Startup, actual denied state, expected error, app completion or native crash | Blocked before prompt by missing floatingFrg.png |
+| Original customer app | Grant while Settings is open | Permission granted, create/delete markers or equivalent, app completion, no native crash | Blocked before prompt by missing floatingFrg.png |
+| Original customer app | Permission pregranted | Create/delete succeeds and app remains functional | Blocked before customer operation by missing floatingFrg.png |
+| Diagnostic variant | Denied and grant-in-place | Markers, permission state, completion, native stack | Blocked before customer operation by missing floatingFrg.png |
+| Diagnostic variant | Background/foreground and surface recreation | Surface recreation, visible rendering, process completion | Not run; startup blocker prevents valid scenario |
+
+Six API 30 phases were attempted. The app remained on an unhandled resource
+error dialog; process liveness is not a pass. No graphics conclusion is drawn.
 
 ## Historical I03 results
 

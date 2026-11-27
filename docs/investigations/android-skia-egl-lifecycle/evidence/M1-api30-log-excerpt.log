@@ -1,0 +1,18 @@
+exact/denied: 11-27 16:44:22.452  4897  4923 I TotalCross:  totalcross.io.FileNotFoundException totalcross.io.FileNotFoundException: File not found: /data/user/0/totalcross.appzmtw/totalcross/res/android/floatingFrg.png
+exact/denied: 11-27 16:44:22.452  4897  4923 I TotalCross: totalcross.res.Resources.uiStyleChanged 296
+exact/denied: 11-27 16:44:22.452  4897  4923 I TotalCross: Aborting program.
+exact/grant-in-place: 11-27 16:45:07.170  5279  5304 I TotalCross:  totalcross.io.FileNotFoundException totalcross.io.FileNotFoundException: File not found: /data/user/0/totalcross.appzmtw/totalcross/res/android/floatingFrg.png
+exact/grant-in-place: 11-27 16:45:07.170  5279  5304 I TotalCross: totalcross.res.Resources.uiStyleChanged 296
+exact/grant-in-place: 11-27 16:45:07.170  5279  5304 I TotalCross: Aborting program.
+exact/granted-before-launch: 11-27 16:45:58.551  5634  5659 I TotalCross:  totalcross.io.FileNotFoundException totalcross.io.FileNotFoundException: File not found: /data/user/0/totalcross.appzmtw/totalcross/res/android/floatingFrg.png
+exact/granted-before-launch: 11-27 16:45:58.551  5634  5659 I TotalCross: totalcross.res.Resources.uiStyleChanged 296
+exact/granted-before-launch: 11-27 16:45:58.551  5634  5659 I TotalCross: Aborting program.
+trace/denied: 11-27 16:47:07.509  5936  5967 I TotalCross:  totalcross.io.FileNotFoundException totalcross.io.FileNotFoundException: File not found: /data/user/0/totalcross.appzmtw/totalcross/res/android/floatingFrg.png
+trace/denied: 11-27 16:47:07.509  5936  5967 I TotalCross: totalcross.res.Resources.uiStyleChanged 296
+trace/denied: 11-27 16:47:07.509  5936  5967 I TotalCross: Aborting program.
+trace/grant-in-place: 11-27 16:48:05.852  6326  6351 I TotalCross:  totalcross.io.FileNotFoundException totalcross.io.FileNotFoundException: File not found: /data/user/0/totalcross.appzmtw/totalcross/res/android/floatingFrg.png
+trace/grant-in-place: 11-27 16:48:05.852  6326  6351 I TotalCross: totalcross.res.Resources.uiStyleChanged 296
+trace/grant-in-place: 11-27 16:48:05.852  6326  6351 I TotalCross: Aborting program.
+trace/granted-before-launch: 11-27 16:48:37.681  6711  6736 I TotalCross:  totalcross.io.FileNotFoundException totalcross.io.FileNotFoundException: File not found: /data/user/0/totalcross.appzmtw/totalcross/res/android/floatingFrg.png
+trace/granted-before-launch: 11-27 16:48:37.681  6711  6736 I TotalCross: totalcross.res.Resources.uiStyleChanged 296
+trace/granted-before-launch: 11-27 16:48:37.681  6711  6736 I TotalCross: Aborting program.

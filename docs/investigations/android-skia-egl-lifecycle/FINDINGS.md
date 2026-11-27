@@ -60,4 +60,19 @@ old context was valid or current at Skia resource destruction.
 
 ## Current-master runtime result
 
-Not yet tested. See CHECKPOINT.md and TEST-MATRIX.md.
+The current-source SDK and ARM64 release bundle built successfully. The
+PR 7 exact and marker-only APKs also compiled. The six bounded API 30 phases
+did not reach the customer permission or filesystem operations: the app showed
+an unhandled FileNotFoundException for
+/data/user/0/totalcross.appzmtw/totalcross/res/android/floatingFrg.png in
+Resources.uiStyleChanged / MainWindow.setUIStyle, followed by “Aborting
+program.” MANAGE_EXTERNAL_STORAGE remained ignore in denied and grant-in-place
+phases and was allow in pregranted phases. No permission prompt, customer
+operation marker, or historical native crash signature was observed.
+
+This is a blocked reproduction, not evidence that the graphics defect is
+absent. The application never entered the Activity transition under test.
+The current Android EGL and Skia source still matches the historical source in
+the relevant paths. Build and emulator provenance are recorded in
+evidence/M1-api30-run.md; the visible startup error is
+evidence/M1-api30-startup-error.png.
