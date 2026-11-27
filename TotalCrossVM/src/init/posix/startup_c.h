@@ -37,7 +37,7 @@ static void registerWake(bool set)
 
 static inline bool copyResolvedPath(const char *path, char *out, size_t outSize)
 {
-   char resolved[MAX_PATHNAME];
+   char *resolved;
    const char *resolvedPath;
 
    if (outSize == 0)
@@ -48,9 +48,11 @@ static inline bool copyResolvedPath(const char *path, char *out, size_t outSize)
    if (path == null || *path == 0)
       return false;
 
-   resolvedPath = realpath(path, resolved) ? resolved : path;
+   resolved = realpath(path, NULL);
+   resolvedPath = resolved ? resolved : path;
    xstrncpy(out, resolvedPath, outSize - 1);
    out[outSize - 1] = 0;
+   free(resolved);
    return true;
 }
 

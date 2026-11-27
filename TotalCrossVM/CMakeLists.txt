@@ -85,7 +85,7 @@ option(TC_BUILD_IR_TESTS "Build focused TCIR contract tests" OFF)
 option(TC_BUILD_NATIVE_STARTUP_TEST "Build the native desktop startup test" OFF)
 option(TC_TEST_EXPECT_OLD_REALPATH_ABORT
   "Expect the old fixed-buffer realpath helper to abort in its baseline test"
-  ON
+  OFF
 )
 option(TC_BUILD_IR_BENCHMARKS "Build optional TCIR performance benchmarks" OFF)
 option(TC_ENABLE_C_AOT "Build the experimental portable-C TCIR backend" OFF)
