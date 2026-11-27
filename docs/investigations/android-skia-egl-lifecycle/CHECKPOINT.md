@@ -7,7 +7,7 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Current milestone
 
-Milestone 2 complete — mandatory pause before Milestone 3.
+Milestone 3 complete — mandatory pause before Milestone 4.
 
 ## Completed sub-milestones
 
@@ -45,6 +45,17 @@ Milestone 2 complete — mandatory pause before Milestone 3.
   control created/deleted the directory and remained alive.
 - The full harness invocation timed out in ADB cleanup after its exact-app
   phases; focused trace grant-in-place and pregranted phases were run directly.
+- Reused retained M2 diagnostic APKs/logs and tested one isolated candidate
+  that released the screen Skia surface on the event thread before old EGL
+  teardown. See evidence/M3-api30-causal-candidate.md.
+- Candidate grant-in-place, denied-return, and pregranted scenarios passed.
+  Five additional grant-in-place repetitions also passed with cleanup-end
+  before EGL teardown and replacement Skia initialization recorded each time.
+- One rotation/background/foreground control observed rotation, pause/resume,
+  surface callbacks, continued process responsiveness, and no native crash.
+- Confirmed the pinned Skia API provides `abandonContext()` for an already
+  lost context and `releaseResourcesAndAbandonContext()` while the native
+  context is still valid. No production code change was retained.
 
 ## Baseline revision
 
@@ -60,7 +71,8 @@ on its recorded baseline.
 ## Last completed commit
 
 M1 baseline reproduction commit: c59a6ac2fee0018d2a75402e43aa46397a0d9d38.
-M2 diagnostics and sequence are included in this milestone's checkpoint.
+M2 diagnostics commit: 7b86b52b00a1933453581db575af76f774a42c05.
+M3 candidate and evidence are included in this milestone's checkpoint.
 
 ## Current hypothesis
 
@@ -68,7 +80,9 @@ During the reproduced replacement, the old EGL context is destroyed before
 the old Skia surface is reset. The new EGL context is current while the Skia
 surface still tracks the old context; surface destruction flushes queued
 GrDirectContext work and SIGSEGVs in the GL encoder. This strongly supports
-the lifetime hypothesis; a controlled ordering comparison is still required.
+the lifetime hypothesis. Releasing the screen surface on the same thread while
+the old context remains current, before EGL teardown, prevented the reproduced
+API 30 crashes in the grant-in-place and denied-return candidate flows.
 
 ## Confirmed findings
 
@@ -97,6 +111,18 @@ the lifetime hypothesis; a controlled ordering comparison is still required.
 - A focused trace pregranted control completed the same file operation and
   retained its process; its Skia surface reset began and ended with the
   associated EGL context current.
+- M3 candidate logs show old-context Skia surface reset completion before
+  `egl.destroy.begin`, followed by replacement `egl.create.madeCurrent`,
+  `skia.init.end`, and Java surface acceptance. Six grant-in-place runs
+  created/deleted `/sdcard/asd`, retained their processes, and had no SIGSEGV.
+- Denied-return reported the expected permission failure, completed old-context
+  cleanup before EGL teardown, and returned to the live application. The
+  pregranted control passed. Rotation plus Home/foreground also completed with
+  callbacks, rendering, and no native fatal signal.
+- The dependency pin is Skia `158dc9d7` (`skia-158dc9d7-r8`). Its documented
+  lost-context path is `GrDirectContext::abandonContext()` before releasing
+  surface wrappers; the valid-context destroy path supports releasing Skia
+  resources before invalidating EGL.
 
 ## Rejected hypotheses
 
@@ -104,10 +130,10 @@ None.
 
 ## Pending experiments
 
-Manual rotation and standalone background/foreground controls were not run.
-The next step is Milestone 3: isolate teardown ordering with a controlled
-comparison. Do not alter production behavior or start M3 until the user
-explicitly authorizes it.
+No M3 experiment remains. The final API matrix and production correction have
+not started. M4 should implement the narrow lifecycle contract recorded in
+evidence/M3-api30-causal-candidate.md; do not begin it until the user
+explicitly authorizes Milestone 4.
 
 ## Test environment
 
@@ -123,31 +149,38 @@ explicitly authorizes it.
 - M2 diagnostic bundle, lifecycle sequence, and focused controls:
   evidence/M2-api30-lifecycle-diagnostics.md and
   evidence/M2-api30-lifecycle-sequence.log.
+- M3 causal candidate results, Skia context-loss API contract, screenshot, and
+  ordered sequences: evidence/M3-api30-causal-candidate.md,
+  evidence/M3-api30-candidate-rendered.png, and
+  evidence/M3-api30-candidate-sequence.log.
 
 ## Available build artifacts
 
 The current SDK jar, AAB, arm64-v8a libtcvm.so, exact APK, and trace APK were
 built from the recorded baseline. The test-only package overlays two UI image
 assets; hashes, six phase assertions, sanitized native stack, and screenshot are
-in evidence/M1-api30-reproduction.md. Generated APKs and full logs remain
-outside Git.
+in evidence/M1-api30-reproduction.md. The M2 baseline and M3 candidate bundles,
+APKs, and full logs remain outside Git; the candidate patch and compact
+ordered evidence are committed separately.
 
 ## Remaining technical question
 
 The current Android resource tree is missing two assets eagerly loaded by
 Android UI startup. The disposable overlay is sufficient for this reproduced
 flow; no production resource fix is in scope for the graphics correction.
-M2 supports the context-mismatch hypothesis; M3 must isolate whether teardown
-ordering alone prevents this failure. No production correction has been made.
+M3 isolated teardown ordering on API 30 and the candidate passed all focused
+scenarios, five repetitions, and one rotation/background/foreground control.
+The production correction remains unimplemented. M1's missing TCUI resources
+and M2's all-phase ADB Back timeout remain independent findings, not fixed.
 
 ## Exact next concrete action
 
-Stop at the Milestone 2 review pause. After explicit authorization, begin
-Milestone 3 with a controlled teardown-order comparison using the recorded
-API 30 reproducer and diagnostics.
+Stop at the Milestone 3 review pause. After explicit authorization, begin
+Milestone 4 with the narrow production lifecycle correction; preserve the
+thread, window, generation, and replacement-context contracts established here.
 
 ## Resume protocol
 
 Resume in the isolated worktree
 /Users/flsobral/.codex/worktrees/fix-android-skia-egl-surface-lifecycle.
-Read this file first. Do not begin Milestone 3 without explicit authorization.
+Read this file first. Do not begin Milestone 4 without explicit authorization.

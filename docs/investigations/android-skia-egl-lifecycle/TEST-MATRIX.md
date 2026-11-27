@@ -38,6 +38,23 @@ Compact sequence, crash stack, build identity, and full-log location are in
 evidence/M2-api30-lifecycle-diagnostics.md and
 evidence/M2-api30-lifecycle-sequence.log.
 
+## Milestone 3 — controlled API 30 candidate
+
+| App / case | Permission and lifecycle | Expected assertions | Status |
+| --- | --- | --- | --- |
+| Trace candidate | Grant in Settings, return in place | Cleanup under old current EGL context before teardown; replacement init; file operation; no crash | PASS, initial run and five additional repetitions; create/delete succeeded |
+| Trace candidate | Return without granting | Denial state/error; ordered cleanup; replacement init; no crash | PASS; expected `Operation not permitted` |
+| Trace candidate | Permission pregranted | File operation; no prompt; app remains functional | PASS; create/delete succeeded |
+| Customer candidate | Rotation, background, foreground | Surface recreation, replacement init, app responsiveness, no crash | PASS; one control, ROTATION_90 and Home/resume observed |
+| Visual check | After grant-in-place surface recreation | Visible customer content | PASS; screenshot preserved in `evidence/M3-api30-candidate-rendered.png` |
+
+All candidate cases used the existing API 30 ARM64 emulator, diagnostic
+instrumentation, customer reproducer, and disposable TCUI overlay. The M2
+instrumented baseline evidence was reused without rebuilding. Ordered events
+and repeat results are in `evidence/M3-api30-candidate-sequence.log`; the
+candidate patch and provenance are indexed in `evidence/index.md`. Results
+confirm causality for these paths, not the full Android API matrix.
+
 ## Historical I03 results
 
 | API | Historical result on official 7.3.0 | Current-master result |

@@ -23,9 +23,22 @@ source or the old stack. Milestone 2 instrumentation and Milestone 3 controlled
 comparison must establish causality before any production correction.
 
 M2 diagnostics show `surface.reset()` destroying the old GPU surface and
-flushing queued work while the replacement EGL context is current. This is
-strong evidence for the lifetime hypothesis, but the required M3 controlled
-ordering comparison must still pass before implementation.
+flushing queued work while the replacement EGL context is current. M3 changed
+only the cleanup ordering in an isolated candidate: old screen Skia cleanup
+ran while the old EGL context remained current, before existing EGL teardown
+and replacement initialization. Grant-in-place passed six times total, and
+denied-return, pregranted, and rotation/background/foreground controls passed.
+Old-context cleanup completed before EGL destruction, and replacement Skia
+initialization completed. This confirms the cause for the exercised API 30
+paths. Pause for explicit review before any production change.
+
+For the pinned Skia `158dc9d7` APIs, use
+`releaseResourcesAndAbandonContext()` only while the native context is still
+valid, before destroying it. If already lost or unavailable, use
+`abandonContext()` before dropping the old GPU surface/resource wrappers so
+their destructors cannot call the replacement backend. Keep lifecycle cleanup
+on the existing graphics-owning thread; M3 does not authorize broader context
+loss redesign.
 
 ## Apply the local emulator restriction
 

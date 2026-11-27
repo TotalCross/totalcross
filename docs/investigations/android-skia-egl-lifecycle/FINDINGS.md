@@ -132,3 +132,40 @@ Build/runtime artifact hashes, commands, environment, and compact identity and
 stack records are in evidence/M2-api30-lifecycle-diagnostics.md and
 evidence/M2-api30-lifecycle-sequence.log. Full logs and generated APKs remain
 outside Git in the M2 results directory.
+
+## Milestone 3 causal comparison
+
+The isolated API 30 candidate called `destroySkiaScreen()` on the existing
+graphics/event thread before destroying the still-current old EGL context.
+It preserved surface generations, native window ownership, and replacement
+context initialization. Candidate-only build switches and source edits were
+removed after the experiment; the replayable patch is
+`diagnostic-patches/M3-pre-egl-skia-cleanup-candidate.patch.gz`.
+
+The M2 grant-in-place trace baseline crashed when old Skia cleanup started
+after EGL replacement. With only the cleanup order changed, the candidate
+passed the initial grant-in-place run plus five repetitions, denied-return,
+pregranted, and one rotation/background/foreground control. Old-context Skia
+reset ended before EGL teardown; replacement Skia initialization completed.
+Grant and pregranted filesystem create/delete operations succeeded, denial
+returned the expected `Operation not permitted`, the app stayed responsive,
+and no original native crash appeared. The rendered customer surface is
+preserved as `evidence/M3-api30-candidate-rendered.png`; the ordered events
+and repetition summaries are in `evidence/M3-api30-candidate-sequence.log`.
+
+This controlled API 30 ARM64 comparison confirms the EGL/Skia lifetime cause
+for the exercised surface-recreation paths. It does not constitute production
+implementation or cross-API validation. The missing `floatingFrg.png` and
+`outlined_edit.png` resources remain an independent test-input issue handled
+only by the disposable TCUI overlay. The M2 harness ADB Back timeout remains
+an independent automation issue; M3 used focused runs and did not correct it.
+
+The pinned Skia revision is `158dc9d7` (`skia-158dc9d7-r8`). Its valid-context
+API `releaseResourcesAndAbandonContext()` releases resources before native
+context destruction; its lost-context API `abandonContext()` prevents backend
+3D calls from resource destructors. The production contract is to clean up the
+old screen surface on its owning graphics thread while its EGL context is
+current, before EGL/window teardown. If that context is already unavailable,
+abandon its direct context before dropping GPU wrappers; do not issue cleanup
+GL calls through the replacement context. No broader context-loss redesign
+was tested or implemented.

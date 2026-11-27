@@ -15,3 +15,11 @@ It was built and exercised on the API 30 ARM64 emulator; see
 `../evidence/M2-api30-lifecycle-diagnostics.md`. Keep this instrumentation
 separate from the future production correction and remove it during final
 consolidation unless maintainers explicitly request otherwise.
+
+`M3-pre-egl-skia-cleanup-candidate.patch.gz` contains the isolated causal
+candidate. It released screen-bound Skia resources on the existing graphics
+thread while the old EGL context was current, before existing EGL teardown.
+The candidate passed the focused API 30 scenarios; see
+`../evidence/M3-api30-causal-candidate.md`. Candidate-only source changes were
+removed from the worktree after testing. This patch is diagnostic evidence,
+not production code.

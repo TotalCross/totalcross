@@ -35,6 +35,18 @@ pregranted trace control completed the operation and remained alive. Full
 diagnostic logcats and build artifacts remain outside Git in the results
 directory referenced by the M2 report.
 
+M3 controlled API 30 causal candidate: M3-api30-causal-candidate.md,
+M3-api30-candidate-sequence.log, and M3-api30-candidate-rendered.png. The
+ordered log shows old-context Skia cleanup completing before EGL teardown and
+replacement Skia initialization succeeding. Grant-in-place passed six times;
+denied-return, pregranted, and one rotation/background/foreground control also
+passed. The isolated diagnostic source patch is
+`../diagnostic-patches/M3-pre-egl-skia-cleanup-candidate.patch.gz`; candidate
+source edits were reverted and no production correction was started. The
+candidate AAB and disposable SDK ZIP hashes, and external build/log location,
+are recorded in the M3 report. Missing TCUI assets and the M2 ADB Back timeout
+remain independent findings.
+
 Generated APKs, native binaries, emulator images, full SDK archives, caches,
 full logcats, and tombstones remain outside Git. The committed stack excerpt
 is sanitized and compact.
