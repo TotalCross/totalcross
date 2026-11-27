@@ -1,0 +1,336 @@
+{
+  "referenceDecoder": "Pillow 13.0.0 / libjpeg-turbo, host-only input validation",
+  "pngFixtures": [
+    {
+      "file": "alpha-2x2.png",
+      "bytes": 78,
+      "sha256": "79938a708543f85c5c04bd15747a1c0314c7cbfca0ae0be09f69b4e4f5b6df3e",
+      "format": "PNG",
+      "size": [
+        2,
+        2
+      ],
+      "mode": "RGBA",
+      "bitDepth": 8,
+      "colorType": 6,
+      "chunks": [
+        {
+          "type": "IHDR",
+          "crcValid": true,
+          "length": 13
+        },
+        {
+          "type": "IDAT",
+          "crcValid": true,
+          "length": 21
+        },
+        {
+          "type": "IEND",
+          "crcValid": true,
+          "length": 0
+        }
+      ],
+      "allChunkCrcsValid": true,
+      "idatBytes": 21,
+      "inflatedScanlineBytes": 18,
+      "pixelSamples": {
+        "0,0": [
+          255,
+          0,
+          0,
+          128
+        ],
+        "1,0": [
+          0,
+          255,
+          0,
+          255
+        ],
+        "0,1": [
+          0,
+          0,
+          255,
+          0
+        ],
+        "1,1": [
+          255,
+          255,
+          255,
+          255
+        ]
+      }
+    },
+    {
+      "file": "historical-rgba-36x36.png",
+      "bytes": 136,
+      "sha256": "958903b3f880fbf626fa8fbba8f69856a989f5930531984be9585aac08a5aba6",
+      "format": "PNG",
+      "size": [
+        36,
+        36
+      ],
+      "mode": "RGBA",
+      "bitDepth": 8,
+      "colorType": 6,
+      "chunks": [
+        {
+          "type": "IHDR",
+          "crcValid": true,
+          "length": 13
+        },
+        {
+          "type": "IDAT",
+          "crcValid": true,
+          "length": 79
+        },
+        {
+          "type": "IEND",
+          "crcValid": true,
+          "length": 0
+        }
+      ],
+      "allChunkCrcsValid": true,
+      "idatBytes": 79,
+      "inflatedScanlineBytes": 5220,
+      "pixelSamples": {
+        "0,0": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "1,0": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "0,1": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "1,1": [
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "file": "indexed-transparent-2x2.png",
+      "bytes": 107,
+      "sha256": "0823539a40acde890b3a769c7c48490e5bf083da51c78898fdbea67c8119c10e",
+      "format": "PNG",
+      "size": [
+        2,
+        2
+      ],
+      "mode": "P",
+      "bitDepth": 8,
+      "colorType": 3,
+      "chunks": [
+        {
+          "type": "IHDR",
+          "crcValid": true,
+          "length": 13
+        },
+        {
+          "type": "PLTE",
+          "crcValid": true,
+          "length": 9
+        },
+        {
+          "type": "tRNS",
+          "crcValid": true,
+          "length": 3
+        },
+        {
+          "type": "IDAT",
+          "crcValid": true,
+          "length": 14
+        },
+        {
+          "type": "IEND",
+          "crcValid": true,
+          "length": 0
+        }
+      ],
+      "allChunkCrcsValid": true,
+      "idatBytes": 14,
+      "inflatedScanlineBytes": 6,
+      "pixelSamples": {
+        "0,0": 0,
+        "1,0": 1,
+        "0,1": 2,
+        "1,1": 0
+      },
+      "paletteRgb": [
+        [
+          255,
+          0,
+          0
+        ],
+        [
+          0,
+          255,
+          0
+        ],
+        [
+          0,
+          0,
+          255
+        ]
+      ],
+      "paletteTransparency": [
+        255,
+        0,
+        128
+      ]
+    },
+    {
+      "file": "invalid.bin",
+      "bytes": 11,
+      "sha256": "71933a2f8897a278956c0cae49de3f2a1d9a2e7ea5b6f7daabc2f7e83a4e3131",
+      "format": "invalid-control"
+    },
+    {
+      "file": "known-good-512x512.jpg",
+      "bytes": 90385,
+      "sha256": "df0035534c5c12d024763dce5f515023ad7e16139f4278b360291b2f0261fb51",
+      "format": "JPEG",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGB"
+    },
+    {
+      "file": "ownership-red-2x2.png",
+      "bytes": 74,
+      "sha256": "d28c139bba718d60154960eaca75535a5cc5b59fe2153e998a29251e8e5f4667",
+      "format": "PNG",
+      "size": [
+        2,
+        2
+      ],
+      "mode": "RGBA",
+      "bitDepth": 8,
+      "colorType": 6,
+      "chunks": [
+        {
+          "type": "IHDR",
+          "crcValid": true,
+          "length": 13
+        },
+        {
+          "type": "IDAT",
+          "crcValid": true,
+          "length": 17
+        },
+        {
+          "type": "IEND",
+          "crcValid": true,
+          "length": 0
+        }
+      ],
+      "allChunkCrcsValid": true,
+      "idatBytes": 17,
+      "inflatedScanlineBytes": 18,
+      "pixelSamples": {
+        "0,0": [
+          255,
+          0,
+          0,
+          255
+        ],
+        "1,0": [
+          255,
+          0,
+          0,
+          255
+        ],
+        "0,1": [
+          255,
+          0,
+          0,
+          255
+        ],
+        "1,1": [
+          255,
+          0,
+          0,
+          255
+        ]
+      }
+    },
+    {
+      "file": "tcz-2x2.png",
+      "bytes": 78,
+      "sha256": "79938a708543f85c5c04bd15747a1c0314c7cbfca0ae0be09f69b4e4f5b6df3e",
+      "format": "PNG",
+      "size": [
+        2,
+        2
+      ],
+      "mode": "RGBA",
+      "bitDepth": 8,
+      "colorType": 6,
+      "chunks": [
+        {
+          "type": "IHDR",
+          "crcValid": true,
+          "length": 13
+        },
+        {
+          "type": "IDAT",
+          "crcValid": true,
+          "length": 21
+        },
+        {
+          "type": "IEND",
+          "crcValid": true,
+          "length": 0
+        }
+      ],
+      "allChunkCrcsValid": true,
+      "idatBytes": 21,
+      "inflatedScanlineBytes": 18,
+      "pixelSamples": {
+        "0,0": [
+          255,
+          0,
+          0,
+          128
+        ],
+        "1,0": [
+          0,
+          255,
+          0,
+          255
+        ],
+        "0,1": [
+          0,
+          0,
+          255,
+          0
+        ],
+        "1,1": [
+          255,
+          255,
+          255,
+          255
+        ]
+      }
+    }
+  ],
+  "ownershipPngSource": {
+    "repository": "TotalCross/totalcross-performance-lab",
+    "commit": "d084949d106f9606a7639d851ad66b97734df1ec",
+    "path": "tests/functional-validation/totalcross/ui/image/ImageOwnershipLifecycleProbe.java",
+    "sourceSha256": "fdecc98a576b23a5c9e68d64ed2eff2b68899b47fb54597e121711fa69bba117",
+    "extraction": "RED_PNG byte array in source order"
+  }
+}
