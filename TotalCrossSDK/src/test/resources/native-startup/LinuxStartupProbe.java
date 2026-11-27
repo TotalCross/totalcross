@@ -21,7 +21,8 @@ public final class LinuxStartupProbe extends MainWindow {
           || Settings.vmPath == null || Settings.vmPath.length() == 0) {
         throw new IllegalStateException("native path discovery returned an empty directory");
       }
-      if (Settings.platform.equals(Settings.LINUX) && Settings.appPath.length() < 200) {
+      if (Settings.appPath.length() < 220
+          && new File(Settings.appPath + "/comparison-control.jpg").exists()) {
         checkFile();
         checkSqlite();
         checkJpeg();

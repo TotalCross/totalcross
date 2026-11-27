@@ -87,10 +87,12 @@ def scenario_installations(base, executable, output):
 
     long_install = temporary_root / "long"
     long_install.mkdir()
-    for index in range(5):
-        component = "segment_%02d_" % index + ("x" * 42)
+    index = 0
+    while len(str(long_install / "install" / executable.name)) <= 200:
+        component = "segment_%02d_" % index + ("x" * 20)
         long_install = long_install / component
         long_install.mkdir()
+        index += 1
     long_install = copy_install(base, long_install / "install")
 
     alias_parent = Path(output).resolve() / "paths/symlink"
@@ -110,8 +112,8 @@ def scenario_installations(base, executable, output):
         path_length = len(str(launch_path if relative else install / executable.name))
         if name == "short-path" and path_length >= 80:
             fail("short executable path exceeded 79 bytes")
-        if name == "bounded-long-path" and not 200 < path_length < 400:
-            fail("bounded long executable path must remain between 201 and 399 bytes")
+        if name == "bounded-long-path" and not 200 < path_length < 238:
+            fail("bounded long executable path must remain between 201 and 237 bytes")
         if path_length >= 512:
             fail("executable path exceeds the independent launcher command-line limit")
         yield name, install, launch_path, relative, path_length
@@ -158,7 +160,7 @@ def run_case(name, install, launch_path, relative, path_length, output):
     if os.path.realpath(vm_path) != expected_directory:
         fail("%s discovered vmPath=%r, expected %r" % (name, vm_path, expected_directory))
 
-    controls_expected = name != "bounded-long-path"
+    controls_expected = True
     if controls_expected:
         for marker in REQUIRED_CONTROL_MARKERS:
             if marker not in text:
