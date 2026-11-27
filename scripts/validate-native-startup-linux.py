@@ -108,7 +108,7 @@ def scenario_installations(base, executable, output):
         ("relative-path", base, True),
     ]
     for name, install, relative in cases:
-        launch_path = Path("./" + executable.name) if relative else install / executable.name
+        launch_path = "./" + executable.name if relative else install / executable.name
         path_length = len(str(launch_path if relative else install / executable.name))
         if name == "short-path" and path_length >= 80:
             fail("short executable path exceeded 79 bytes")
