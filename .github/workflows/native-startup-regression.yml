@@ -10,6 +10,10 @@ on:
       - '.github/workflows/build.yml'
       - '.github/workflows/native-startup-regression.yml'
       - 'TotalCrossSDK/src/test/resources/native-startup/**'
+      - 'TotalCrossSDK/src/main/java/totalcross/ui/image/**'
+      - 'TotalCrossSDK/src/main/java/totalcross/ui/ImageControl.java'
+      - 'TotalCrossVM/src/nm/ui/image*'
+      - 'TotalCrossVM/src/nm/ui/image/**'
       - 'TotalCrossVM/CMakeLists.txt'
       - 'TotalCrossVM/src/init/posix/startup_c.h'
       - 'TotalCrossVM/src/tests/copy_resolved_path_native_test.c'
@@ -142,7 +146,7 @@ jobs:
         PY
 
     - name: Install Linux graphics runtime libraries
-      run: sudo apt-get update && sudo apt-get install --yes libegl1 libgles2 libgl1-mesa-dri
+      run: sudo apt-get update && sudo apt-get install --yes xvfb libegl1 libgles2 libgl1-mesa-dri libglu1-mesa libx11-6 libxext6 libxrender1 libfontconfig1
 
     - name: Check Linux native runtime dependencies
       shell: bash
@@ -167,6 +171,8 @@ jobs:
           --investigation-root validation/performance-lab \
           --java-source TotalCrossSDK/src/test/resources/native-startup/LinuxStartupProbe.java \
           --jpeg-fixture validation/performance-lab/investigations/7.3.0-functional/cases/image-ownership/fixtures/red-8x8.jpg \
+          --png-regression-source TotalCrossSDK/src/test/resources/native-startup/png-regression/LinuxPngRegressionProbe.java \
+          --png-fixture-dir TotalCrossSDK/src/test/resources/native-startup/png-regression/fixtures \
           --output "${RUNNER_TEMP}/native-startup-linux"
 
     - name: Preserve Linux runtime evidence
