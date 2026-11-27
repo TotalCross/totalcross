@@ -19,7 +19,7 @@ SPDX-License-Identifier: LGPL-2.1-only
 | Indexed palette-transparency PNG constructor | I02 | None | REJECTED: unsupported encoded image exception |
 | Original 2×2 PNG image drawing and application surface sequence | I06 | None | PASS: stages 1–7 and exact red draw pixel; historical failure NOT_REPRODUCED |
 | I06 Linux ownership assertion set with original PNG | I06 | None | PASS: two cycles, 1,510 controls per cycle, zero ownership mismatches |
-| Repository-owned PNG regression probe | `LinuxPngRegressionProbe` | None | Pending hosted closure run: RGBA file/bytes plus original PNG drawing and owner cleanup |
+| Repository-owned PNG regression probe | `LinuxPngRegressionProbe` | None | PASS: 3/3 cases; both RGBA paths and original PNG drawing/owner cleanup passed |
 | JPEG positive control | I02 and startup probe | None | PASS |
 | Invalid encoded-image controls | I02 | None | PASS: both invalid inputs rejected |
 

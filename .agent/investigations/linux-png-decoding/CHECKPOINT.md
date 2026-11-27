@@ -8,8 +8,8 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Current State
 
-- Milestone: closure authorized; focused test integration prepared, hosted run and final synchronization pending.
-- Execution interval: closure authorization received at 2026-11-27 21:08 UTC; maximum 40 minutes.
+- Milestone: closure complete; final evidence commit and remote-head verification pending.
+- Execution interval: closure authorization received at 2026-11-27 21:08:39 UTC; maximum 40 minutes.
 - Branch: `fix/linux-png-decoding`.
 - Worktree: `/Users/flsobral/.codex/worktrees/fix-linux-png-decoding`.
 - Selected master revision: `6beef491f28c63aa364d3661dd5c37ccff01fb0d`.
@@ -24,9 +24,13 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Closure classification: ADLER32 and original I06 drawing are
   `NOT_REPRODUCED`, root causes undetermined; I06 Linux ownership validation is
   `PASS` with the original PNG and no startup shim.
-- Closure regression probe is being integrated into the existing Linux startup
+- Closure regression probe is integrated into the existing Linux startup
   workflow. Its three cases cover RGBA file, RGBA bytes, and original PNG
-  drawing/owner cleanup. The hosted result is pending.
+  drawing/owner cleanup. Commit `394dbd7754bcd62bf4aa0cc56dca3ddec7753c88` is
+  pushed; hosted run `46071207197` passed.
+- The hosted probe passed all three cases without a startup shim. Run and
+  artifact details are in `evidence/index.md`; test source SHA-256 is
+  `602d6fc9368e3bd643ef4078ae5db15733bdd6d07561f1311e06fc28c84223dc`.
 - Both issue texts are local proposals only; no GitHub issue has been changed.
 - No indexed-PNG diagnosis or correction, production image change, dependency
   change, symbol isolation, allocator change, or historical bisect is in scope.
@@ -63,9 +67,8 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Next Action
 
-Run focused static checks, commit and push the closure integration, inspect the
-hosted Linux-only result, complete the evidence/report/matrix, commit and push
-the closure record, then verify that the remote branch HEAD matches local HEAD.
+Commit and push the completed evidence/report/checkpoint, verify that remote
+branch HEAD matches local HEAD, then pause.
 
 ## Active Decisions
 
@@ -84,7 +87,8 @@ the closure record, then verify that the remote branch HEAD matches local HEAD.
   of scope; both historical root causes remain undetermined.
 - Windows, macOS, Android, sanitizer, and benchmark validation are skipped.
 - The hosted closure run is limited to Linux x86_64 and SDK build/runtime
-  integration; no local native runtime is planned.
+  integration. Windows, macOS, Android, Linux ARM, and helper jobs were skipped;
+  no local native runtime was executed.
 
 ## Resume Command
 

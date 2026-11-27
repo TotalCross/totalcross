@@ -70,12 +70,39 @@ build identity is `b044e6dca052ae68307006e83fbfb7672364c21f5cff393b889029a552548
   That independent result is captured in a separate proposed issue and is not
   treated as a cause of either failure above.
 
+## Permanent Regression Integration
+
+The repository now keeps the original RGBA and I06 PNG fixtures under
+`TotalCrossSDK/src/test/resources/native-startup/png-regression/fixtures/` and
+runs focused deployed assertions through the existing Linux startup workflow.
+Hosted run [46071207197](https://github.com/TotalCross/totalcross/actions/runs/46071207197)
+passed on branch revision `394dbd7754bcd62bf4aa0cc56dca3ddec7753c88`, source
+tree `5cb1a33249203bda172d2391a0a93cd782ee4d4a`, `dirty: false`. It used no
+startup shim. Its exact results were:
+
+```text
+TC_LINUX_PNG case=historical-rgba-file,status=PASS,width=36,height=36,pixelCount=1296,pixel0=0
+TC_LINUX_PNG case=historical-rgba-bytes,status=PASS,width=36,height=36,pixelCount=1296,pixel0=0
+TC_LINUX_PNG case=original-ownership-drawing,status=PASS,width=2,height=2,drawPixelRgb=16711680,ownerCountAfterDetach=0
+TC_LINUX_PNG_RESULT complete=true
+```
+
+The run's runtime artifact is ID `15233640195`, SHA-256
+`6767a4f2faa89b8d72a7e8f160cdb87e12c98fa8a34cdf2f1bb9515ac1f086ee`.
+The canonical Linux build artifact is ID `15232314511`, SHA-256
+`b5be7fe36948715d39c111d4e581adf1015bceb8cbeea1243bd8d2e5d15d7e57`; the SDK
+build artifact is ID `15233092536`, SHA-256
+`da2f00bfb37d5d15e56c80a020bcd0d97e81747a0f99a6af3f47a283a8da36fe`. Both
+builds report the same clean commit and source tree. The regression source SHA-256
+is `602d6fc9368e3bd643ef4078ae5db15733bdd6d07561f1311e06fc28c84223dc`.
+
 ## Revisions and Artifact Identity
 
 | Item | Identity |
 | --- | --- |
 | Baseline run head | `94917ff6d51f7dd442aacbec838717e5aef48fa4` |
 | Linux runtime source | `6beef491f28c63aa364d3661dd5c37ccff01fb0d`, tree `9ddcd0275dad076260e3a60169ab1da870351252` |
+| Permanent regression source | `394dbd7754bcd62bf4aa0cc56dca3ddec7753c88`, tree `5cb1a33249203bda172d2391a0a93cd782ee4d4a` |
 | Runtime VM subtree | `15096565350eadd0c059df66d339f41b7ab71e93` |
 | `libtcvm.so` SHA-256 | `04b248226d68630ab67764371d12e12a9e533e9a100af3c0d6620b0928236a3f` |
 | Linux `Launcher` SHA-256 | `603440e2aa1cf9a651631d34aae8973d04216ad5e2e7b1326888d86ce67e5b37` |
@@ -100,6 +127,16 @@ unzip -q linux-runtime.zip -d linux-runtime
 jq -r '.observed.pngCases[]' linux-runtime/png-baseline/unmodified/result.json
 jq . linux-runtime/png-baseline/I06/original-png/classification.json
 jq . linux-runtime/png-baseline/I06/original-png/result.json
+```
+
+The permanent regression is in run `46071207197`, runtime artifact
+`15233640195`. Download it and inspect the exact three focused cases with:
+
+```sh
+gh run download 46071207197 --repo TotalCross/totalcross \
+  --name native-startup-linux-runtime-394dbd7754bcd62bf4aa0cc56dca3ddec7753c88 \
+  --dir linux-runtime-regression
+jq .pngRegression linux-runtime-regression/summary.json
 ```
 
 For a fresh run, the retained workflow is `.github/workflows/native-startup-regression.yml`.

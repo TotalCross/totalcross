@@ -6,6 +6,9 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 # Evidence Index
 
+Closure summary: [`FINAL-REPORT.md`](../FINAL-REPORT.md). The issue texts are
+local drafts only; neither GitHub issue was modified.
+
 ## Baseline and Source Revisions
 
 - Selected `TotalCross/totalcross` master: `6beef491f28c63aa364d3661dd5c37ccff01fb0d`.
@@ -142,3 +145,46 @@ that result separate from the RGBA and drawing findings.
 - The canonical workflow also ran its existing macOS ARM64 build and deployed
   startup smoke job `140717307484`; it passed. It was an existing workflow
   side-effect and is not used to classify the Linux findings.
+
+## Closure Regression Run
+
+- Actions run: [46071207197](https://github.com/TotalCross/totalcross/actions/runs/46071207197),
+  branch head `394dbd7754bcd62bf4aa0cc56dca3ddec7753c88`; conclusion: success.
+- Source selector job `140748310981`, canonical Linux build job
+  `140748755381`, SDK build job `140748491226`, and Linux runtime job
+  `140749268210` passed. The helper, Windows, macOS, Android, iOS, and disabled
+  Linux ARM jobs did not run. No cross-platform build ran.
+- Linux runtime and SDK provenance both identify clean source commit
+  `394dbd7754bcd62bf4aa0cc56dca3ddec7753c88`, tree
+  `5cb1a33249203bda172d2391a0a93cd782ee4d4a`, `dirty: false`.
+- Runtime artifact `native-startup-linux-runtime-394dbd7754bcd62bf4aa0cc56dca3ddec7753c88`:
+  ID `15233640195`, SHA-256
+  `6767a4f2faa89b8d72a7e8f160cdb87e12c98fa8a34cdf2f1bb9515ac1f086ee`,
+  30,120,574 bytes.
+- Linux build artifact ID `15232314511`, SHA-256
+  `b5be7fe36948715d39c111d4e581adf1015bceb8cbeea1243bd8d2e5d15d7e57`,
+  7,612,635 bytes. SDK build artifact ID `15233092536`, SHA-256
+  `da2f00bfb37d5d15e56c80a020bcd0d97e81747a0f99a6af3f47a283a8da36fe`,
+  65,461,238 bytes.
+- Generated native bridges artifact ID `15232359174`, SHA-256
+  `292a630ce62a8a170df26be4a6e3ae22cf25a2cdf69c04df629eab10ed95c5b0`;
+  prepared native dependencies artifact ID `15232688322`, SHA-256
+  `1592c26ab10197ee334bf390f0c90d05df8e3e4f877d62567a2fa35de49b9d39`.
+- Runtime `libtcvm.so` SHA-256 is
+  `27e42a2987e8a81b62ad2a7bb123a1670e9f9e1b2d3a36d3a8d5d3dbeb6c68ea`;
+  Linux `Launcher` SHA-256 is
+  `f638b0ff270906a6c703dc84983f27d173083f7c22bd48296ac8016efc2a3a09`.
+- `pngRegression.status` is `PASS`, process exit 0, `runtimeShim: null`. Its
+  Java source SHA-256 is
+  `602d6fc9368e3bd643ef4078ae5db15733bdd6d07561f1311e06fc28c84223dc`.
+  Exact markers show both 36×36 RGBA paths passed with 1,296 pixels and
+  `pixel0=0`; original PNG drawing passed with 2×2 dimensions, exact red
+  `16711680`, and owner count 0 after detach. The generated render PNG digest
+  is `961193a64a23a06ebe62da397919e4e04d752c4f1a6fa31c4e7170fd70d365b5`.
+- All seven fixture hashes were verified. The original RGBA and original I06
+  fixture digests match the baseline record above.
+
+Reproduce the permanent cases by downloading runtime artifact `15233640195`
+from run `46071207197` and reading `summary.json` and
+`png-regression/result.json`. The focused runtime log contains the three
+`TC_LINUX_PNG` pass markers and `TC_LINUX_PNG_RESULT complete=true`.

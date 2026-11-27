@@ -52,8 +52,10 @@ failures, and keep the indexed-PNG proposal separate from this branch's code.
 - [x] Closure milestone authorized: classify both historical failures as
   `NOT_REPRODUCED`, preserve the original fixtures, add a focused Linux runtime
   regression probe, and prepare issue proposals without publishing them.
-- [ ] Final hosted Linux-only regression run, report update, commit, push, and
-  remote-head verification.
+- [x] Hosted Linux-only regression run `46071207197`: the repository-owned
+  probe passed all three cases without a shim; non-Linux jobs were skipped.
+- [ ] Commit and push the completed evidence/report/checkpoint, then verify the
+  remote branch head and pause.
 
 ## Current Architecture and Scope
 
@@ -136,11 +138,13 @@ revision, artifacts, and next retrieval command in `CHECKPOINT.md`.
 
 ## Outcomes & Retrospective
 
-Milestone 1 is complete. The historical RGBA and original drawing failures did
-not reproduce on the clean master baseline; I06 ownership validation passed;
-indexed PNG construction remains separately rejected. The closure adds a
-repository-owned probe without changing production code. Record final run IDs,
-artifact identities, and commit hashes in `CHECKPOINT.md` and `evidence/index.md`.
+The closure is complete. The historical RGBA and original drawing failures did
+not reproduce on the clean master baseline; their root causes remain
+undetermined. I06 ownership validation passed with the original PNG and no
+shim. Indexed PNG construction remains separately rejected and was not
+investigated. The repository-owned probe passed all three focused cases without
+changing production code. Run and artifact identities are recorded in
+`CHECKPOINT.md`, `TEST-MATRIX.md`, and `evidence/index.md`.
 
 ## Revision Note
 
