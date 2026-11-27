@@ -21,6 +21,8 @@ def depotToolsDepsFile = file("${depotToolsDir}/deps.yml")
 def nativeAndroidAbis = ['arm64-v8a']
 def tcAndroidEglLifecycleDiagnostics =
     project.findProperty('tcAndroidEglLifecycleDiagnostics') == 'true'
+def tcAndroidEglLifecycleTests =
+    project.findProperty('tcAndroidEglLifecycleTests') == 'true'
 def skiaDevBundleOutputs = [
     file("${depotToolsDir}/skia/local/include/core/SkPathEffect.h"),
     file("${depotToolsDir}/skia/local/src/gpu/gl/GrGLDefines.h")
@@ -345,6 +347,9 @@ android {
                 )
                 if (tcAndroidEglLifecycleDiagnostics) {
                     arguments "-DTC_ANDROID_EGL_LIFECYCLE_DIAGNOSTICS=ON"
+                }
+                if (tcAndroidEglLifecycleTests) {
+                    arguments "-DTC_ANDROID_EGL_LIFECYCLE_TESTS=ON"
                 }
                 cppFlags "-std=c++14", "-DSK_GL"
                 targets "tcvm"

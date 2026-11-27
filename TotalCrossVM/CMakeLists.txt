@@ -83,6 +83,7 @@ tc_generate_platform_config()
 
 option(TC_BUILD_IR_TESTS "Build focused TCIR contract tests" OFF)
 option(TC_BUILD_NATIVE_STARTUP_TEST "Build the native desktop startup test" OFF)
+option(TC_BUILD_ANDROID_EGL_LIFECYCLE_TESTS "Build Android EGL/Skia cleanup policy tests" OFF)
 option(TC_BUILD_IR_BENCHMARKS "Build optional TCIR performance benchmarks" OFF)
 option(TC_ENABLE_C_AOT "Build the experimental portable-C TCIR backend" OFF)
 option(TC_ENABLE_SLJIT_JIT "Build the experimental SLJIT TCIR backend" OFF)
@@ -97,6 +98,10 @@ option(TC_ENABLE_RUNTIME_DIAGNOSTICS
 )
 option(TC_ANDROID_EGL_LIFECYCLE_DIAGNOSTICS
   "Enable temporary Android Skia and EGL lifecycle diagnostics"
+  OFF
+)
+option(TC_ANDROID_EGL_LIFECYCLE_TESTS
+  "Enable test-only Android EGL lifecycle failure injection"
   OFF
 )
 
@@ -196,6 +201,25 @@ if(TC_BUILD_IR_TESTS)
   )
 endif()
 
+if(TC_BUILD_ANDROID_EGL_LIFECYCLE_TESTS)
+  enable_testing()
+  add_executable(android_skia_egl_lifecycle_test
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/tests/android_skia_egl_lifecycle_test.c
+  )
+  target_include_directories(android_skia_egl_lifecycle_test PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/nm/ui
+  )
+  target_compile_options(android_skia_egl_lifecycle_test PRIVATE
+    $<$<OR:$<C_COMPILER_ID:GNU>,$<C_COMPILER_ID:Clang>>:-Wall;-Wextra;-Werror>
+  )
+  set_target_properties(android_skia_egl_lifecycle_test PROPERTIES
+    C_STANDARD 99
+    C_STANDARD_REQUIRED YES
+    C_EXTENSIONS NO
+  )
+  add_test(NAME android-skia-egl-lifecycle COMMAND android_skia_egl_lifecycle_test)
+endif()
+
 
 if(NOT DEFINED BUILD_SHARED_LIBS AND NOT DEFINED TCVM_SHARED)
   if(TC_GENERATOR_XCODE)
@@ -287,6 +311,12 @@ endif()
 if(TC_TARGET_ANDROID AND TC_ANDROID_EGL_LIFECYCLE_DIAGNOSTICS)
   target_compile_definitions(tcvm PRIVATE
     TC_ANDROID_EGL_LIFECYCLE_DIAGNOSTICS=1
+  )
+endif()
+
+if(TC_TARGET_ANDROID AND TC_ANDROID_EGL_LIFECYCLE_TESTS)
+  target_compile_definitions(tcvm PRIVATE
+    TC_ANDROID_EGL_LIFECYCLE_TESTS=1
   )
 endif()
 
