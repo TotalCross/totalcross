@@ -9,18 +9,20 @@ SPDX-License-Identifier: LGPL-2.1-only
 ## Current State
 
 - Milestone: 1 — reproduce on current master.
-- Execution interval: first authorization; hosted baseline is ready to start.
+- Execution interval: first authorization; hosted baseline is running.
 - Branch: `fix/linux-png-decoding`.
 - Worktree: `/Users/flsobral/.codex/worktrees/fix-linux-png-decoding`.
 - Selected master revision: `6beef491f28c63aa364d3661dd5c37ccff01fb0d`.
 - PR #568 correction: verified as an ancestor of selected master.
 - Last workflow implementation commit: `e12bda6d6` (three focused setup commits
   follow selected master).
-- Remote branch: not yet published; publish setup and checkpoint commits now.
+- Baseline run head: `94917ff6d51f7dd442aacbec838717e5aef48fa4`.
+- Remote branch: published as `origin/fix/linux-png-decoding`.
 - Shared checkout: remains on older `master` with unrelated untracked work; no
   files were changed there.
 - Native runtime tests: none run locally.
-- Hosted baseline workflow: locally validated, awaiting first branch push.
+- Hosted baseline run: `46061400453`, in progress; source-selection and helper
+  contract jobs have passed. The canonical native build is starting.
 
 ## Completed
 
@@ -37,10 +39,11 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Next Action
 
-Push the branch, capture the resulting Actions run ID, and wait for that run
-before classifying current-master behavior. The first hosted source selector
-pins the canonical build to `6beef491f28c63aa364d3661dd5c37ccff01fb0d` because
-the branch changes only investigation records, fixtures, and workflow code.
+Wait for run `46061400453`, capture the selected source from build provenance,
+then classify the PNG and ownership probes separately. The source selector
+passed; the branch changes only investigation records, fixtures, and workflow
+code, so the canonical build is expected to use
+`6beef491f28c63aa364d3661dd5c37ccff01fb0d`.
 
 ## Active Decisions
 
