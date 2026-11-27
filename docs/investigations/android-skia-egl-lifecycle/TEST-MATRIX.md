@@ -25,6 +25,19 @@ exact phase the harness summary reported the same PID while logcat captured a
 fatal SIGSEGV for that PID; use the native log as the process outcome. Full
 assertions and artifact provenance are in evidence/M1-api30-reproduction.md.
 
+## Milestone 2 — ordered lifecycle diagnostics
+
+| App / case | Permission and lifecycle | Expected assertions | Status |
+| --- | --- | --- | --- |
+| Exact app | Grant in Settings, return to app | Callback thread, EGL/Skia identities, crash stack | Reproduced SIGSEGV during `destroySkiaScreen`; EGL context replaced while old Skia resources remained |
+| Trace app | Grant in Settings, return to app | Create/delete markers, identities, native completion | `/sdcard/asd` create/delete succeeded before SIGSEGV; reset-end event absent |
+| Trace app control | Permission pregranted | Create/delete markers, matching EGL/Skia context, process alive | Created/deleted `/sdcard/asd`; same process remained alive and reset completed with its EGL context current |
+| Full harness | All six exact/trace phases | Complete phase matrix | Incomplete: ADB timed out sending Back after exact phases; focused trace phases above were run directly |
+
+Compact sequence, crash stack, build identity, and full-log location are in
+evidence/M2-api30-lifecycle-diagnostics.md and
+evidence/M2-api30-lifecycle-sequence.log.
+
 ## Historical I03 results
 
 | API | Historical result on official 7.3.0 | Current-master result |

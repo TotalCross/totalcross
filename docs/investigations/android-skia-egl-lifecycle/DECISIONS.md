@@ -22,6 +22,11 @@ The suspected EGL-before-Skia destruction ordering is not proven by static
 source or the old stack. Milestone 2 instrumentation and Milestone 3 controlled
 comparison must establish causality before any production correction.
 
+M2 diagnostics show `surface.reset()` destroying the old GPU surface and
+flushing queued work while the replacement EGL context is current. This is
+strong evidence for the lifetime hypothesis, but the required M3 controlled
+ordering comparison must still pass before implementation.
+
 ## Apply the local emulator restriction
 
 All runtime execution is local on hardware-accelerated ARM64 emulators. No

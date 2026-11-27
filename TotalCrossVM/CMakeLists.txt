@@ -95,6 +95,10 @@ option(TC_ENABLE_RUNTIME_DIAGNOSTICS
   "Enable optional runtime diagnostics storage and native bridge"
   OFF
 )
+option(TC_ANDROID_EGL_LIFECYCLE_DIAGNOSTICS
+  "Enable temporary Android Skia and EGL lifecycle diagnostics"
+  OFF
+)
 
 if(TC_BUILD_IR_BENCHMARKS AND NOT TC_ENABLE_SLJIT_JIT)
   message(FATAL_ERROR "TC_BUILD_IR_BENCHMARKS requires TC_ENABLE_SLJIT_JIT=ON")
@@ -278,6 +282,12 @@ endif()
 
 if(TC_ENABLE_RUNTIME_DIAGNOSTICS)
   target_compile_definitions(tcvm PRIVATE TC_ENABLE_RUNTIME_DIAGNOSTICS=1)
+endif()
+
+if(TC_TARGET_ANDROID AND TC_ANDROID_EGL_LIFECYCLE_DIAGNOSTICS)
+  target_compile_definitions(tcvm PRIVATE
+    TC_ANDROID_EGL_LIFECYCLE_DIAGNOSTICS=1
+  )
 endif()
 
 # Android fail-fast

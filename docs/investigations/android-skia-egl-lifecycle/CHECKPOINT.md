@@ -7,7 +7,7 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Current milestone
 
-Milestone 1 complete — mandatory pause before Milestone 2.
+Milestone 2 complete — mandatory pause before Milestone 3.
 
 ## Completed sub-milestones
 
@@ -37,6 +37,14 @@ Milestone 1 complete — mandatory pause before Milestone 2.
   directory create/delete before the surface callback crash.
 - Preserved compact crash evidence, scenario assertions, artifact hashes, and
   the post-crash emulator screenshot in evidence/M1-api30-reproduction.md.
+- Added default-off Java/native EGL and Skia lifecycle diagnostics and built a
+  diagnostic Android bundle. See evidence/M2-api30-lifecycle-diagnostics.md.
+- Reproduced the API 30 trace grant-in-place crash with ordered identity logs:
+  old EGL context teardown precedes old Skia surface reset, which flushes via
+  GrDirectContext destruction and crashes in GL2Encoder. The pregranted trace
+  control created/deleted the directory and remained alive.
+- The full harness invocation timed out in ADB cleanup after its exact-app
+  phases; focused trace grant-in-place and pregranted phases were run directly.
 
 ## Baseline revision
 
@@ -51,13 +59,16 @@ on its recorded baseline.
 
 ## Last completed commit
 
-This checkpoint's reproduction evidence follows 0bb06b0959a3e00425de793d75f22bb0c4e53f2b,
-the prior startup-blocker evidence commit.
+M1 baseline reproduction commit: c59a6ac2fee0018d2a75402e43aa46397a0d9d38.
+M2 diagnostics and sequence are included in this milestone's checkpoint.
 
 ## Current hypothesis
 
-The old Skia GPU surface may be destroyed after its EGL context has already
-been destroyed during native surface replacement. This is not established.
+During the reproduced replacement, the old EGL context is destroyed before
+the old Skia surface is reset. The new EGL context is current while the Skia
+surface still tracks the old context; surface destruction flushes queued
+GrDirectContext work and SIGSEGVs in the GL encoder. This strongly supports
+the lifetime hypothesis; a controlled ordering comparison is still required.
 
 ## Confirmed findings
 
@@ -77,9 +88,15 @@ been destroyed during native surface replacement. This is not established.
   FillRectOp::onExecute, GrDirectContext::~GrDirectContext,
   SkGpuDevice::~SkGpuDevice, initSkia, initGLES, and
   Java_totalcross_Launcher4A_nativeSurfaceChanged.
-- This confirms reproduction on the recorded source baseline. It does not
-  establish whether Skia resources were released with a valid/current old EGL
-  context.
+- M2 logs correlate the old and replacement EGL contexts with the Skia surface
+  and context identities. At `skia.surface.reset.begin`, the replacement EGL
+  context was current but the tracked Skia context was the old one. The
+  tombstone runs through `GrDrawingManager::flush`,
+  `GrDirectContext::~GrDirectContext`, `SkSurface_Gpu::~SkSurface_Gpu`, and
+  `destroySkiaScreen`.
+- A focused trace pregranted control completed the same file operation and
+  retained its process; its Skia surface reset began and ended with the
+  associated EGL context current.
 
 ## Rejected hypotheses
 
@@ -87,10 +104,10 @@ None.
 
 ## Pending experiments
 
-No further Milestone 1 experiments are pending. Manual rotation and standalone
-background/foreground controls were not run; the permission Settings return
-already reproduced the surface callback crash. Milestone 2 instrumentation is
-the next action only after explicit authorization.
+Manual rotation and standalone background/foreground controls were not run.
+The next step is Milestone 3: isolate teardown ordering with a controlled
+comparison. Do not alter production behavior or start M3 until the user
+explicitly authorizes it.
 
 ## Test environment
 
@@ -103,6 +120,9 @@ the next action only after explicit authorization.
 - Emulator is launched read-only with -gpu host and -accel on.
 - Runtime result: current-baseline API 30 reproduction; see
   evidence/M1-api30-reproduction.md.
+- M2 diagnostic bundle, lifecycle sequence, and focused controls:
+  evidence/M2-api30-lifecycle-diagnostics.md and
+  evidence/M2-api30-lifecycle-sequence.log.
 
 ## Available build artifacts
 
@@ -112,23 +132,22 @@ assets; hashes, six phase assertions, sanitized native stack, and screenshot are
 in evidence/M1-api30-reproduction.md. Generated APKs and full logs remain
 outside Git.
 
-## Remaining blockers
+## Remaining technical question
 
 The current Android resource tree is missing two assets eagerly loaded by
 Android UI startup. The disposable overlay is sufficient for this reproduced
-flow; no production resource fix is in scope for the graphics correction. The
-remaining technical uncertainty is the actual Skia/EGL resource ownership and
-context state at teardown. No lifecycle instrumentation or production change
-has been made.
+flow; no production resource fix is in scope for the graphics correction.
+M2 supports the context-mismatch hypothesis; M3 must isolate whether teardown
+ordering alone prevents this failure. No production correction has been made.
 
 ## Exact next concrete action
 
-Stop at the Milestone 1 review pause. After explicit authorization, begin
-Milestone 2 by inspecting lifecycle ownership and preparing minimal ordered
-Android EGL/Skia diagnostics in an isolated patch.
+Stop at the Milestone 2 review pause. After explicit authorization, begin
+Milestone 3 with a controlled teardown-order comparison using the recorded
+API 30 reproducer and diagnostics.
 
 ## Resume protocol
 
 Resume in the isolated worktree
 /Users/flsobral/.codex/worktrees/fix-android-skia-egl-surface-lifecycle.
-Read this file first. Do not begin Milestone 2 without explicit authorization.
+Read this file first. Do not begin Milestone 3 without explicit authorization.

@@ -49,6 +49,7 @@ import android.telephony.TelephonyManager;
 import android.telephony.gsm.GsmCellLocation;
 import android.text.InputType;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.util.Size;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -279,6 +280,26 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    
    private android.view.Surface lastSurface;
    private int surfaceGeneration;
+   private static long eglLifecycleJavaSequence;
+   private static final String EGL_LIFECYCLE_TAG = "TC_EGL_LIFECYCLE";
+
+   private static void logEglLifecycle(String event, int generation,
+         Surface surface, int width, int height)
+   {
+      if (!Log.isLoggable(EGL_LIFECYCLE_TAG, Log.INFO))
+         return;
+      long sequence;
+      synchronized (Launcher4A.class)
+      {
+         sequence = ++eglLifecycleJavaSequence;
+      }
+      Log.i(EGL_LIFECYCLE_TAG, "event=java." + event + " seq=" + sequence
+            + " tid=" + Thread.currentThread().getId() + " gen=" + generation
+            + " surface=" + (surface == null ? "null"
+                  : Integer.toHexString(System.identityHashCode(surface)))
+            + " valid=" + (surface != null && surface.isValid())
+            + " size=" + width + "x" + height);
+   }
 
    private void tryBootstrapSurface(SurfaceHolder holder)
    {
@@ -297,6 +318,8 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    
    public void surfaceChanged(final SurfaceHolder holder, int format, int w, int h) 
    {
+      logEglLifecycle("surfaceChanged.callback", surfaceGeneration,
+            holder == null ? null : holder.getSurface(), w, h);
       if (h == 0 || w == 0 || !loader.isInteractive()) {
         return;
       }
@@ -337,10 +360,13 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       }
 
       final int generation = ++surfaceGeneration;
+      logEglLifecycle("surfaceChanged.queued", generation, surface, width, height);
       eventThread.invokeInEventThread(false, new Runnable()
       {
          public void run()
          {
+            logEglLifecycle("surfaceChanged.native.begin", generation,
+                  surface, width, height);
             DisplayMetrics metrics = getResources().getDisplayMetrics();
             Configuration configuration = getResources().getConfiguration();
             double contentScale = metrics.density > 0 ? metrics.density : 1;
@@ -358,8 +384,12 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
                   (int)(metrics.ydpi + 0.5),
                   deviceFontHeight,
                   generation)) {
+               logEglLifecycle("surfaceChanged.native.rejected", generation,
+                     surface, width, height);
                return;
             }
+            logEglLifecycle("surfaceChanged.native.accepted", generation,
+                  surface, width, height);
 
             safeAreaVmReady = true;
             flushPendingSafeAreaInsetsInEventThread();
@@ -446,7 +476,10 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    public void surfaceDestroyed(SurfaceHolder holder)
    {
       lastSurface = null;
-      nativeSurfaceDestroyed(++surfaceGeneration);
+      int generation = ++surfaceGeneration;
+      logEglLifecycle("surfaceDestroyed.callback", generation,
+            holder == null ? null : holder.getSurface(), lastScreenW, lastScreenH);
+      nativeSurfaceDestroyed(generation);
    }
 
    private static final int PEN_DOWN  = 1;
@@ -1610,6 +1643,8 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    public static void appPaused()
    {
       appPaused = true;
+      logEglLifecycle("appPaused", instance.surfaceGeneration, instance.lastSurface,
+            lastScreenW, lastScreenH);
       instance.nativePrepareForPause();
       if (eventThread != null)
       {
@@ -1622,6 +1657,8 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    {
       SurfaceHolder holder = instance == null ? null : instance.getHolder();
       Surface surface = holder == null ? null : holder.getSurface();
+      logEglLifecycle("appResumed", instance.surfaceGeneration, surface,
+            lastScreenW, lastScreenH);
       instance.nativePrepareForResume();
       if (eventThread != null && surface != null && surface.isValid() && lastScreenW > 0 && lastScreenH > 0)
       {

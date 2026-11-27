@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 
 #include "gfx_ex.h"
+#include "../../../android_skia_egl_lifecycle_diagnostics.h"
 
 #if defined(ANDROID) || (defined(TC_OS_ANDROID) && TC_OS_ANDROID)
  #define TC_GLES_ANDROID 1
@@ -77,33 +78,88 @@ static ScreenSurfaceEx androidGetScreenExtension(ScreenSurface screenSurface)
    return extension;
 }
 
+#if defined(TC_ANDROID_EGL_LIFECYCLE_DIAGNOSTICS)
+static void androidLogEglLifecycleAtGeneration(const char *event,
+      uint32 generation,
+      ScreenSurfaceEx extension, ANativeWindow *window,
+      ANativeWindow *candidateWindow, EGLDisplay display,
+      EGLSurface surface, EGLContext context)
+{
+   uint32 flags = (extension != null && extension->graphicsInitialized ? 1u : 0u)
+         | (screen.surfaceReady ? 2u : 0u)
+         | (surfaceWillChange ? 4u : 0u);
+   TC_ANDROID_EGL_DIAG_NATIVE(event, generation,
+         window, candidateWindow, display, surface, context, flags);
+}
+static void androidLogEglLifecycle(const char *event,
+      ScreenSurfaceEx extension, ANativeWindow *window,
+      ANativeWindow *candidateWindow, EGLDisplay display,
+      EGLSurface surface, EGLContext context)
+{
+   androidLogEglLifecycleAtGeneration(event, screen.surfaceGeneration,
+         extension, window, candidateWindow, display, surface, context);
+}
+#else
+#define androidLogEglLifecycle(...) ((void)0)
+#define androidLogEglLifecycleAtGeneration(...) ((void)0)
+#endif
+
 static void androidDestroyEGL(ScreenSurfaceEx extension)
 {
    if (extension == null)
       return;
 
+   androidLogEglLifecycle("egl.destroy.begin", extension,
+         extension->window, null, extension->display,
+         extension->surface, extension->context);
+
    if (extension->display != EGL_NO_DISPLAY)
    {
       eglMakeCurrent(extension->display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+      androidLogEglLifecycle("egl.destroy.unbound", extension,
+            extension->window, null, extension->display,
+            extension->surface, extension->context);
       if (extension->context != EGL_NO_CONTEXT)
+      {
          eglDestroyContext(extension->display, extension->context);
+         androidLogEglLifecycle("egl.destroy.context", extension,
+               extension->window, null, extension->display,
+               extension->surface, extension->context);
+      }
       if (extension->surface != EGL_NO_SURFACE)
+      {
          eglDestroySurface(extension->display, extension->surface);
+         androidLogEglLifecycle("egl.destroy.surface", extension,
+               extension->window, null, extension->display,
+               extension->surface, extension->context);
+      }
       eglTerminate(extension->display);
+      androidLogEglLifecycle("egl.destroy.terminated", extension,
+            extension->window, null, extension->display,
+            extension->surface, extension->context);
    }
 
    extension->display = EGL_NO_DISPLAY;
    extension->surface = EGL_NO_SURFACE;
    extension->context = EGL_NO_CONTEXT;
    extension->graphicsInitialized = false;
+   androidLogEglLifecycle("egl.destroy.end", extension,
+         extension->window, null, extension->display,
+         extension->surface, extension->context);
 }
 
 static void androidReleaseNativeWindow(ScreenSurfaceEx extension)
 {
    if (extension != null && extension->window != null)
    {
+      androidLogEglLifecycle("window.release.begin", extension,
+            extension->window, null, extension->display,
+            extension->surface, extension->context);
       ANativeWindow_release(extension->window);
       extension->window = null;
+      androidLogEglLifecycle("window.release.end", extension,
+            null, null, extension->display,
+            extension->surface, extension->context);
    }
 }
 
@@ -119,18 +175,52 @@ static bool androidApplySurfaceChange(JNIEnv *env, jobject javaSurface,
    bool hadGraphics;
    TScreenConfiguration configuration;
 
+   extension = SCREEN_EX(&screen);
+   androidLogEglLifecycleAtGeneration("surface.change.callback", generation, extension,
+         extension != null ? extension->window : null, null,
+         extension != null ? extension->display : EGL_NO_DISPLAY,
+         extension != null ? extension->surface : EGL_NO_SURFACE,
+         extension != null ? extension->context : EGL_NO_CONTEXT);
+
    if (javaSurface == null || width <= 0 || height <= 0)
+   {
+      androidLogEglLifecycleAtGeneration("surface.change.rejected.arguments", generation, extension,
+            extension != null ? extension->window : null, null,
+            extension != null ? extension->display : EGL_NO_DISPLAY,
+            extension != null ? extension->surface : EGL_NO_SURFACE,
+            extension != null ? extension->context : EGL_NO_CONTEXT);
       return false;
+   }
    if (generation < screen.surfaceGeneration)
+   {
+      androidLogEglLifecycleAtGeneration("surface.change.rejected.generation", generation, extension,
+            extension != null ? extension->window : null, null,
+            extension != null ? extension->display : EGL_NO_DISPLAY,
+            extension != null ? extension->surface : EGL_NO_SURFACE,
+            extension != null ? extension->context : EGL_NO_CONTEXT);
       return false;
+   }
 
    extension = androidGetScreenExtension(&screen);
    if (extension == null)
       return false;
 
+   androidLogEglLifecycleAtGeneration("surface.change.extension", generation, extension,
+         extension->window, null, extension->display,
+         extension->surface, extension->context);
+
    newWindow = ANativeWindow_fromSurface(env, javaSurface);
    if (newWindow == null)
+   {
+      androidLogEglLifecycleAtGeneration("surface.change.window.failed", generation, extension,
+            extension->window, null, extension->display,
+            extension->surface, extension->context);
       return false;
+   }
+
+   androidLogEglLifecycleAtGeneration("surface.change.window.acquired", generation, extension,
+         extension->window, newWindow, extension->display,
+         extension->surface, extension->context);
 
    nativeSurfaceChanged = extension->window != newWindow;
    hadGraphics = extension->graphicsInitialized;
@@ -141,11 +231,17 @@ static bool androidApplySurfaceChange(JNIEnv *env, jobject javaSurface,
          androidDestroyEGL(extension);
       androidReleaseNativeWindow(extension);
       extension->window = newWindow;
+      androidLogEglLifecycleAtGeneration("surface.change.window.replaced", generation, extension,
+            extension->window, null, extension->display,
+            extension->surface, extension->context);
    }
    else
    {
       // ANativeWindow_fromSurface returns a retained reference.
       ANativeWindow_release(newWindow);
+      androidLogEglLifecycleAtGeneration("surface.change.window.retained", generation, extension,
+            extension->window, newWindow, extension->display,
+            extension->surface, extension->context);
    }
 
    memset(&configuration, 0, sizeof(configuration));
@@ -170,13 +266,28 @@ static bool androidApplySurfaceChange(JNIEnv *env, jobject javaSurface,
    surfaceWillChange = false;
    realAppH = (*env)->CallStaticIntMethod(env, applicationClass, jgetHeight);
 
-   if (nativeSurfaceChanged && hadGraphics && !initGLES(&screen))
+   if (nativeSurfaceChanged && hadGraphics)
    {
-      screen.surfaceReady = false;
-      surfaceWillChange = true;
-      return false;
+      androidLogEglLifecycleAtGeneration("surface.change.initgles.begin", generation, extension,
+            extension->window, null, extension->display,
+            extension->surface, extension->context);
+      if (!initGLES(&screen))
+      {
+         screen.surfaceReady = false;
+         surfaceWillChange = true;
+         androidLogEglLifecycleAtGeneration("surface.change.initgles.failed", generation, extension,
+               extension->window, null, extension->display,
+               extension->surface, extension->context);
+         return false;
+      }
+      androidLogEglLifecycleAtGeneration("surface.change.initgles.end", generation, extension,
+            extension->window, null, extension->display,
+            extension->surface, extension->context);
    }
 
+   androidLogEglLifecycleAtGeneration("surface.change.return", generation, extension,
+         extension->window, null, extension->display,
+         extension->surface, extension->context);
    return true;
 }
 
@@ -186,6 +297,12 @@ JNIEXPORT jboolean JNICALL Java_totalcross_Launcher4A_nativeSurfaceChanged(
       jint hRes, jint vRes, jint fontHeight, jint generation)
 {
    UNUSED(thisObject);
+   ScreenSurfaceEx extension = SCREEN_EX(&screen);
+   androidLogEglLifecycleAtGeneration("jni.surfaceChanged.enter", (uint32)generation, extension,
+         extension != null ? extension->window : null, null,
+         extension != null ? extension->display : EGL_NO_DISPLAY,
+         extension != null ? extension->surface : EGL_NO_SURFACE,
+         extension != null ? extension->context : EGL_NO_CONTEXT);
    return androidApplySurfaceChange(env, javaSurface, width, height,
          contentScale, fontScale, hRes, vRes, fontHeight,
          (uint32)generation) ? JNI_TRUE : JNI_FALSE;
@@ -197,6 +314,13 @@ JNIEXPORT void JNICALL Java_totalcross_Launcher4A_nativeSurfaceDestroyed(
    UNUSED(env);
    UNUSED(thisObject);
 
+   ScreenSurfaceEx extension = SCREEN_EX(&screen);
+   androidLogEglLifecycleAtGeneration("jni.surfaceDestroyed.enter", (uint32)generation, extension,
+         extension != null ? extension->window : null, null,
+         extension != null ? extension->display : EGL_NO_DISPLAY,
+         extension != null ? extension->surface : EGL_NO_SURFACE,
+         extension != null ? extension->context : EGL_NO_CONTEXT);
+
    if ((uint32)generation < screen.surfaceGeneration)
       return;
 
@@ -204,6 +328,11 @@ JNIEXPORT void JNICALL Java_totalcross_Launcher4A_nativeSurfaceDestroyed(
    screen.surfaceReady = false;
    screen.pendingChangeFlags = SCREEN_CHANGE_NONE;
    surfaceWillChange = true;
+   androidLogEglLifecycleAtGeneration("jni.surfaceDestroyed.exit", (uint32)generation, extension,
+         extension != null ? extension->window : null, null,
+         extension != null ? extension->display : EGL_NO_DISPLAY,
+         extension != null ? extension->surface : EGL_NO_SURFACE,
+         extension != null ? extension->context : EGL_NO_CONTEXT);
 }
 
 JNIEXPORT void JNICALL Java_totalcross_Launcher4A_nativeSetKeyboardShift(
@@ -227,6 +356,13 @@ JNIEXPORT void JNICALL Java_totalcross_Launcher4A_nativePrepareForPause(
    UNUSED(env);
    UNUSED(thisObject);
 
+   ScreenSurfaceEx extension = SCREEN_EX(&screen);
+   androidLogEglLifecycle("jni.prepareForPause", extension,
+         extension != null ? extension->window : null, null,
+         extension != null ? extension->display : EGL_NO_DISPLAY,
+         extension != null ? extension->surface : EGL_NO_SURFACE,
+         extension != null ? extension->context : EGL_NO_CONTEXT);
+
    if (ENABLE_TEXTURE_TRACE)
       debug("preparing graphics for application pause");
 
@@ -244,6 +380,12 @@ JNIEXPORT void JNICALL Java_totalcross_Launcher4A_nativePrepareForResume(
 {
    UNUSED(env);
    UNUSED(thisObject);
+   ScreenSurfaceEx extension = SCREEN_EX(&screen);
+   androidLogEglLifecycle("jni.prepareForResume", extension,
+         extension != null ? extension->window : null, null,
+         extension != null ? extension->display : EGL_NO_DISPLAY,
+         extension != null ? extension->surface : EGL_NO_SURFACE,
+         extension != null ? extension->context : EGL_NO_CONTEXT);
    surfaceWillChange = true;
 }
 #endif
@@ -278,6 +420,10 @@ int32 initGLES(ScreenSurface screenSurface)
    EGLContext context;
    EGLint width;
    EGLint height;
+
+   androidLogEglLifecycle("egl.create.begin", extension,
+         extension != null ? extension->window : null, null,
+         EGL_NO_DISPLAY, EGL_NO_SURFACE, EGL_NO_CONTEXT);
 
    if (extension == null || extension->window == null)
    {
@@ -335,6 +481,10 @@ int32 initGLES(ScreenSurface screenSurface)
       return false;
    }
 
+   androidLogEglLifecycleAtGeneration("egl.create.madeCurrent",
+         screen.surfaceGeneration, extension, extension->window, null,
+         display, surface, context);
+
    if (!eglQuerySurface(display, surface, EGL_WIDTH, &width)
        || !eglQuerySurface(display, surface, EGL_HEIGHT, &height))
    {
@@ -351,13 +501,23 @@ int32 initGLES(ScreenSurface screenSurface)
    extension->context = context;
    extension->graphicsInitialized = true;
 
+   androidLogEglLifecycle("egl.create.committed", extension,
+         extension->window, null, extension->display,
+         extension->surface, extension->context);
+
    glViewport(0, 0, (GLsizei)width, (GLsizei)height);
    glClearColor(1, 0, 0, 1);
    glClearStencil(0);
    glStencilMask(0xffffffff);
    glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
+   androidLogEglLifecycle("skia.init.call.begin", extension,
+         extension->window, null, extension->display,
+         extension->surface, extension->context);
    initSkia(width, height, NULL, screenSurface->pitch, screenSurface->pixelformat);
+   androidLogEglLifecycle("skia.init.call.end", extension,
+         extension->window, null, extension->display,
+         extension->surface, extension->context);
    return true;
 }
 #endif
@@ -427,14 +587,21 @@ int32 graphicsCreateScreenSurface(ScreenSurface screenSurface)
 void graphicsDestroy(ScreenSurface screenSurface, int32 isScreenChange)
 {
 #if TC_GLES_ANDROID
+   ScreenSurfaceEx extension = SCREEN_EX(screenSurface);
+   androidLogEglLifecycle("graphics.destroy.begin", extension,
+         extension != null ? extension->window : null, null,
+         extension != null ? extension->display : EGL_NO_DISPLAY,
+         extension != null ? extension->surface : EGL_NO_SURFACE,
+         extension != null ? extension->context : EGL_NO_CONTEXT);
    if (!isScreenChange)
    {
-      ScreenSurfaceEx extension = SCREEN_EX(screenSurface);
       androidDestroyEGL(extension);
       androidReleaseNativeWindow(extension);
       xfree(screenSurface->extension);
       screenSurface->extension = null;
    }
+   androidLogEglLifecycle("graphics.destroy.end", SCREEN_EX(screenSurface),
+         null, null, EGL_NO_DISPLAY, EGL_NO_SURFACE, EGL_NO_CONTEXT);
 #else
    if (isScreenChange)
       screenSurface->extension = NULL;

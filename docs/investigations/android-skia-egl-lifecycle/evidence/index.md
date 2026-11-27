@@ -27,6 +27,14 @@ variant recorded successful directory create/delete before the surface
 callback crash. The test-only TCUI asset overlay and artifact hashes are
 documented in the reproduction report.
 
+M2 API 30 EGL/Skia lifecycle diagnostic build and focused runs:
+M2-api30-lifecycle-diagnostics.md and M2-api30-lifecycle-sequence.log. The
+trace grant-in-place phase created/deleted `/sdcard/asd`, then crashed while
+destroying its Skia GPU surface after EGL context replacement. The paired
+pregranted trace control completed the operation and remained alive. Full
+diagnostic logcats and build artifacts remain outside Git in the results
+directory referenced by the M2 report.
+
 Generated APKs, native binaries, emulator images, full SDK archives, caches,
 full logcats, and tombstones remain outside Git. The committed stack excerpt
 is sanitized and compact.

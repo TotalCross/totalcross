@@ -19,6 +19,8 @@ def axtlsFetchScript = file("${depotToolsDir}/axtls/fetch.sh")
 def sljitFetchScript = file("${depotToolsDir}/sljit/fetch.sh")
 def depotToolsDepsFile = file("${depotToolsDir}/deps.yml")
 def nativeAndroidAbis = ['arm64-v8a']
+def tcAndroidEglLifecycleDiagnostics =
+    project.findProperty('tcAndroidEglLifecycleDiagnostics') == 'true'
 def skiaDevBundleOutputs = [
     file("${depotToolsDir}/skia/local/include/core/SkPathEffect.h"),
     file("${depotToolsDir}/skia/local/src/gpu/gl/GrGLDefines.h")
@@ -341,6 +343,9 @@ android {
                     "-DTC_ENABLE_SLJIT_JIT=OFF",
                     "-DTC_JNI_HEADER_DIR=${jniHeaderDir.absolutePath}"
                 )
+                if (tcAndroidEglLifecycleDiagnostics) {
+                    arguments "-DTC_ANDROID_EGL_LIFECYCLE_DIAGNOSTICS=ON"
+                }
                 cppFlags "-std=c++14", "-DSK_GL"
                 targets "tcvm"
             }

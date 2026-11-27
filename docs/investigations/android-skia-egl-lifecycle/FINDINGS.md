@@ -95,3 +95,40 @@ The full assertions, provenance, native stack excerpt, screenshot, and command
 details are in evidence/M1-api30-reproduction.md. The initial startup-blocked
 attempt remains recorded in evidence/M1-api30-run.md and
 evidence/M1-api30-startup-error.png.
+
+## Milestone 2 lifecycle diagnostics
+
+The diagnostic bundle was built from the same baseline with the default-off
+`TC_ANDROID_EGL_LIFECYCLE_DIAGNOSTICS` option enabled through Gradle. Java and
+native logs correlated on API 30 by surface generation, timestamp, and event
+thread. The Java `Surface` identity remained constant across the permission
+return while `ANativeWindow_fromSurface` returned a different native window.
+
+In the focused trace grant-in-place phase, `/sdcard/asd` was created and
+deleted successfully. On return from Settings, generation 5 replaced the
+native window. Native sequence 52 unbound/destroyed the previous EGL context
+`0xb4000071a832ce50`; sequence 63 made replacement context
+`0xb4000071a834bf90` current. At sequence 68, `skia.surface.reset.begin`
+reported that replacement context as current while the old Skia context
+`0xb4000071b8313ef0` and old surface `0xb40000717830f190` were still tracked.
+There was no reset-end event. The process received SIGSEGV 82 ms after reset
+began.
+
+The tombstone stack reaches `GL2Encoder::s_glDrawRangeElements`,
+`GrDrawingManager::flush`, `GrDirectContext::~GrDirectContext`,
+`SkSurface_Gpu::~SkSurface_Gpu`, `destroySkiaScreen`, `initSkia`, and
+`initGLES`. It shows the old Skia surface's pending draw work being flushed as
+that surface and its context are destroyed. This strongly implicates the
+context mismatch; it does not replace the controlled M3 ordering comparison.
+
+The paired trace pregranted control created/deleted `/sdcard/asd`, had no
+permission prompt, completed its Skia reset with its EGL context current, and
+kept the same process alive. The initial all-phases harness invocation timed
+out sending Back through ADB after the exact-app phases. Focused trace phases
+were run directly afterward; manual rotation and standalone background/
+foreground remain untested.
+
+Build/runtime artifact hashes, commands, environment, and compact identity and
+stack records are in evidence/M2-api30-lifecycle-diagnostics.md and
+evidence/M2-api30-lifecycle-sequence.log. Full logs and generated APKs remain
+outside Git in the M2 results directory.

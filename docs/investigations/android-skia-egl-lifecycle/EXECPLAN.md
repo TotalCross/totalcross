@@ -29,8 +29,12 @@ FINAL-REPORT.md is completed only at final consolidation.
 - [x] (2026-11-27) Reproduce the current-baseline API 30 native crash using
   the customer app and marker-only variant. A disposable UI-resource overlay
   was needed to pass two missing SDK image assets. See
-  evidence/M1-api30-reproduction.md. Stop at Milestone 1 pending authorization.
-- [ ] Milestone 2: instrument only the relevant Android EGL and Skia lifecycle.
+  evidence/M1-api30-reproduction.md.
+- [x] (2026-11-27) Instrument Java callbacks and native EGL/Skia identities,
+  then reproduce the API 30 trace crash and pregranted control. See
+  evidence/M2-api30-lifecycle-diagnostics.md and
+  evidence/M2-api30-lifecycle-sequence.log. Stop at Milestone 2 pending
+  authorization.
 - [ ] Milestone 3: causally validate the lifecycle ordering before production
   changes; stop for review before implementation.
 - [ ] Milestone 4: implement the smallest justified Android correction and
@@ -47,8 +51,9 @@ TotalCrossVM/src/nm/ui/backend/graphics/gles/gfx_Graphics_c.h. On a replacement
 native window, the current code destroys EGL state and releases the old native
 window before initializing a replacement EGL context. initGLES makes the new
 context current and calls initSkia; initSkia first releases the prior Skia
-screen surface. This matches the historical 7.3.0 source sequence, but source
-ordering and a crash stack do not prove causality.
+screen surface. M2 logs show the old Skia context being destroyed after EGL
+replacement while the new context is current. M3 must isolate that ordering
+before the production fix.
 
 Scope is Android Skia/EGL surface recreation only. Permission recovery,
 SQLite, other platforms, graphics optimization, physical devices, and remote
@@ -96,6 +101,11 @@ pause for explicit user authorization to continue.
   the native SIGSEGV in both the exact customer app and marker-only variant.
   The captured stack reaches initSkia, initGLES, and nativeSurfaceChanged.
   This establishes current-baseline reproduction, not resource-lifetime cause.
+- M2 log order shows the old EGL context is unbound and destroyed before the
+  old Skia screen surface is reset. The replacement EGL context is current at
+  reset; the tombstone shows a queued Skia flush entering GL2Encoder before
+  SIGSEGV. The pregranted trace control completes without a crash, but this
+  comparison does not isolate teardown order.
 
 ## Decision Log
 
@@ -123,7 +133,8 @@ performance tests.
 - The old harness builds against the pinned 7.3.0 distribution. Determine the
   smallest adaptation needed to use the current-source SDK without changing
   the customer Java operations.
-- The primary EGL/Skia lifetime hypothesis remains unproven.
+- The EGL/Skia context mismatch is strongly implicated; the controlled M3
+  teardown comparison remains necessary before implementation.
 - Existing API 30 AVD metadata reports a missing image despite the installed
   image being present; emulator boot and renderer were verified directly.
 
@@ -136,11 +147,14 @@ or build fails, preserve logs and classify the result before retrying.
 
 ## Outcomes & Retrospective
 
-Milestone 1 is complete: API 30 reproduction was captured on the recorded
-baseline and pushed. The exact lifecycle cause is still unproven. No production
-change has been made. Stop here until explicit authorization for Milestone 2.
+Milestone 1 reproduced the current-baseline failure. Milestone 2 added
+default-off diagnostics and captured the old-Skia/new-EGL context mismatch
+immediately before the known GL/Skia crash. The evidence points to teardown
+ordering but does not yet isolate it. No production correction has been made.
+Stop here until explicit authorization for Milestone 3.
 
 ## Revision Note
 
-Initial plan. Future updates are limited to milestone boundaries and material
-changes in technical direction.
+Updated after Milestone 2: ordered EGL/Skia identity evidence now supports the
+lifecycle hypothesis; a controlled teardown-order comparison remains the gate
+before production changes.

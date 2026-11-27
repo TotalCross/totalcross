@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 
 #include "skia_internal.h"
+#include "../android_skia_egl_lifecycle_diagnostics.h"
 
 #if defined(ANDROID)
 #include <jni.h>
@@ -61,6 +62,90 @@
 
 #include <vector>
 #include <map>
+
+#if defined(ANDROID) && defined(TC_ANDROID_EGL_LIFECYCLE_DIAGNOSTICS)
+#include <android/log.h>
+#include <mutex>
+#include <sys/syscall.h>
+#include <unistd.h>
+
+namespace {
+struct AndroidEglLifecycleState {
+    uint64_t sequence = 0;
+    uint32_t generation = 0;
+    const void *window = nullptr;
+    const void *candidateWindow = nullptr;
+    const void *display = nullptr;
+    const void *eglSurface = nullptr;
+    const void *expectedContext = nullptr;
+    const void *skiaContext = nullptr;
+    const void *skiaSurface = nullptr;
+    const void *canvas = nullptr;
+    uint32_t flags = 0;
+};
+
+AndroidEglLifecycleState androidEglLifecycleState;
+std::mutex androidEglLifecycleMutex;
+const void *androidSkiaContextIdentity = nullptr;
+const void *androidSkiaSurfaceIdentity = nullptr;
+const void *androidSkiaCanvasIdentity = nullptr;
+
+void logAndroidEglLifecycleLocked(const char *event)
+{
+    const uint64_t sequence = ++androidEglLifecycleState.sequence;
+    const long tid = static_cast<long>(syscall(SYS_gettid));
+    const EGLDisplay currentDisplay = eglGetCurrentDisplay();
+    const EGLSurface currentSurface = eglGetCurrentSurface(EGL_DRAW);
+    const EGLContext currentContext = eglGetCurrentContext();
+
+    __android_log_print(ANDROID_LOG_INFO, "TC_EGL_LIFECYCLE",
+        "seq=%llu tid=%ld event=%s gen=%u window=%p candidate=%p "
+        "display=%p surface=%p expectedContext=%p currentDisplay=%p "
+        "currentSurface=%p currentContext=%p skiaContext=%p "
+        "skiaSurface=%p canvas=%p flags=0x%x",
+        static_cast<unsigned long long>(sequence), tid, event,
+        androidEglLifecycleState.generation,
+        androidEglLifecycleState.window,
+        androidEglLifecycleState.candidateWindow,
+        androidEglLifecycleState.display,
+        androidEglLifecycleState.eglSurface,
+        androidEglLifecycleState.expectedContext,
+        currentDisplay, currentSurface, currentContext,
+        androidEglLifecycleState.skiaContext,
+        androidEglLifecycleState.skiaSurface,
+        androidEglLifecycleState.canvas,
+        androidEglLifecycleState.flags);
+}
+}
+
+extern "C" void tcAndroidEglLifecycleLogNative(const char *event,
+        uint32_t generation, const void *window, const void *candidateWindow,
+        const void *display, const void *eglSurface,
+        const void *expectedContext, uint32_t flags)
+{
+    std::lock_guard<std::mutex> lock(androidEglLifecycleMutex);
+    androidEglLifecycleState.generation = generation;
+    androidEglLifecycleState.window = window;
+    androidEglLifecycleState.candidateWindow = candidateWindow;
+    androidEglLifecycleState.display = display;
+    androidEglLifecycleState.eglSurface = eglSurface;
+    androidEglLifecycleState.expectedContext = expectedContext;
+    androidEglLifecycleState.flags = flags;
+    logAndroidEglLifecycleLocked(event);
+}
+
+extern "C" void tcAndroidEglLifecycleLogSkia(const char *event,
+        const void *context, const void *skiaSurface, const void *skiaCanvas,
+        uint32_t flags)
+{
+    std::lock_guard<std::mutex> lock(androidEglLifecycleMutex);
+    androidEglLifecycleState.skiaContext = context;
+    androidEglLifecycleState.skiaSurface = skiaSurface;
+    androidEglLifecycleState.canvas = skiaCanvas;
+    androidEglLifecycleState.flags = flags;
+    logAndroidEglLifecycleLocked(event);
+}
+#endif
 
 
 extern "C" {
@@ -124,6 +209,11 @@ std::map<std::string, int> typefaceIndexMap;
 void initSkia(int w, int h, void * pixels, int pitch, uint32_t pixelformat)
 {
     SKIA_TRACE()
+#if defined(ANDROID) && defined(TC_ANDROID_EGL_LIFECYCLE_DIAGNOSTICS)
+    TC_ANDROID_EGL_DIAG_SKIA("skia.init.begin", androidSkiaContextIdentity,
+            androidSkiaSurfaceIdentity, androidSkiaCanvasIdentity,
+            (surface ? 1u : 0u) | (canvas ? 2u : 0u));
+#endif
     destroySkiaScreen();
 #if TC_GRAPHICS_SOFTWARE
     bitmap.installPixels(SkImageInfo::Make(w,
@@ -136,6 +226,11 @@ void initSkia(int w, int h, void * pixels, int pitch, uint32_t pixelformat)
     // a GL context and produce a valid rendertarget out of it for rendering.
     auto interface = GrGLMakeNativeInterface();
     sk_sp<GrDirectContext> grContext(GrDirectContext::MakeGL(interface));
+#if defined(ANDROID) && defined(TC_ANDROID_EGL_LIFECYCLE_DIAGNOSTICS)
+    androidSkiaContextIdentity = grContext.get();
+    TC_ANDROID_EGL_DIAG_SKIA("skia.context.created", androidSkiaContextIdentity,
+            androidSkiaSurfaceIdentity, androidSkiaCanvasIdentity, 0);
+#endif
 
     GLint defaultFBO;
     glGetIntegerv(GL_FRAMEBUFFER_BINDING, &defaultFBO);
@@ -153,12 +248,27 @@ void initSkia(int w, int h, void * pixels, int pitch, uint32_t pixelformat)
     sk_sp<SkSurface> gpuSurface = SkSurface::MakeFromBackendRenderTarget(
         grContext.get(), render_target, kBottomLeft_GrSurfaceOrigin,
         kRGB_888x_SkColorType, nullptr, &surface_props);
+#if defined(ANDROID) && defined(TC_ANDROID_EGL_LIFECYCLE_DIAGNOSTICS)
+    androidSkiaSurfaceIdentity = gpuSurface.get();
+    TC_ANDROID_EGL_DIAG_SKIA("skia.surface.created", androidSkiaContextIdentity,
+            androidSkiaSurfaceIdentity, nullptr, gpuSurface ? 1u : 0u);
+#endif
 
     SkCanvas *gpuCanvas = gpuSurface->getCanvas();
+#if defined(ANDROID) && defined(TC_ANDROID_EGL_LIFECYCLE_DIAGNOSTICS)
+    androidSkiaCanvasIdentity = gpuCanvas;
+    TC_ANDROID_EGL_DIAG_SKIA("skia.canvas.created", androidSkiaContextIdentity,
+            androidSkiaSurfaceIdentity, androidSkiaCanvasIdentity, 0);
+#endif
 
     // We cache a reference for the surface and canvas for later use.
     surface = gpuSurface;
     canvas = gpuCanvas;
+#if defined(ANDROID) && defined(TC_ANDROID_EGL_LIFECYCLE_DIAGNOSTICS)
+    TC_ANDROID_EGL_DIAG_SKIA("skia.surface.committed", androidSkiaContextIdentity,
+            androidSkiaSurfaceIdentity, androidSkiaCanvasIdentity,
+            (surface ? 1u : 0u) | (canvas ? 2u : 0u));
+#endif
 #else
     #error "Unsupported graphics backend"
 #endif
@@ -175,16 +285,37 @@ void initSkia(int w, int h, void * pixels, int pitch, uint32_t pixelformat)
     backPaint.setAntiAlias(true);
     canvas->clear(SK_ColorWHITE);
     flushSkia();
+#if defined(ANDROID) && defined(TC_ANDROID_EGL_LIFECYCLE_DIAGNOSTICS)
+    TC_ANDROID_EGL_DIAG_SKIA("skia.init.end", androidSkiaContextIdentity,
+            androidSkiaSurfaceIdentity, androidSkiaCanvasIdentity, 0);
+#endif
 }
 
 void destroySkiaScreen()
 {
+#if defined(ANDROID) && defined(TC_ANDROID_EGL_LIFECYCLE_DIAGNOSTICS)
+    TC_ANDROID_EGL_DIAG_SKIA("skia.destroy.begin", androidSkiaContextIdentity,
+            androidSkiaSurfaceIdentity, androidSkiaCanvasIdentity,
+            (surface ? 1u : 0u) | (canvas ? 2u : 0u));
+#endif
 #if TC_GRAPHICS_SOFTWARE
     delete canvas;
 #endif
     canvas = nullptr;
     bitmap.reset();
+#if defined(ANDROID) && defined(TC_ANDROID_EGL_LIFECYCLE_DIAGNOSTICS)
+    TC_ANDROID_EGL_DIAG_SKIA("skia.surface.reset.begin", androidSkiaContextIdentity,
+            androidSkiaSurfaceIdentity, androidSkiaCanvasIdentity, surface ? 1u : 0u);
+#endif
     surface.reset();
+#if defined(ANDROID) && defined(TC_ANDROID_EGL_LIFECYCLE_DIAGNOSTICS)
+    TC_ANDROID_EGL_DIAG_SKIA("skia.surface.reset.end", androidSkiaContextIdentity,
+            androidSkiaSurfaceIdentity, nullptr, 0);
+    androidSkiaContextIdentity = nullptr;
+    androidSkiaSurfaceIdentity = nullptr;
+    androidSkiaCanvasIdentity = nullptr;
+    TC_ANDROID_EGL_DIAG_SKIA("skia.destroy.end", nullptr, nullptr, nullptr, 0);
+#endif
 }
 
 void flushSkia()
