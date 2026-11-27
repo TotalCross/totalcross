@@ -8,8 +8,8 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Current State
 
-- Milestone: 1 complete — pause for review before Milestone 2.
-- Execution interval: first authorization; Milestone 1 complete, awaiting review.
+- Milestone: closure authorized; focused test integration prepared, hosted run and final synchronization pending.
+- Execution interval: closure authorization received at 2026-11-27 21:08 UTC; maximum 40 minutes.
 - Branch: `fix/linux-png-decoding`.
 - Worktree: `/Users/flsobral/.codex/worktrees/fix-linux-png-decoding`.
 - Selected master revision: `6beef491f28c63aa364d3661dd5c37ccff01fb0d`.
@@ -21,6 +21,17 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Remote branch: published as `origin/fix/linux-png-decoding`.
 - Current-master results: run `46061400453` completed successfully; compact
   classifications and artifact identities are in `evidence/index.md`.
+- Closure classification: ADLER32 and original I06 drawing are
+  `NOT_REPRODUCED`, root causes undetermined; I06 Linux ownership validation is
+  `PASS` with the original PNG and no startup shim.
+- Closure regression probe is being integrated into the existing Linux startup
+  workflow. Its three cases cover RGBA file, RGBA bytes, and original PNG
+  drawing/owner cleanup. The hosted result is pending.
+- Both issue texts are local proposals only; no GitHub issue has been changed.
+- No indexed-PNG diagnosis or correction, production image change, dependency
+  change, symbol isolation, allocator change, or historical bisect is in scope.
+- No non-Linux build is authorized unless a shared regression-test change makes
+  it strictly necessary.
 - Shared checkout: remains on older `master` with unrelated untracked work; no
   files were changed there.
 - Native runtime tests: none run locally.
@@ -44,33 +55,36 @@ SPDX-License-Identifier: LGPL-2.1-only
   failures did not reproduce; indexed PNG construction remains rejected.
 - Committed and pushed the Milestone 1 evidence to
   `origin/fix/linux-png-decoding`.
+- Moved the unchanged PNG fixtures into SDK native-startup test resources,
+  added a focused deployed Linux probe, and wired it into the existing runtime
+  job rather than adding another workflow.
+- Prepared a self-contained issue #564 update and a separate indexed-PNG issue
+  proposal; both remain unpublished.
 
 ## Next Action
 
-Wait for explicit authorization before starting Milestone 2 failure
-localization. Do not infer a shared cause from the two non-reproduced failures
-or from the separate indexed-PNG rejection.
+Run focused static checks, commit and push the closure integration, inspect the
+hosted Linux-only result, complete the evidence/report/matrix, commit and push
+the closure record, then verify that the remote branch HEAD matches local HEAD.
 
 ## Active Decisions
 
-- No production code changes before Milestone 3 causal review and explicit
-  approval.
+- No production code changes are authorized in this closure.
 - Baseline runtime must run without a preload shim.
 - Keep ADLER32, drawing, and indexed-inspection outcomes separate.
-- Preserve the canonical source revision in build provenance when the reusable
-  workflow checks out the selected baseline commit.
-- Do not begin Milestone 2 until the user explicitly authorizes it.
+- Preserve exact source and artifact identities for both the clean-master
+  baseline and the branch regression run.
+- Do not publish proposals or create a PR.
 
 ## Deferred Validation
 
 - No local native runtime was executed; native desktop execution is prohibited
   locally.
-- Failure localization and causal experiments are deferred to authorized
-  Milestone 2 and later.
-- Windows, macOS PNG controls, and Android emulator controls belong to later
-  authorized milestones. The canonical reusable build also ran its existing
-  macOS ARM64 smoke job as a side-effect; it passed and does not expand scope.
-- No sanitizers or benchmarks are needed for this baseline slice.
+- Failure localization, indexed-PNG diagnosis, and causal experiments are out
+  of scope; both historical root causes remain undetermined.
+- Windows, macOS, Android, sanitizer, and benchmark validation are skipped.
+- The hosted closure run is limited to Linux x86_64 and SDK build/runtime
+  integration; no local native runtime is planned.
 
 ## Resume Command
 

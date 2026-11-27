@@ -34,6 +34,7 @@ revision `6beef491f28c63aa364d3661dd5c37ccff01fb0d`. All probes ran without
 | --- | --- | --- |
 | 36×36 RGBA decode through `Image(File)` and `Image(byte[])` | NOT REPRODUCED | Both I02 cases constructed and decoded 1,296 pixels; no exception |
 | Original 2×2 PNG during native image drawing | NOT REPRODUCED | I06 completed all seven stages and drew exact red `0xff0000` |
+| I06 Linux ownership validation with the original PNG | PASS | No shim; full assertion set passed, including owner cleanup |
 | Indexed PNG palette-transparency inspection | CONSTRUCTOR REJECTED | I02 still reports `Invalid or unsupported encoded image` |
 | Normal Linux startup without shim | PASS | Five startup/path cases exited 0 and emitted completion/control markers |
 
@@ -44,7 +45,7 @@ behavior; it is not evidence for either non-reproduced failure.
 ## Causal Findings
 
 None. Neither the historical ADLER32 symptom nor the I06 drawing failure
-reproduced on current master, so there is no current failure to localize. The
-indexed constructor rejection is observed but has not been causally investigated.
-Do not treat symbol overlap, allocation alignment, or the historical shimmed
-pass as a cause or correction.
+reproduced on current master; both historical root causes remain undetermined.
+There is no current failure to localize. The indexed constructor rejection is
+observed but has not been causally investigated. Do not treat symbol overlap,
+allocation alignment, or the historical shimmed pass as a cause or correction.

@@ -23,6 +23,11 @@ on:
         required: false
         type: boolean
         default: false
+      linux-only-validation:
+        description: Skip the macOS ARM64 build for Linux-only regression validation
+        required: false
+        type: boolean
+        default: false
       source-ref:
         description: Optional source revision for focused diagnostic builds
         required: false
@@ -648,7 +653,7 @@ jobs:
         popd
 
   build-macos-arm64:
-    if: ${{ needs.checkout-source.outputs.scope == 'full' }}
+    if: ${{ needs.checkout-source.outputs.scope == 'full' && !inputs.linux-only-validation }}
     name: Build `macos-arm64`
     needs: [checkout-source, prepare-native-dependencies, generate-native-bridges]
     runs-on: xcode-27

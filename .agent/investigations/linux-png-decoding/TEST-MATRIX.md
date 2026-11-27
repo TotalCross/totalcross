@@ -17,16 +17,19 @@ SPDX-License-Identifier: LGPL-2.1-only
 | Packaged TCZ PNG through `Image(String)` | I02 | None | PASS: 4 pixels materialized |
 | Pixel materialization and alpha control | I02 `getPixels()` | None | PASS: expected sample values recorded in run output |
 | Indexed palette-transparency PNG constructor | I02 | None | REJECTED: unsupported encoded image exception |
-| Original 2×2 PNG image drawing and application surface sequence | I06 | None | PASS: stages 1–7 and exact red draw pixel |
+| Original 2×2 PNG image drawing and application surface sequence | I06 | None | PASS: stages 1–7 and exact red draw pixel; historical failure NOT_REPRODUCED |
+| I06 Linux ownership assertion set with original PNG | I06 | None | PASS: two cycles, 1,510 controls per cycle, zero ownership mismatches |
+| Repository-owned PNG regression probe | `LinuxPngRegressionProbe` | None | Pending hosted closure run: RGBA file/bytes plus original PNG drawing and owner cleanup |
 | JPEG positive control | I02 and startup probe | None | PASS |
 | Invalid encoded-image controls | I02 | None | PASS: both invalid inputs rejected |
 
 PNG metadata and reference-decoder samples are retained in
-`fixtures/manifest.json`. Runtime statuses, exact case lines, and artifact
-provenance are recorded in `evidence/index.md`.
+`TotalCrossSDK/src/test/resources/native-startup/png-regression/fixtures/manifest.json`.
+Runtime statuses, exact case lines, and artifact provenance are recorded in
+`evidence/index.md`.
 
-## Later Milestones
+## Deferred Beyond This Closure
 
-Windows Win32/I386, macOS ARM64, Android ARM64 emulator, sanitizer builds,
-corrected Linux regressions, and full ownership assertions are deferred to the
-authorized milestone that requires them.
+No Windows, macOS, Android, sanitizer, or other cross-platform build is planned
+for this closure. Indexed-PNG construction rejection remains a separate defect
+proposal and is not investigated or changed here.

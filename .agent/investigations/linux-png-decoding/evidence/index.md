@@ -33,7 +33,8 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Retained Fixtures
 
-`fixtures/` is self-contained. The `SHA256SUMS` file covers every binary input.
+`TotalCrossSDK/src/test/resources/native-startup/png-regression/fixtures/` is
+self-contained. Its `SHA256SUMS` file covers every binary input.
 `manifest.json` records PNG dimensions, bit depth, color type, chunks and CRCs,
 inflated scanline lengths, sample pixels, alpha, and indexed palette
 transparency. Inputs were read with Pillow 13.0.0 as a host-only reference

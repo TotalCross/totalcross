@@ -4,17 +4,19 @@ Copyright (C) 2026 Amalgam Solucoes em TI Ltda
 SPDX-License-Identifier: LGPL-2.1-only
 -->
 
-# Investigate Linux x86_64 PNG decoding
+# Close Linux PNG failure reports
 
-This ExecPlan follows `AGENTS.md` and `.agent/PLANS.md`. The user's task file
-defines the full investigation requirements and six milestone acceptance gates.
+This ExecPlan follows `AGENTS.md` and `.agent/PLANS.md`. The current user
+authorization narrows the remaining work to regression coverage and report
+closure after the successful Milestone 1 baseline.
 
 ## Purpose / Big Picture
 
-Classify the three reported PNG failures independently on current master,
-identify causes only from reproducible evidence, and correct only a demonstrated
-Linux x86_64 decoding defect. Keep the indexed-PNG inspection defect separate
-unless a shared cause is established and approved.
+Close the Linux x86_64 issue review with independent classifications for the
+historical RGBA decode failure, the original PNG drawing failure, and indexed
+PNG construction rejection. Add reusable Linux regression coverage for the two
+non-reproduced failures. Do not infer or pursue causes for non-reproduced
+failures, and keep the indexed-PNG proposal separate from this branch's code.
 
 ## Working Set and Resume Protocol
 
@@ -26,8 +28,12 @@ unless a shared cause is established and approved.
 - `evidence/index.md` identifies retained fixtures, source revisions, artifacts,
   and run records. Do not reread CI logs unless the index points to a needed
   detail.
-- `fixtures/` contains the original and control inputs with hashes and decoded
-  reference properties. Verify with `cd fixtures && sha256sum -c SHA256SUMS`.
+- `TotalCrossSDK/src/test/resources/native-startup/png-regression/fixtures/`
+  contains the original and control inputs with hashes and decoded reference
+  properties. Verify from the repository root with
+  `cd TotalCrossSDK/src/test/resources/native-startup/png-regression/fixtures && sha256sum -c SHA256SUMS`.
+- `PROPOSED-ISSUE-564-UPDATE.md` and `PROPOSED-INDEXED-PNG-ISSUE.md` are
+  self-contained drafts; do not publish them or edit GitHub issues.
 - `diagnostic-patches/` is reserved for temporary experiments. Keep temporary
   instrumentation out of production paths.
 - Update `FINAL-REPORT.md` at milestone 6 only.
@@ -43,38 +49,44 @@ unless a shared cause is established and approved.
   completed; both reported decode/drawing failures were not reproduced, while
   indexed PNG construction remains rejected. No cause or production change is
   justified by this result.
-- [ ] Milestones 2–6 remain gated on explicit authorization after each pause.
+- [x] Closure milestone authorized: classify both historical failures as
+  `NOT_REPRODUCED`, preserve the original fixtures, add a focused Linux runtime
+  regression probe, and prepare issue proposals without publishing them.
+- [ ] Final hosted Linux-only regression run, report update, commit, push, and
+  remote-head verification.
 
 ## Current Architecture and Scope
 
-The PNG constructor and encoded-image inspection paths are in
-`TotalCrossVM/src/nm/ui/image_Image.c` and
-`TotalCrossVM/src/nm/ui/image/ImageEncodedBag.c`. PNG materialization and drawing
-use the native decoder and graphics pipeline. Milestone 2 will trace those
-boundaries only after Milestone 1 establishes current behavior.
+The historical runtime path used `Image(Stream)`/`Image(byte[])` capture,
+materialization, and the native drawing pipeline. The current baseline no longer
+reproduces the reported RGBA decode or drawing failures, so those paths are not
+being traced for speculative causes.
 
-In scope: Linux x86_64 PNG decode/materialization and the exact failed image
-drawing sequence. Out of scope: startup behavior from PR #568, indexed image
-inspection changes, ownership implementation, Image(String) fallback changes,
-other image refactors, benchmarks, and non-Linux production fixes.
+In scope: repository-owned Linux x86_64 regression assertions for the 36×36
+RGBA file/byte-array paths and the original 2×2 PNG drawing/ownership sequence;
+the existing hosted Linux startup workflow; issue-update drafts and evidence.
+Out of scope: decoder or dependency changes, symbol isolation, allocator
+changes, historical bisecting, indexed-PNG diagnosis or correction, other
+platform builds, benchmarks, and GitHub issue edits.
 
 ## Plan of Work
 
-1. **Current-master reproduction.** Pin master; validate original fixture
-   identities; verify ordinary startup; run I02 and the original I06 PNG drawing
-   probe on hosted Linux without `LD_PRELOAD`; classify each result.
-2. **Failure localization.** Trace each reproduced failure to a concrete image
-   processing stage with minimal diagnostic instrumentation.
-3. **Causal investigation.** Compare exact dependency and binary provenance,
-   runtime symbol bindings, and an isolated decoder control. Stop at the smallest
-   causal experiment. Pause for review before any production edit.
-4. **Production correction.** Only after explicit approval, make the smallest
-   evidence-backed Linux PNG correction and add permanent tests for the original
-   fixtures.
-5. **Functional regression validation.** Run the focused Linux matrix, then the
-   authorized Windows I386, macOS ARM64, and local Android emulator controls.
-6. **Final consolidation.** Reconcile the branch, findings, reports, evidence,
-   and remote history. Do not open a pull request unless requested.
+1. **Baseline classification (complete).** Run the exact current-master source
+   without a startup shim; classify the ADLER32 and drawing failures separately
+   from indexed PNG construction.
+2. **Permanent regression integration.** Keep fixture bytes in test resources,
+   add a focused deployed Linux probe, and call it from the existing Linux
+   startup workflow. Use a Linux-only canonical build for the branch push.
+3. **Issue proposals.** Prepare a self-contained update for issue #564 and a
+   separate indexed-PNG issue draft. Do not publish either draft.
+4. **Closure.** Record the hosted result and test integration, run focused
+   static/deploy validation plus the hosted Linux job, commit and push, verify
+   the remote branch head, and pause.
+
+The original Milestones 2–6 are superseded for this closure. The two failed
+symptoms are not reproducible, and the user explicitly ruled out decoder,
+dependency, symbol, allocator, and historical-bisect experiments. No production
+correction or indexed-PNG investigation is authorized by this closure.
 
 ## Surprises & Discoveries
 
@@ -84,35 +96,35 @@ other image refactors, benchmarks, and non-Linux production fixes.
   later JPEG replacement fixture.
 - The indexed PNG is rejected by image inspection before pixel decoding in the
   captured run. Treat it as independent unless evidence changes that boundary.
+- The unshimmed current-master run completes both previously failing PNG
+  scenarios. Their causes remain undetermined; the indexed rejection persists.
 
 ## Decision Log
 
-- No production correction is justified before a current unmodified-master
-  reproduction and reviewed causal findings.
+- The two historical Linux failures are `NOT_REPRODUCED`; their root causes are
+  undetermined.
 - Do not use a startup shim for baseline or corrected functional runs.
-- Preserve the indexed-PNG case as a control; do not expand implementation to
-  its inspector rejection without a separate approval.
+- Record I06 ownership validation as `PASS` with the original PNG and no shim.
+- Keep the indexed-PNG rejection as a separate issue proposal. Do not investigate
+  or correct it in this branch.
+- Do not modify image production code or dependencies, isolate symbols, alter
+  allocation, or bisect historical revisions.
 
 ## Validation and Acceptance
 
-Milestone 1 uses hosted GitHub Actions on Linux x86_64 for native runtime work.
-Require normal startup markers, successful process completion for captured
-probes, materialized pixel counts and values, and the exact original fixtures.
-The probe records expected decoder failures without treating a captured defect
-as a workflow-harness failure. Do not run native desktop runtime tests locally.
-
-Later milestones use the smallest validation that proves the current change,
-following the validation levels in `AGENTS.md`. Cross-platform runtime tests and
-sanitizers are deferred until the milestone that requires them.
+Hosted GitHub Actions on Linux x86_64 is the only native runtime validation for
+this closure. Require clean startup, all focused case markers, exact fixture
+hashes, expected dimensions/pixel values, successful drawing, and a successful
+process exit. Do not run native desktop runtime tests locally or rebuild other
+platforms. Static checks and Java compile/deploy checks are appropriate locally.
 
 ## Risks and Open Questions
 
-- The original RGBA failure may remain non-reproducible on current master.
-- The rendering failure may share or differ from the ADLER32 failure.
-- Prior indexed-PNG source and runtime behavior disagree; current rejection
-  boundary must be re-established without converting that into scope expansion.
-- Native dependency and symbol-binding evidence must match the exact tested
-  Linux artifact.
+- The causes of the non-reproduced ADLER32 and drawing failures remain unknown.
+- The indexed constructor rejection is reproducible but remains outside this
+  branch's investigation and implementation scope.
+- The closure regression job must identify the branch probe revision and the
+  canonical Linux artifact revision separately.
 
 ## Idempotence and Recovery
 
@@ -124,10 +136,14 @@ revision, artifacts, and next retrieval command in `CHECKPOINT.md`.
 
 ## Outcomes & Retrospective
 
-No milestone is complete yet. Record each outcome once at its acceptance
-checkpoint and point to the evidence index.
+Milestone 1 is complete. The historical RGBA and original drawing failures did
+not reproduce on the clean master baseline; I06 ownership validation passed;
+indexed PNG construction remains separately rejected. The closure adds a
+repository-owned probe without changing production code. Record final run IDs,
+artifact identities, and commit hashes in `CHECKPOINT.md` and `evidence/index.md`.
 
 ## Revision Note
 
-Created for the six-milestone investigation; it summarizes the user's detailed
-plan while preserving the required pause and review gates.
+Revised after Milestone 1 to reflect the user's closure scope and explicit
+prohibition on speculative causes, indexed-PNG work, and unnecessary platform
+builds. Earlier plan history remains available in Git.

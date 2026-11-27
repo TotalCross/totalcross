@@ -15,11 +15,19 @@ SPDX-License-Identifier: LGPL-2.1-only
   workflow support needed to run this baseline on the isolated branch.
 - Keep I02 RGBA decode, I06 native drawing, and indexed inspection classified
   independently.
-- Do not use startup workarounds, change production image code, modify
-  ImageDrawingBridge ownership, or fix indexed inspection in this phase.
-- Pause at every milestone and before any production scope expansion. Causal
-  findings and a proposed correction must be reviewed before Milestone 4.
+- Classify the ADLER32 decode and I06 drawing failures as `NOT_REPRODUCED` with
+  root cause undetermined; record I06 ownership validation as `PASS`.
+- Keep the original RGBA and I06 PNG bytes with a repository-owned focused
+  probe in the existing hosted Linux workflow.
+- Do not use startup workarounds, change production image code, modify image
+  dependencies, isolate symbols, alter allocation, or bisect old revisions.
+- Prepare issue proposals only. Do not publish or edit GitHub issues.
+- Do not investigate or correct indexed-PNG rejection in this branch.
+- Do not run non-Linux builds unless a shared regression-test change requires
+  them. Pause after the closure commit and remote verification.
 
 ## Superseded
 
-None.
+- The original Milestones 2–6 failure-localization, causal-experiment,
+  production-correction, cross-platform, and full-regression plan is superseded
+  by the current user-authorized closure. Its history remains in Git.
