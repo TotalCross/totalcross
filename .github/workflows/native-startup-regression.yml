@@ -164,6 +164,9 @@ jobs:
         print("canonical_binary_imports_realpath_chk=" + str("__realpath_chk" in undefined).lower())
         PY
 
+    - name: Install Linux graphics runtime libraries
+      run: sudo apt-get update && sudo apt-get install --yes libegl1 libgl1-mesa-dri
+
     - name: Run deployed Linux startup path matrix and functional controls
       run: |
         python3 scripts/validate-native-startup-linux.py \

@@ -124,6 +124,9 @@ def main():
     output.mkdir(parents=True, exist_ok=True)
     sdk = sdk_home(args.sdk_root)
     native = native_directory(args.native_root)
+    java_source = Path(args.java_source).resolve()
+    if not java_source.is_file():
+        fail("Java startup probe source does not exist: " + str(java_source))
     runtime_source = native / "libtcvm.dylib"
     launcher_source = native / "Launcher"
 
@@ -142,7 +145,7 @@ def main():
     environment["TOTALCROSS3_HOME"] = str(sdk)
     compile_log = output / "compile.log"
     run_logged(
-        ["javac", "--release", "8", "-cp", classpath, "-d", classes, args.java_source],
+        ["javac", "--release", "8", "-cp", classpath, "-d", classes, java_source],
         output,
         environment,
         compile_log,
