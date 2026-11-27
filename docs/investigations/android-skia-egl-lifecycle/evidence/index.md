@@ -50,3 +50,8 @@ remain independent findings.
 Generated APKs, native binaries, emulator images, full SDK archives, caches,
 full logcats, and tombstones remain outside Git. The committed stack excerpt
 is sanitized and compact.
+
+M4 production correction and partial API 30 validation:
+M4-api30-initial-validation.md. It records the cleanup contract, release
+build, policy test, ordered surface replacement, ADB Back stall, and rendering
+and exceptional-path checks that remain outstanding.

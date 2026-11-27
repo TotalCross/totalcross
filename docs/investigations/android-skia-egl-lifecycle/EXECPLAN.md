@@ -41,8 +41,9 @@ FINAL-REPORT.md is completed only at final consolidation.
   background/foreground control passed. See
   evidence/M3-api30-causal-candidate.md and
   evidence/M3-api30-candidate-sequence.log. Stop for review before M4.
-- [ ] Milestone 4: implement the smallest justified Android correction and
-  focused regression coverage; stop for review.
+- [ ] Milestone 4: production correction and cleanup-policy tests are
+  committed; initial API 30 validation is partial. Complete permission marker,
+  exceptional-path, repeated-surface, and pixel assertions before M5.
 - [ ] Milestone 5: run the authorized local ARM64 emulator matrix; stop for
   review.
 - [ ] Milestone 6: reconcile evidence, finish FINAL-REPORT.md, and verify the
@@ -164,15 +165,15 @@ or build fails, preserve logs and classify the result before retrying.
 ## Outcomes & Retrospective
 
 Milestone 1 reproduced the current-baseline failure. Milestone 2 captured the
-old-Skia/new-EGL mismatch. Milestone 3 then changed only screen Skia cleanup
-ordering in an isolated diagnostic candidate; the failing crash disappeared
-through focused scenarios, five repetitions, and one lifecycle control. The
-pinned Skia lost-context API contract is recorded for M4. Candidate source
-edits were removed, and no production correction has been made. Stop here
-until explicit authorization for Milestone 4.
+old-Skia/new-EGL mismatch, and M3 established the cleanup order as causal.
+M4 implemented the valid/current release path, non-current rebind check, and
+lost/unavailable abandon path, with cleanup before EGL teardown. The policy
+test and release build pass. Initial API 30 functional validation is partial:
+the ADB Back harness stalled, exceptional hooks were not reached, and the
+distinctive-pixel assertion failed to produce colored content. Do not start
+M5 until those focused checks are completed.
 
 ## Revision Note
 
-Updated after Milestone 3: ordered A/B evidence establishes the cleanup order
-for the reproduced API 30 failure; production implementation remains gated by
-explicit review.
+Updated after Milestone 4 implementation: production correction is committed;
+focused API 30 functional and rendering validation remains incomplete.

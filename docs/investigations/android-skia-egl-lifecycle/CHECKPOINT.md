@@ -7,7 +7,7 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Current milestone
 
-Milestone 3 complete — mandatory pause before Milestone 4.
+Milestone 4 implementation committed; initial validation is partial.
 
 ## Completed sub-milestones
 
@@ -178,6 +178,19 @@ and M2's all-phase ADB Back timeout remain independent findings, not fixed.
 Stop at the Milestone 3 review pause. After explicit authorization, begin
 Milestone 4 with the narrow production lifecycle correction; preserve the
 thread, window, generation, and replacement-context contracts established here.
+
+## Milestone 4 checkpoint update
+
+Production correction commit: 4c128ad88. Policy test commit: c5e7b7103.
+The API 30 ARM64 release build passed in build3; the five-case cleanup policy
+test passed. One runtime surface replacement completed valid/current Skia
+cleanup before EGL teardown and replacement initialization without a fatal
+signal. The exact denied harness stopped at the existing ADB Back stall.
+Permission marker assertions, actual lost-context and init-failure injection,
+repeated EGL replacements, and distinctive pixel validation remain incomplete.
+The screenshot was blank white. Full details are in
+evidence/M4-api30-initial-validation.md. Complete these focused M4 checks in a
+new authorized interval; do not begin Milestone 5.
 
 ## Resume protocol
 

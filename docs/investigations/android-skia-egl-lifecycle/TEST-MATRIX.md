@@ -72,3 +72,19 @@ continue. Record AVD image, ABI, renderer, SDK/runtime/APK identity, scenario,
 permission state, visual assertion, completion, and crash result for each
 completed case. Do not interpret API 29 legacy permission behavior as a
 graphics failure.
+
+## Milestone 4 — initial API 30 validation
+
+| Case | Result |
+| --- | --- |
+| ARM64 release build with diagnostics/test hooks | PASS, build3; 86 tasks, 13 executed |
+| EGL cleanup policy | PASS, 5 direct C test cases |
+| Exact app denied phase | PARTIAL; Settings opened with process alive, then existing ADB Back stall |
+| Marker app surface replacement | PASS ordering once; old-context cleanup ended before EGL teardown and replacement Skia init |
+| Permission filesystem assertions | INCOMPLETE; create/delete/error markers not established for all three states |
+| Rotation/background/foreground | PARTIAL PASS; callbacks and responsiveness observed, no fatal signal |
+| Lost-context / replacement-init-failure injection | NOT RUN; test hooks were not reached |
+| Distinctive rendering/pixel assertion | NOT PASS; screenshot was blank white |
+
+M4 remains partially validated. Complete these focused API 30 checks before
+requesting Milestone 5.

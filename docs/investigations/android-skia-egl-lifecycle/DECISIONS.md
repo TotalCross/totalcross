@@ -53,3 +53,13 @@ which are eagerly loaded before the customer flow. For M1 only, use the
 same-name Material assets in a temporary TCUI archive so the unchanged
 customer app can reach the permission transition. Keep the overlay out of
 production source and treat the result as qualified by this test input.
+
+## M4 cleanup contract
+
+Use the pinned Skia release API `releaseResourcesAndAbandonContext()` only
+after EGL validity and current binding are verified (or a valid non-current
+context is successfully rebound) on the existing graphics thread. If EGL is
+invalid or unavailable, call `abandonContext()` before dropping GPU wrappers.
+Apply this before surface-replacement and final EGL teardown. Initial API 30
+validation is partial; retain the pending assertions in the checkpoint and
+do not begin Milestone 5 yet.

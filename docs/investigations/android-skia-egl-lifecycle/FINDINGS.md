@@ -169,3 +169,22 @@ current, before EGL/window teardown. If that context is already unavailable,
 abandon its direct context before dropping GPU wrappers; do not issue cleanup
 GL calls through the replacement context. No broader context-loss redesign
 was tested or implemented.
+
+## Milestone 4 initial validation
+
+The Android production path queries EGL context/surface validity and checks
+the current display, context, draw surface, and read surface. A valid
+non-current context is rebound on the existing graphics thread before Skia
+cleanup. The valid path calls `releaseResourcesAndAbandonContext()`; invalid
+or unavailable state calls `abandonContext()` before surface wrapper release.
+The same ordering is used for surface replacement and final graphics teardown.
+Failed replacement initialization can retry on a later callback for the same
+window.
+
+The release build and five-case cleanup policy test passed. One API 30 surface
+replacement logged cleanup completion before EGL destruction and replacement
+Skia initialization, with no fatal signal. Full permission marker assertions,
+test-injected loss/init failure, repeated EGL replacement, and distinctive
+pixel validation remain incomplete. The screenshot was blank white. The exact
+denied harness stopped at the existing ADB Back timeout. See
+`evidence/M4-api30-initial-validation.md`.
