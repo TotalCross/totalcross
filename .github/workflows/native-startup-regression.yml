@@ -165,7 +165,22 @@ jobs:
         PY
 
     - name: Install Linux graphics runtime libraries
-      run: sudo apt-get update && sudo apt-get install --yes libegl1 libgl1-mesa-dri
+      run: sudo apt-get update && sudo apt-get install --yes libegl1 libgles2 libgl1-mesa-dri
+
+    - name: Check Linux native runtime dependencies
+      shell: bash
+      run: |
+        set -euo pipefail
+        native_library="$(find validation/artifacts/linux-amd64 -name libtcvm.so -print -quit)"
+        native_dir="$(dirname "${native_library}")"
+        for binary in "${native_dir}/libtcvm.so" "${native_dir}/Launcher"; do
+          dependencies="$(ldd "${binary}")"
+          printf '%s\n' "${dependencies}"
+          if grep -q 'not found' <<<"${dependencies}"; then
+            echo "unresolved native runtime dependencies in ${binary}" >&2
+            exit 1
+          fi
+        done
 
     - name: Run deployed Linux startup path matrix and functional controls
       run: |

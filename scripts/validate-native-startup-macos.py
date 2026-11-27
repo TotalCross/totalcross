@@ -176,7 +176,7 @@ def main():
         fail("staged macOS VM differs from the canonical build artifact")
 
     linkage = subprocess.run(
-        ["otool", "-L", str(executable)],
+        ["otool", "-L", str(runtime_source)],
         cwd=str(install),
         env=environment,
         stdout=subprocess.PIPE,
@@ -184,8 +184,8 @@ def main():
         text=True,
         check=False,
     )
-    if linkage.returncode != 0 or "libtcvm.dylib" not in linkage.stdout:
-        fail("macOS executable does not declare its libtcvm.dylib dependency")
+    if linkage.returncode != 0 or "@rpath/libtcvm.dylib" not in linkage.stdout:
+        fail("macOS VM does not carry its expected @rpath install name")
     (output / "linkage.txt").write_text(linkage.stdout, encoding="utf-8")
 
     runtime_environment = environment.copy()
