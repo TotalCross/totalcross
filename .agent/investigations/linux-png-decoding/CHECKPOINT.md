@@ -9,17 +9,18 @@ SPDX-License-Identifier: LGPL-2.1-only
 ## Current State
 
 - Milestone: 1 — reproduce on current master.
-- Execution interval: first authorization; baseline capture is being prepared.
+- Execution interval: first authorization; hosted baseline is ready to start.
 - Branch: `fix/linux-png-decoding`.
 - Worktree: `/Users/flsobral/.codex/worktrees/fix-linux-png-decoding`.
 - Selected master revision: `6beef491f28c63aa364d3661dd5c37ccff01fb0d`.
 - PR #568 correction: verified as an ancestor of selected master.
-- Current branch HEAD: selected master; initial investigation commit not yet made.
-- Remote branch: not yet published; publish the first complete milestone commit.
+- Last workflow implementation commit: `e12bda6d6` (three focused setup commits
+  follow selected master).
+- Remote branch: not yet published; publish setup and checkpoint commits now.
 - Shared checkout: remains on older `master` with unrelated untracked work; no
   files were changed there.
 - Native runtime tests: none run locally.
-- Hosted baseline workflow: not yet started.
+- Hosted baseline workflow: locally validated, awaiting first branch push.
 
 ## Completed
 
@@ -36,10 +37,10 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Next Action
 
-Finish and inspect the branch-scoped hosted baseline workflow, validate the
-workflow and fixture manifest locally, create focused commits, push the branch,
-and capture the resulting run ID. Wait for that run before classifying the
-current-master behavior.
+Push the branch, capture the resulting Actions run ID, and wait for that run
+before classifying current-master behavior. The first hosted source selector
+pins the canonical build to `6beef491f28c63aa364d3661dd5c37ccff01fb0d` because
+the branch changes only investigation records, fixtures, and workflow code.
 
 ## Active Decisions
 
@@ -47,6 +48,8 @@ current-master behavior.
   approval.
 - Baseline runtime must run without a preload shim.
 - Keep ADLER32, drawing, and indexed-inspection outcomes separate.
+- Preserve the canonical source revision in build provenance when the reusable
+  workflow checks out the selected baseline commit.
 
 ## Deferred Validation
 
