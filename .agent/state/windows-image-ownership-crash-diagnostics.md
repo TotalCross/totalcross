@@ -12,6 +12,10 @@ SPDX-License-Identifier: LGPL-2.1-only
   `/Users/flsobral/.codex/worktrees/image-ownership-windows-crash-diagnostics`.
   The existing dedicated branch may be pushed to start the authorized Actions
   run; do not create a PR or modify production runtime code.
+- Workflow implementation commit: `c932f8b743f100d4703d27601401d5bc1e10e519`
+  (`test(windows): validate production Win32 ownership`); commit-message
+  validation passed. It changes only the diagnostic workflow, harness,
+  contracts, and plan/evidence records.
 - Corrected source: `94af2b8b653cad509994b5ccf3dbb60ac28ef920`, built with the
   canonical Windows Release workflow and CMake `-A Win32`.
 - Historical artifacts: runs `44414042826` and `44565183218` were downloaded,
@@ -33,10 +37,9 @@ SPDX-License-Identifier: LGPL-2.1-only
   workflow YAML files, Python compile check, and `git diff --check`. Hosted
   PowerShell/CMake/runtime execution is pending GitHub Actions; do not build or
   execute Windows binaries locally.
-- Next action: finish focused review, run copyright/commit validators, commit
-  the diagnostic workflow slice on this existing branch, push it, then monitor
-  the new workflow through startup and the gated ownership job. Record all
-  run evidence and update the report/state after completion or a documented
-  failure.
+- Next action: push the reviewed commits on this existing branch, then monitor
+  the new workflow through startup and the gated ownership job. Record all run
+  evidence and update the report/state after completion or a documented
+  failure. The push path filter excludes later docs/evidence-only updates.
 - Preserve the original root worktree, other branches, dependency caches,
   untracked artifacts, historical AMD64 evidence, and all existing reports.
