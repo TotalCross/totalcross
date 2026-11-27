@@ -19,6 +19,7 @@ import tempfile
 
 
 APP_NAME = "LinuxStartupProbe"
+PNG_APP_NAME = "LinuxPngRegressionProbe"
 REQUIRED_STARTUP_MARKERS = ("TC_STARTUP_MARKER", "TC_STARTUP_COMPLETE")
 REQUIRED_CONTROL_MARKERS = (
     "TC_FILE_CONTROL_PASS",
@@ -180,6 +181,133 @@ def run_case(name, install, launch_path, relative, path_length, output):
     return result
 
 
+def run_logged(command, cwd, environment, log_path, timeout=1800):
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+    with log_path.open("w", encoding="utf-8") as log:
+        log.write("$ " + " ".join(str(arg) for arg in command) + "\n")
+        log.flush()
+        result = subprocess.run(command, cwd=str(cwd), env=environment,
+                                stdout=log, stderr=subprocess.STDOUT,
+                                text=True, timeout=timeout, check=False)
+        log.write("\nEXIT_CODE=" + str(result.returncode) + "\n")
+    if result.returncode:
+        fail("command failed with exit %d; see %s" % (result.returncode, log_path))
+
+
+def verify_png_fixtures(fixture_root):
+    sums = fixture_root / "SHA256SUMS"
+    if not sums.is_file():
+        fail("PNG regression fixture checksums are missing")
+    verified = {}
+    for line in sums.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        digest, name = line.split(None, 1)
+        path = fixture_root / name.strip().lstrip("*")
+        if not path.is_file() or sha256(path) != digest:
+            fail("PNG regression fixture checksum mismatch: " + path.name)
+        verified[path.name] = digest
+    required = {"historical-rgba-36x36.png", "ownership-red-2x2.png"}
+    if not required.issubset(verified):
+        fail("PNG regression fixtures are incomplete: " + repr(sorted(required - set(verified))))
+    return verified
+
+
+def run_png_regression(args, output, native_dir):
+    fixture_root = Path(args.png_fixture_dir).resolve()
+    source = Path(args.png_regression_source).resolve()
+    if not source.is_file():
+        fail("PNG regression source is missing: " + str(source))
+    fixture_hashes = verify_png_fixtures(fixture_root)
+
+    home = Path(args.sdk_root).resolve()
+    sdk_jar = home / "dist/totalcross-sdk.jar"
+    if not sdk_jar.is_file() or not (home / "dist/libs").is_dir():
+        fail("SDK root must contain dist/totalcross-sdk.jar and dist/libs")
+    vm_dir = home / "dist/vm/linux"
+    launcher_dir = home / "etc/launchers/linux"
+    vm_dir.mkdir(parents=True, exist_ok=True)
+    launcher_dir.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(native_dir / "libtcvm.so", vm_dir / "libtcvm.so")
+    shutil.copy2(native_dir / "Launcher", launcher_dir / "Launcher")
+    deployed_launcher = launcher_dir / "Launcher"
+    deployed_launcher.chmod(deployed_launcher.stat().st_mode | 0o111)
+
+    probe_root = output / "png-regression"
+    classes = probe_root / "classes"
+    classes.mkdir(parents=True, exist_ok=True)
+    classpath = os.pathsep.join((str(sdk_jar), str(home / "dist/libs" / "*")))
+    environment = os.environ.copy()
+    environment["TOTALCROSS3_HOME"] = str(home)
+    environment.pop("LD_PRELOAD", None)
+    run_logged(["javac", "--release", "8", "-cp", classpath, "-d", str(classes), str(source)],
+               Path.cwd(), environment, probe_root / "compile.log")
+
+    app_jar = probe_root / (PNG_APP_NAME + ".jar")
+    run_logged(["jar", "cf", str(app_jar), "-C", str(classes), "."],
+               Path.cwd(), environment, probe_root / "jar.log")
+    deploy_root = probe_root / "deployed"
+    deploy_root.mkdir(parents=True, exist_ok=True)
+    run_logged(["java", "-cp", classpath, "tc.Deploy", str(app_jar), "-linux", "/p", "/n",
+                PNG_APP_NAME, "/o", str(deploy_root) + os.sep],
+               Path.cwd(), environment, probe_root / "deploy.log")
+
+    install = deploy_root / "install/linux"
+    executable = install / PNG_APP_NAME
+    if not executable.is_file():
+        fail("deployer did not create " + str(executable))
+    executable.chmod(executable.stat().st_mode | 0o111)
+    for fixture_name in sorted({"historical-rgba-36x36.png", "ownership-red-2x2.png"}):
+        shutil.copy2(fixture_root / fixture_name, install / fixture_name)
+
+    runtime_environment = os.environ.copy()
+    runtime_environment["LD_LIBRARY_PATH"] = str(install) + os.pathsep + runtime_environment.get("LD_LIBRARY_PATH", "")
+    runtime_environment.pop("LD_PRELOAD", None)
+    runtime_log = probe_root / "runtime.log"
+    with runtime_log.open("w", encoding="utf-8") as log:
+        process = subprocess.run(["xvfb-run", "-a", "env", str(executable)],
+                                 cwd=str(install), env=runtime_environment,
+                                 stdout=log, stderr=subprocess.STDOUT, text=True,
+                                 timeout=180, check=False)
+    runtime_output = runtime_log.read_text(encoding="utf-8", errors="replace")
+    if process.returncode != 0:
+        fail("Linux PNG regression probe exited with code %d; see %s"
+             % (process.returncode, runtime_log))
+    if "TC_LINUX_PNG_RESULT complete=true" not in runtime_output:
+        fail("Linux PNG regression probe omitted its completion marker; see " + str(runtime_log))
+    cases = [line for line in runtime_output.splitlines()
+             if line.startswith("TC_LINUX_PNG case=")]
+    required_cases = {
+        "historical-rgba-file",
+        "historical-rgba-bytes",
+        "original-ownership-drawing",
+    }
+    names = {line.split("case=", 1)[1].split(",", 1)[0] for line in cases}
+    if names != required_cases or any(",status=PASS" not in line for line in cases):
+        fail("Linux PNG regression assertions are incomplete or failed: " + repr(cases))
+    render = install / "image-ownership-render.png"
+    if not render.is_file() or render.stat().st_size == 0:
+        fail("ownership drawing regression did not write its PNG output")
+
+    result = {
+        "status": "PASS",
+        "processReturnCode": process.returncode,
+        "runtimeShim": None,
+        "sourceSha256": sha256(source),
+        "fixtureSha256": fixture_hashes,
+        "cases": cases,
+        "renderSha256": sha256(render),
+        "runtimeLog": "runtime.log",
+    }
+    (probe_root / "result.json").write_text(json.dumps(result, indent=2) + "\n",
+                                            encoding="utf-8")
+    for case in cases:
+        print(case)
+    print(json.dumps({"pngRegressionStatus": result["status"], "caseCount": len(cases)},
+                     sort_keys=True))
+    return result
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--sdk-root", required=True)
@@ -187,6 +315,8 @@ def main():
     parser.add_argument("--investigation-root", required=True)
     parser.add_argument("--java-source", required=True)
     parser.add_argument("--jpeg-fixture", required=True)
+    parser.add_argument("--png-regression-source", required=True)
+    parser.add_argument("--png-fixture-dir", required=True)
     parser.add_argument("--output", required=True)
     args = parser.parse_args()
 
@@ -195,11 +325,13 @@ def main():
     install, executable, native_lib, native_launcher = prepare_install(args)
     results = [run_case(*case, output) for case in
                scenario_installations(install, executable, output)]
+    png_result = run_png_regression(args, output, native_directory(args.native_root))
     summary = {
         "status": "passed",
         "nativeLibrarySha256": sha256(native_lib),
         "nativeLauncherSha256": sha256(native_launcher),
         "cases": results,
+        "pngRegression": png_result,
     }
     (output / "summary.json").write_text(json.dumps(summary, indent=2) + "\n")
     print(json.dumps({"status": summary["status"], "caseCount": len(results)}, sort_keys=True))
