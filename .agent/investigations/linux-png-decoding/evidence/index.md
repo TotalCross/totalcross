@@ -69,6 +69,75 @@ decoder; no TotalCross native runtime ran locally.
 
 ## Current-Master Hosted Run
 
-Pending. Record the Actions run ID, job ID, tested source revision, artifact IDs
-and digests, startup markers, process status, each PNG result line, and I06
-stage/failure markers here after completion.
+### Run and Build Identity
+
+- Actions run: [46061400453](https://github.com/TotalCross/totalcross/actions/runs/46061400453),
+  push head `94917ff6d51f7dd442aacbec838717e5aef48fa4`; conclusion: success.
+- Source selector job `140716278474` passed. Linux x86_64 runtime job
+  `140717307446` passed. Canonical Linux build job `140716670628` and SDK build
+  job `140716489405` passed.
+- Both `linux-amd64/build-provenance.json` and the SDK package's provenance
+  record source commit `6beef491f28c63aa364d3661dd5c37ccff01fb0d`, tree
+  `9ddcd0275dad076260e3a60169ab1da870351252`, `dirty: false`, and build ID
+  `b044e6dca052ae68307006e83fbfb7672364c21f5cff393b889029a552548354`.
+- Runtime artifact identity: `libtcvm.so` SHA-256
+  `04b248226d68630ab67764371d12e12a9e533e9a100af3c0d6620b0928236a3f`;
+  Linux `Launcher` SHA-256
+  `603440e2aa1cf9a651631d34aae8973d04216ad5e2e7b1326888d86ce67e5b37`;
+  SDK jar SHA-256
+  `970876eb5223c494b5b4a5465fb51a1be9fab4e19cab742b53d4f59301a52f5a`.
+- Runtime source VM subtree is
+  `15096565350eadd0c059df66d339f41b7ab71e93`; generated native-bridge tree
+  digest is `bc30e18437913444ee09baa1a53a0f4710e36a442774d60539e919e2d62b0762`.
+- The exact original I06 probe source is from PL commit
+  `d084949d106f9606a7639d851ad66b97734df1ec`; the ownership fixture hash is
+  listed above and the workflow verified the embedded array byte-for-byte.
+
+| Artifact | ID | SHA-256 digest | Size (bytes) |
+| --- | ---: | --- | ---: |
+| Linux runtime evidence | `15228767611` | `2e61ef84ff7374613a96f91491e7cc6dc6bc65630117666b3d3ebf3ad0082882` | 40,367,408 |
+| Linux build | `15228663178` | `87cfabc9fd06d69a58d7e756519c526f860ba76a16c4e44bc733b672913122f9` | 7,612,645 |
+| SDK build | `15229440316` | `2bde7cbda4bbab3e4756ce0f7c8768bdc1d5fb01f36dacabcdb18704be12aa27` | 65,460,408 |
+| Generated native bridges | `15228393349` | `db6f063fd5ebfee6b29b2e3a7223aef72505a0762f13d8e1873ea01d284ef7dc` | 24,840 |
+| Prepared native dependencies | `15228477966` | `2a71e2235a04129aa28f7ea66e5f59e3e8ff5d2cff634ecc0090b45ea2b9a94c` | 79,957,924 |
+| Linux helper contract | `15228907454` | `6e7571c74ce4b9c0ebe8f828fdb2b316d149f2eab3bddeebf123158d104fa7fc` | 865 |
+
+### Startup and PNG Results
+
+- No startup shim was used. Both diagnostic steps unset `LD_PRELOAD`; I02's
+  result records `runtimeShim: null`.
+- The PR #568 native startup matrix passed all five cases (normal, short,
+  bounded-long, symlink, and relative path): each exited 0, emitted
+  `TC_STARTUP_COMPLETE`, and passed the downstream JPEG control.
+- I02 exited 0 in 0.138 seconds and emitted its completion marker with all
+  nine cases. Exact output:
+
+```text
+TC_PNG case=png-file,construct=true,decode=true,width=36,height=36,pixelCount=1296,pixel0=0,expectedBehavior=decode,exception=none
+TC_PNG case=png-bytes,construct=true,decode=true,width=36,height=36,pixelCount=1296,pixel0=0,expectedBehavior=decode,exception=none
+TC_PNG case=tcz-png,construct=true,decode=true,width=2,height=2,pixelCount=4,pixel0=80ff0000,expectedBehavior=decode,exception=none
+TC_PNG case=alpha-png,construct=true,decode=true,width=2,height=2,pixelCount=4,pixel0=80ff0000,expectedBehavior=decode,exception=none
+TC_PNG case=indexed-png,construct=false,decode=false,width=-1,height=-1,pixelCount=-1,pixel0=none,expectedBehavior=decode,exception=totalcross.ui.image.ImageException:Invalid or unsupported encoded image
+TC_PNG case=jpeg-file,construct=true,decode=true,width=512,height=512,pixelCount=262144,pixel0=ff9e683a,expectedBehavior=decode,exception=none
+TC_PNG case=jpeg-bytes,construct=true,decode=true,width=512,height=512,pixelCount=262144,pixel0=ff9e683a,expectedBehavior=decode,exception=none
+TC_PNG case=invalid-file,construct=false,decode=false,width=-1,height=-1,pixelCount=-1,pixel0=none,expectedBehavior=reject,exception=totalcross.ui.image.ImageException:Invalid or unsupported encoded image
+TC_PNG case=invalid-bytes,construct=false,decode=false,width=-1,height=-1,pixelCount=-1,pixel0=none,expectedBehavior=reject,exception=totalcross.ui.image.ImageException:Invalid or unsupported encoded image
+```
+
+The I02 RGBA top-left pixel value `0` matches the fixture's transparent-black
+reference sample. The indexed image is still rejected during construction; keep
+that result separate from the RGBA and drawing findings.
+
+### Original I06 Drawing Sequence
+
+- Classification: `NOT_REPRODUCED`; tool exit code 0, startup marker present,
+  stage 3 entered, no failure marker, and all seven stages completed.
+- `drawPixelRgb` was `16711680` (`0xff0000`). The original PNG decoded and
+  rendered, and the complete run reported 1,510 controls and distinct images
+  per cycle, two screen cycles, zero ownership mismatches, and `status: PASS`.
+- I06 prepared the SDK and Linux VM from the same clean master commit/tree and
+  recorded the SDK jar, launcher, VM library, and native-bridge identities
+  above. The run used no startup shim.
+- The canonical workflow also ran its existing macOS ARM64 build and deployed
+  startup smoke job `140717307484`; it passed. It was an existing workflow
+  side-effect and is not used to classify the Linux findings.

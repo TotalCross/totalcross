@@ -26,17 +26,25 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Current-Master Baseline
 
-Pending hosted run against the selected master revision. Do not infer current
-behavior from the frozen-master shimmed results above.
+Hosted Linux run `46061400453` completed successfully against exact master
+revision `6beef491f28c63aa364d3661dd5c37ccff01fb0d`. All probes ran without
+`LD_PRELOAD`.
 
 | Manifestation | Current status | Evidence |
 | --- | --- | --- |
-| 36×36 RGBA decode through `Image(File)` and `Image(byte[])` | PENDING | Hosted Linux probe |
-| Original 2×2 PNG during native image drawing | PENDING | Original I06 sequence |
-| Indexed PNG palette-transparency inspection | PENDING | I02 constructor case |
-| Normal Linux startup without shim | PENDING | PR #568 hosted startup validation |
+| 36×36 RGBA decode through `Image(File)` and `Image(byte[])` | NOT REPRODUCED | Both I02 cases constructed and decoded 1,296 pixels; no exception |
+| Original 2×2 PNG during native image drawing | NOT REPRODUCED | I06 completed all seven stages and drew exact red `0xff0000` |
+| Indexed PNG palette-transparency inspection | CONSTRUCTOR REJECTED | I02 still reports `Invalid or unsupported encoded image` |
+| Normal Linux startup without shim | PASS | Five startup/path cases exited 0 and emitted completion/control markers |
+
+The RGBA results report `pixel0=0`, which matches the retained fixture's
+transparent-black top-left sample. Indexed rejection remains a separate
+behavior; it is not evidence for either non-reproduced failure.
 
 ## Causal Findings
 
-None. Do not treat symbol overlap, allocation alignment, or the previously
-observed shimmed pass as a cause or correction.
+None. Neither the historical ADLER32 symptom nor the I06 drawing failure
+reproduced on current master, so there is no current failure to localize. The
+indexed constructor rejection is observed but has not been causally investigated.
+Do not treat symbol overlap, allocation alignment, or the historical shimmed
+pass as a cause or correction.

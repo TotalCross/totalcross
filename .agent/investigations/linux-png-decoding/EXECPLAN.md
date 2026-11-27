@@ -38,8 +38,11 @@ unless a shared cause is established and approved.
   `6beef491f28c63aa364d3661dd5c37ccff01fb0d`, and PR #568 is an ancestor.
 - [x] Created isolated worktree `/Users/flsobral/.codex/worktrees/fix-linux-png-decoding`
   on `fix/linux-png-decoding`; the shared dirty checkout remains untouched.
-- [ ] Milestone 1: run the current-master Linux baseline without a startup shim,
-  then commit and push its classifications and compact evidence.
+- [x] Milestone 1: run the current-master Linux baseline without a startup shim,
+  then commit and push its classifications and compact evidence. The baseline
+  completed; both reported decode/drawing failures were not reproduced, while
+  indexed PNG construction remains rejected. No cause or production change is
+  justified by this result.
 - [ ] Milestones 2–6 remain gated on explicit authorization after each pause.
 
 ## Current Architecture and Scope
