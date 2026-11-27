@@ -8,8 +8,8 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Current State
 
-- Milestone: closure complete; final evidence commit and remote-head verification pending.
-- Execution interval: closure authorization received at 2026-11-27 21:08:39 UTC; maximum 40 minutes.
+- Milestone: closure complete; this final checkpoint update will be pushed and verified before pausing.
+- Execution interval: closure authorization received at 2026-11-27 21:08:39 UTC; completed within the 40-minute limit.
 - Branch: `fix/linux-png-decoding`.
 - Worktree: `/Users/flsobral/.codex/worktrees/fix-linux-png-decoding`.
 - Selected master revision: `6beef491f28c63aa364d3661dd5c37ccff01fb0d`.
@@ -17,6 +17,10 @@ SPDX-License-Identifier: LGPL-2.1-only
 - Preparation commits: `e4e6ac449`, `291fba75e`, `e12bda6d6`, `94917ff6d`,
   and `2472e596f`; they follow selected master.
 - Results commit: `f5582ba36`, pushed to the remote branch.
+- Regression integration commit: `394dbd7754bcd62bf4aa0cc56dca3ddec7753c88`.
+- Evidence/report commit: `fcb30f115b84f85bd8eee041dbeae613b415de7b`.
+- The evidence/report commit was pushed; `git ls-remote` matched local HEAD
+  `fcb30f115b84f85bd8eee041dbeae613b415de7b` before this checkpoint-only update.
 - Baseline run head: `94917ff6d51f7dd442aacbec838717e5aef48fa4`.
 - Remote branch: published as `origin/fix/linux-png-decoding`.
 - Current-master results: run `46061400453` completed successfully; compact
@@ -67,8 +71,8 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Next Action
 
-Commit and push the completed evidence/report/checkpoint, verify that remote
-branch HEAD matches local HEAD, then pause.
+Pause after this checkpoint update is pushed and the remote branch head is
+verified. No investigation work remains in this closure.
 
 ## Active Decisions
 
