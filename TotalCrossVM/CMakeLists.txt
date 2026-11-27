@@ -83,10 +83,6 @@ tc_generate_platform_config()
 
 option(TC_BUILD_IR_TESTS "Build focused TCIR contract tests" OFF)
 option(TC_BUILD_NATIVE_STARTUP_TEST "Build the native desktop startup test" OFF)
-option(TC_TEST_EXPECT_OLD_REALPATH_ABORT
-  "Expect the old fixed-buffer realpath helper to abort in its baseline test"
-  OFF
-)
 option(TC_BUILD_IR_BENCHMARKS "Build optional TCIR performance benchmarks" OFF)
 option(TC_ENABLE_C_AOT "Build the experimental portable-C TCIR backend" OFF)
 option(TC_ENABLE_SLJIT_JIT "Build the experimental SLJIT TCIR backend" OFF)
@@ -946,7 +942,7 @@ set(LIBRARY_ARGS ${SOURCES} ${TC_WCE_SOURCES} ${TC_MSVC_SOURCES} ${TC_NOT_MSVC_S
 target_sources(tcvm PUBLIC ${LIBRARY_ARGS})
 
 if(TC_BUILD_NATIVE_STARTUP_TEST)
-  if(UNIX)
+  if(CMAKE_SYSTEM_NAME STREQUAL "Linux" OR CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     enable_testing()
     add_executable(copy_resolved_path_native_test
       ${TC_SRCDIR}/tests/copy_resolved_path_native_test.c
@@ -971,18 +967,12 @@ if(TC_BUILD_NATIVE_STARTUP_TEST)
       C_STANDARD_REQUIRED YES
       C_EXTENSIONS NO
     )
-    if(TC_TEST_EXPECT_OLD_REALPATH_ABORT AND CMAKE_SYSTEM_NAME STREQUAL "Linux")
-      add_test(NAME realpath-fixed-buffer-baseline
-        COMMAND copy_resolved_path_native_test --expect-abort
-      )
-    else()
-      add_test(NAME copy-resolved-path-contract
-        COMMAND copy_resolved_path_native_test --run-cases
-      )
-      add_test(NAME copy-resolved-path-startup-safe
-        COMMAND copy_resolved_path_native_test --expect-safe
-      )
-    endif()
+    add_test(NAME copy-resolved-path-contract
+      COMMAND copy_resolved_path_native_test --run-cases
+    )
+    add_test(NAME copy-resolved-path-startup-safe
+      COMMAND copy_resolved_path_native_test --expect-safe
+    )
   endif()
 
   add_executable(window_startup_native_test

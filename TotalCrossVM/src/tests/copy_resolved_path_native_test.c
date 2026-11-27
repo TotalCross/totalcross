@@ -163,8 +163,8 @@ static int runContractCases(void)
    output[0] = 'x';
    if (copyResolvedPath("", output, sizeof(output)) || output[0] != 0)
       return fail("empty input did not clear output and return false");
-   if (copyResolvedPath("/", NULL, 0) || zeroCapacity != 'x')
-      return fail("zero output capacity did not return false");
+   if (copyResolvedPath("/", NULL, 0))
+      return fail("zero output capacity with a null output did not return false");
    if (copyResolvedPath("/", &zeroCapacity, 0) || zeroCapacity != 'x')
       return fail("zero output capacity modified output");
 

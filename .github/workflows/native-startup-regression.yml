@@ -6,50 +6,226 @@ name: Native startup regression
 on:
   push:
     branches: [fix/linux-realpath-startup]
-
-permissions:
-  contents: read
-
+    paths:
+      - '.github/workflows/build.yml'
+      - '.github/workflows/native-startup-regression.yml'
+      - 'TotalCrossSDK/src/test/resources/native-startup/**'
+      - 'TotalCrossVM/CMakeLists.txt'
+      - 'TotalCrossVM/src/init/posix/startup_c.h'
+      - 'TotalCrossVM/src/tests/copy_resolved_path_native_test.c'
+      - 'scripts/validate-native-startup-*.py'
 jobs:
-  fortified-realpath-baseline:
-    name: Reproduce fortified realpath abort
-    runs-on: ubuntu-24.04
-    timeout-minutes: 10
-    steps:
-    - name: Checkout source
-      uses: actions/checkout@v6
+  canonical-native-build:
+    uses: ./.github/workflows/build.yml
+    with:
+      native-startup-validation: true
+    secrets: inherit
 
-    - name: Compile and reproduce the production helper abort
+  linux-helper-regression:
+    name: Linux fortified baseline and helper contract
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+    - name: Checkout correction branch
+      uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
+
+    - name: Reproduce old helper and validate corrected helper
       shell: bash
+      env:
+        BASELINE_HELPER_COMMIT: a91929d193ada1390bf81ae71e6b8bedf95ee071
       run: |
         set -euo pipefail
-        test_dir="${RUNNER_TEMP}/realpath-baseline"
-        mkdir -p "${test_dir}"
+        result_dir="${RUNNER_TEMP}/realpath-helper-results"
+        binary_dir="${RUNNER_TEMP}/realpath-helper-binaries"
+        baseline_dir="${RUNNER_TEMP}/realpath-old-helper"
+        mkdir -p "${result_dir}" "${binary_dir}" \
+          "${baseline_dir}/TotalCrossVM/src/init/posix" \
+          "${baseline_dir}/TotalCrossVM/src/tests"
         {
           printf 'runner=%s\n' "${ImageOS:-unknown}"
           printf 'architecture=%s\n' "$(uname -m)"
           printf 'path_max='; getconf PATH_MAX /
           ldd --version | sed -n '1p'
           cc --version | sed -n '1p'
-        } | tee "${test_dir}/environment.txt"
+          grep -E '^[[:space:]]*#define MAX_PATHNAME 1024' \
+            TotalCrossVM/src/util/xtypes.h
+          printf 'baseline_helper_commit=%s\n' "${BASELINE_HELPER_COMMIT}"
+        } | tee "${result_dir}/environment.txt"
+
+        git show "${BASELINE_HELPER_COMMIT}:TotalCrossVM/src/init/posix/startup_c.h" \
+          > "${baseline_dir}/TotalCrossVM/src/init/posix/startup_c.h"
+        cp TotalCrossVM/src/tests/copy_resolved_path_native_test.c \
+          "${baseline_dir}/TotalCrossVM/src/tests/copy_resolved_path_native_test.c"
         cc -std=c11 -O2 -Wall -Wextra -Werror \
-          -D_FORTIFY_SOURCE=2 \
-          -DTC_COPY_RESOLVED_PATH_TEST_ONLY=1 \
-          TotalCrossVM/src/tests/copy_resolved_path_native_test.c \
-          -o "${test_dir}/copy-resolved-path-baseline"
-        if ! nm -u "${test_dir}/copy-resolved-path-baseline" | grep -q '__realpath_chk'; then
-          echo 'fortified __realpath_chk boundary missing from test binary' >&2
+          -D_FORTIFY_SOURCE=2 -DTC_COPY_RESOLVED_PATH_TEST_ONLY=1 \
+          "${baseline_dir}/TotalCrossVM/src/tests/copy_resolved_path_native_test.c" \
+          -o "${binary_dir}/copy-resolved-path-baseline"
+        if ! nm -u "${binary_dir}/copy-resolved-path-baseline" | grep -q '__realpath_chk'; then
+          echo 'fortified __realpath_chk boundary missing from baseline test binary' >&2
           exit 1
         fi
-        printf 'fortified_symbol=__realpath_chk\n' | tee -a "${test_dir}/environment.txt"
-        "${test_dir}/copy-resolved-path-baseline" --expect-abort \
-          2>&1 | tee "${test_dir}/baseline-result.txt"
+        "${binary_dir}/copy-resolved-path-baseline" --expect-abort \
+          2>&1 | tee "${result_dir}/baseline-result.txt"
 
-    - name: Preserve baseline evidence
+        cc -std=c11 -O2 -Wall -Wextra -Werror \
+          -D_FORTIFY_SOURCE=2 -DTC_COPY_RESOLVED_PATH_TEST_ONLY=1 \
+          TotalCrossVM/src/tests/copy_resolved_path_native_test.c \
+          -o "${binary_dir}/copy-resolved-path-fixed"
+        "${binary_dir}/copy-resolved-path-fixed" --expect-safe \
+          2>&1 | tee "${result_dir}/startup-safe-result.txt"
+        "${binary_dir}/copy-resolved-path-fixed" --run-cases \
+          2>&1 | tee "${result_dir}/contract-result.txt"
+
+        cc -std=c11 -O1 -g -Wall -Wextra -Werror \
+          -fsanitize=address,undefined -fno-omit-frame-pointer \
+          -D_FORTIFY_SOURCE=2 -DTC_COPY_RESOLVED_PATH_TEST_ONLY=1 \
+          TotalCrossVM/src/tests/copy_resolved_path_native_test.c \
+          -o "${binary_dir}/copy-resolved-path-sanitized"
+        ASAN_OPTIONS=detect_leaks=1:halt_on_error=1 \
+          UBSAN_OPTIONS=halt_on_error=1 \
+          "${binary_dir}/copy-resolved-path-sanitized" --run-cases \
+          2>&1 | tee "${result_dir}/sanitizer-result.txt"
+
+    - name: Preserve Linux helper evidence
       if: always()
       uses: actions/upload-artifact@v7
       with:
-        name: realpath-baseline-${{ github.sha }}
-        path: ${{ runner.temp }}/realpath-baseline
+        name: native-startup-linux-helper-${{ github.sha }}
+        path: ${{ runner.temp }}/realpath-helper-results
+        if-no-files-found: warn
+        retention-days: 30
+
+  linux-native-runtime:
+    name: Linux x86_64 deployed startup and controls
+    needs: canonical-native-build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+    - name: Checkout correction branch
+      uses: actions/checkout@v6
+
+    - name: Checkout pinned investigation harness and fixture
+      uses: actions/checkout@v6
+      with:
+        repository: TotalCross/totalcross-performance-lab
+        ref: 6ce6c8fa0b2bbd8fdb6ac81a423ab332f9342483
+        path: validation/performance-lab
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v5
+      with:
+        distribution: temurin
+        java-version: 17
+
+    - name: Download canonical Linux artifact
+      uses: actions/download-artifact@v7
+      with:
+        name: linux-amd64
+        path: validation/artifacts/linux-amd64
+
+    - name: Download canonical SDK artifact
+      uses: actions/download-artifact@v7
+      with:
+        name: sdk-build
+        path: validation/artifacts/sdk-build
+
+    - name: Extract SDK artifact and inspect canonical compiler output
+      shell: bash
+      run: |
+        set -euo pipefail
+        tar -xzf validation/artifacts/sdk-build/sdk-build.tar.gz \
+          -C validation/artifacts/sdk-build
+        python3 - <<'PY'
+        import json
+        from pathlib import Path
+        import re
+        import subprocess
+
+        root = Path("validation/artifacts/linux-amd64")
+        databases = list(root.rglob("compile_commands.json"))
+        if len(databases) != 1:
+            raise SystemExit("canonical Linux build must export one compile_commands.json")
+        entries = json.loads(databases[0].read_text(encoding="utf-8"))
+        startup = next((entry for entry in entries
+                        if entry["file"].replace("\\", "/").endswith("/src/init/startup.c")), None)
+        if startup is None:
+            raise SystemExit("startup.c compile command missing from canonical build")
+        command = startup.get("command", " ".join(startup.get("arguments", [])))
+        fortify = re.findall(r"(?:^|\s)-D_FORTIFY_SOURCE(?:=([0-9]+))?", command)
+        print("canonical_startup_fortify=" + (",".join(v or "1" for v in fortify) or "not explicitly set"))
+        print("canonical_startup_optimization=" + ",".join(re.findall(r"-O[0-3s]", command)))
+        library = next(root.rglob("libtcvm.so"), None)
+        if library is None:
+            raise SystemExit("canonical Linux artifact has no libtcvm.so")
+        undefined = subprocess.check_output(
+            ["nm", "-D", "--undefined-only", str(library)], text=True)
+        print("canonical_binary_imports_realpath_chk=" + str("__realpath_chk" in undefined).lower())
+        PY
+
+    - name: Run deployed Linux startup path matrix and functional controls
+      run: |
+        python3 scripts/validate-native-startup-linux.py \
+          --sdk-root validation/artifacts/sdk-build/build/TotalCross \
+          --native-root validation/artifacts/linux-amd64 \
+          --investigation-root validation/performance-lab \
+          --java-source TotalCrossSDK/src/test/resources/native-startup/LinuxStartupProbe.java \
+          --jpeg-fixture validation/performance-lab/investigations/7.3.0-functional/cases/image-ownership/fixtures/red-8x8.jpg \
+          --output "${RUNNER_TEMP}/native-startup-linux"
+
+    - name: Preserve Linux runtime evidence
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: native-startup-linux-runtime-${{ github.sha }}
+        path: ${{ runner.temp }}/native-startup-linux
+        if-no-files-found: warn
+        retention-days: 30
+
+  macos-native-runtime:
+    name: macOS ARM64 deployed startup smoke
+    needs: canonical-native-build
+    runs-on: xcode-27
+    timeout-minutes: 30
+    steps:
+    - name: Checkout correction branch
+      uses: actions/checkout@v6
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v5
+      with:
+        distribution: temurin
+        java-version: 17
+
+    - name: Download canonical macOS artifact
+      uses: actions/download-artifact@v7
+      with:
+        name: macos-arm64
+        path: validation/artifacts/macos-arm64
+
+    - name: Download canonical SDK artifact
+      uses: actions/download-artifact@v7
+      with:
+        name: sdk-build
+        path: validation/artifacts/sdk-build
+
+    - name: Extract SDK artifact
+      run: tar -xzf validation/artifacts/sdk-build/sdk-build.tar.gz -C validation/artifacts/sdk-build
+
+    - name: Run deployed macOS startup and symlink smoke
+      run: |
+        python3 scripts/validate-native-startup-macos.py \
+          --sdk-root validation/artifacts/sdk-build/build/TotalCross \
+          --native-root validation/artifacts/macos-arm64 \
+          --java-source TotalCrossSDK/src/test/resources/native-startup/LinuxStartupProbe.java \
+          --output "${RUNNER_TEMP}/native-startup-macos"
+
+    - name: Preserve macOS runtime evidence
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: native-startup-macos-runtime-${{ github.sha }}
+        path: ${{ runner.temp }}/native-startup-macos
         if-no-files-found: warn
         retention-days: 30
