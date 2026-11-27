@@ -1,0 +1,55 @@
+# Copyright (C) 2026 Amalgam Solucoes em TI Ltda
+#
+# SPDX-License-Identifier: LGPL-2.1-only
+
+name: Native startup regression
+on:
+  push:
+    branches: [fix/linux-realpath-startup]
+
+permissions:
+  contents: read
+
+jobs:
+  fortified-realpath-baseline:
+    name: Reproduce fortified realpath abort
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+    - name: Checkout source
+      uses: actions/checkout@v6
+
+    - name: Compile and reproduce the production helper abort
+      shell: bash
+      run: |
+        set -euo pipefail
+        test_dir="${RUNNER_TEMP}/realpath-baseline"
+        mkdir -p "${test_dir}"
+        {
+          printf 'runner=%s\n' "${ImageOS:-unknown}"
+          printf 'architecture=%s\n' "$(uname -m)"
+          printf 'path_max='; getconf PATH_MAX /
+          ldd --version | head -n 1
+          cc --version | head -n 1
+        } | tee "${test_dir}/environment.txt"
+        cc -std=c11 -O2 -Wall -Wextra -Werror \
+          -D_FORTIFY_SOURCE=2 \
+          -DTC_COPY_RESOLVED_PATH_TEST_ONLY=1 \
+          TotalCrossVM/src/tests/copy_resolved_path_native_test.c \
+          -o "${test_dir}/copy-resolved-path-baseline"
+        if ! nm -u "${test_dir}/copy-resolved-path-baseline" | grep -q '__realpath_chk'; then
+          echo 'fortified __realpath_chk boundary missing from test binary' >&2
+          exit 1
+        fi
+        printf 'fortified_symbol=__realpath_chk\n' | tee -a "${test_dir}/environment.txt"
+        "${test_dir}/copy-resolved-path-baseline" --expect-abort \
+          2>&1 | tee "${test_dir}/baseline-result.txt"
+
+    - name: Preserve baseline evidence
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: realpath-baseline-${{ github.sha }}
+        path: ${{ runner.temp }}/realpath-baseline
+        if-no-files-found: warn
+        retention-days: 30

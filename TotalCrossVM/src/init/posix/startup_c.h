@@ -4,6 +4,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-only
 
+#ifndef TC_COPY_RESOLVED_PATH_TEST_ONLY
 #define waitUntilStarted()
 
 bool wokeUp()
@@ -15,6 +16,7 @@ static void registerWake(bool set)
 {
    UNUSED(set);
 }
+#endif
 
 #if defined(linux) || defined(darwin) || defined(__APPLE__)
 #if !defined(__APPLE__)
@@ -52,6 +54,7 @@ static inline bool copyResolvedPath(const char *path, char *out, size_t outSize)
    return true;
 }
 
+#ifndef TC_COPY_RESOLVED_PATH_TEST_ONLY
 static inline bool stripFileName(char *path)
 {
    char *slash = xstrrchr(path, '/');
@@ -143,6 +146,7 @@ static inline bool getThisLibraryDir(char *out, size_t outSize)
 }
 #endif
 
+#ifndef TC_COPY_RESOLVED_PATH_TEST_ONLY
 #if defined(darwin)
 void setFullScreen();
 void privateGetWorkingDir(CharP vmPath, CharP appPath);
@@ -175,4 +179,6 @@ static void getWorkingDir()
    if (getMainExecutableName(path, sizeof(path)))
       TCHARP2CharPBuf(path, exeName);
 }
+#endif
+#endif
 #endif
