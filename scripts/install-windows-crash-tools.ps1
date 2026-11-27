@@ -7,6 +7,7 @@ SPDX-License-Identifier: LGPL-2.1-only
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)][string]$OutputDirectory,
+    [ValidateSet('I386', 'AMD64')][string]$Architecture = 'AMD64',
     [string]$ToolDirectory = (Join-Path $env:RUNNER_TEMP 'windows-crash-tools')
 )
 
@@ -18,10 +19,11 @@ function Write-JsonFile([string]$Path, $Value) {
         Set-Content -LiteralPath $Path -Encoding utf8NoBOM
 }
 
-function Find-Cdb {
+function Find-Cdb([string]$TargetArchitecture) {
+    $debuggerArchitecture = if ($TargetArchitecture -eq 'I386') { 'x86' } else { 'x64' }
     $candidates = @(
-        'C:\Program Files (x86)\Windows Kits\10\Debuggers\x64\cdb.exe',
-        'C:\Program Files\Windows Kits\10\Debuggers\x64\cdb.exe'
+        "C:\Program Files (x86)\Windows Kits\10\Debuggers\$debuggerArchitecture\cdb.exe",
+        "C:\Program Files\Windows Kits\10\Debuggers\$debuggerArchitecture\cdb.exe"
     )
     foreach ($candidate in $candidates) {
         if (Test-Path -LiteralPath $candidate) { return $candidate }
@@ -49,7 +51,7 @@ try {
     $procDumpPath = ''
 }
 
-$debuggerPath = Find-Cdb
+$debuggerPath = Find-Cdb $Architecture
 $sdkStatus = if ($debuggerPath) { 'already-installed' } else { 'unavailable' }
 $sdkBootstrapperPath = Join-Path $ToolDirectory 'winsdksetup.exe'
 $sdkBootstrapperSha256 = $null
@@ -70,7 +72,7 @@ if (-not $debuggerPath) {
             $sdkExitCode = $sdkInstaller.ExitCode
             "Windows SDK setup exit code: $sdkExitCode" |
                 Set-Content -LiteralPath $sdkLog -Encoding utf8NoBOM
-            $debuggerPath = Find-Cdb
+            $debuggerPath = Find-Cdb $Architecture
             $sdkStatus = if ($debuggerPath) { 'installed' } else { 'installer-finished-cdb-missing' }
         } else {
             $sdkInstaller.Kill($true)
@@ -96,6 +98,7 @@ if ($debuggerPath -and (Test-Path -LiteralPath $debuggerPath)) {
     $debuggerHash = (Get-FileHash -LiteralPath $debuggerPath -Algorithm SHA256).Hash.ToLowerInvariant()
 }
 $manifest = [ordered]@{
+    targetArchitecture = $Architecture
     procDumpStatus = $procDumpStatus
     procDumpPath = if ($procDumpHash) { $procDumpPath } else { $null }
     procDumpExeSha256 = $procDumpHash

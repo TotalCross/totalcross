@@ -21,9 +21,33 @@ source-file path into `m->ex.setjmpFile`. The CRT copy instruction attempts to
 write to an invalid address. The evidence identifies this immediate failure
 site, but does not establish why the `Heap`/destination became invalid upstream.
 
-No production runtime code was changed. Both probes fail before the functional
-image workload is eligible to run, so Windows ownership and rendering results
-remain **NOT EXECUTED**.
+No production runtime code was changed. Both AMD64 probes fail before the
+functional image workload is eligible to run; the architecture-specific result
+does not establish production Win32/I386 ownership or rendering behavior.
+
+## Priority correction: production Win32/I386
+
+The AMD64 crash comparison above is architecture-specific evidence and does
+not establish behavior on the customer Win32/I386 target. The production
+Win32/I386 validation workflow is being prepared; it has not yet run, so the
+overall Windows ownership acceptance is **INCOMPLETE**.
+
+The two requested historical artifacts were verified locally before use:
+
+| Actions run | Source commit / tree | Build ID | SDK archive SHA-256 | `Launcher.exe` / `tcvm.dll` PE | Symbols |
+|---|---|---|---|---|---|
+| [44414042826](https://github.com/TotalCross/totalcross/actions/runs/44414042826) | `61034a7562e7fa43df076dcc38bcd48128605395` / `d38a41633088464c707c04bd358b9997e3dc1af0` | `b50ea3755c051558d0d59ec00875cf3338bae1f2b8c78976226bb44a4bb92` | `a2886c5a3ce8c2931b951ee8b260fcf1b16bf7d3db75b0a8023c5d8adf9c4e9c` | both I386 (`0x014c`) | no PDB/MAP |
+| [44565183218](https://github.com/TotalCross/totalcross/actions/runs/44565183218) | `c7cf79575602f3cc19e107643f0fa39d3e151004` / `b4ea2e626c5dcfea67953a56f52a348630551620` | `ec7f32317c5c24d2bc174bd7bd1e0c2f8174ae8f3dc6d6d9d50cbe1c35e027fd` | `fdb7fa9dcb1a9c25527b107d05a8d1b6baf8bd84216dd248da9133a953aca979` | both I386 (`0x014c`) | no PDB/MAP |
+
+The correction adds a canonical Release `-A Win32` build for fixed source
+`94af2b8b653cad509994b5ccf3dbb60ac28ef920`. On one Windows runner it will
+compare both historical SDK/runtime pairs with that corrected build, recording
+source/tree, SDK and TCZ hashes, PE machine, all startup markers, signed and
+unsigned exit codes, and any I386 dump/debugger evidence. The existing pinned
+1,510-control ownership fixture will consume the same corrected artifacts only
+if corrected startup passes. Until the Actions run completes, ownership,
+rendering, cache behavior, and pixel results on production Win32/I386 remain
+unvalidated.
 
 ## Tested revisions and provenance
 

@@ -4,20 +4,21 @@ Copyright (C) 2026 Amalgam Solucoes em TI Ltda
 SPDX-License-Identifier: LGPL-2.1-only
 -->
 
-# Windows native startup crash investigation
+# Windows persistent image ownership validation
 
 ## Purpose / Big Picture
 
-Determine whether Windows x64 exit 0xC0000005 happens before image ownership is
-exercised, and identify the earliest failing native startup phase with
-baseline-versus-fix evidence. Deliver a reproducible diagnostic workflow, a
-minimal MainWindow probe, native crash artifacts and analysis, and a factual
-handoff report. Do not change production runtime code.
+Validate persistent image ownership on the production Windows Win32/I386
+target. The earlier x64 investigation is retained as architecture-specific
+evidence, but cannot establish customer-target behavior. Deliver a reproducible
+historical-I386-versus-corrected-I386 startup comparison, run the ownership
+smoke only after corrected startup passes, and record a factual handoff. Do not
+change production runtime code.
 
 The tested TotalCross revisions are baseline
 6b915883dd202f6db891990f6c3af26fb645ecc7 and fixed
 94af2b8b653cad509994b5ccf3dbb60ac28ef920. The instrumented performance-lab
-functional fixture is commit 804803a243db61a2ed54756e1f63cfc42ff4412b.
+Win32 fixture is commit bf691c14d7c5fe807c62de98c7285f65d38de87e.
 
 ## Working Set and Resume Protocol
 
@@ -100,9 +101,19 @@ Actions logs and downloaded artifacts are preserved under
   diagnostic runs, dump hashes, symbolized call path, runner findings, category
   A classification, comparison matrix, remaining uncertainty, and next
   diagnostic action. Final checks and a report-only handoff commit remain.
-- Committed the validated handoff report locally as `231eb8deb`. No additional
-  production changes or Windows workflow run are needed for this diagnostic
-  milestone. The report-only commit was not pushed, avoiding a redundant build.
+- Committed the AMD64-only handoff report locally as `231eb8deb`. That
+  architecture-specific diagnostic milestone remains complete; the report-only
+  commit was not pushed to avoid a redundant build. The priority Win32/I386
+  validation is recorded in the next progress checkpoint.
+- Priority correction: verified customer Windows artifacts from runs
+  `44414042826` and `44565183218` against their clean source commit/tree,
+  producer run ID, SDK/Windows build ID, archive and executable hashes. Both
+  `Launcher.exe` and `tcvm.dll` are PE I386 (`0x014c`); neither run retained
+  matching PDB/MAP files. Added a canonical `-A Win32` Release build and a
+  same-runner historical/corrected I386 startup comparison. The functional
+  ownership smoke consumes the exact corrected artifacts and is gated on all
+  corrected startup markers plus normal exit. This workflow has not run yet;
+  production Win32 acceptance remains INCOMPLETE.
 
 ## Current Architecture and Scope
 
@@ -161,6 +172,31 @@ deployment, execution, and debugging occur through GitHub Actions.
    index, validate diagnostic contracts, headers, commit messages and diffs,
    then make focused logical commits. Push only the dedicated branch and run
    Actions there. No PR is needed unless a workflow trigger requires it.
+
+### Priority correction: production Win32/I386 validation
+
+The attached correction takes precedence over the earlier x64-only steps
+above. Do not trigger another AMD64 diagnostic run. The x64 results remain
+historical evidence for a separate architecture-specific failure.
+
+1. Use the already published historical Windows artifacts from Actions runs
+   `44414042826` and `44565183218`; verify source provenance and PE I386
+   architecture before execution.
+2. Build only corrected source `94af2b8b653cad509994b5ccf3dbb60ac28ef920`
+   using the canonical Windows Release configuration with CMake `-A Win32`.
+   Preserve the production renderer and retain matching PDBs for diagnosis.
+3. On one `windows-2022` runner, deploy the minimal probe with each historical
+   SDK/runtime pair and with the corrected SDK/runtime pair. Record source
+   SHA/tree, SDK and TCZ hashes, PE machine, stage markers, signed and unsigned
+   process exit codes, and dump/debugger evidence. Corrected startup must
+   complete every marker and exit zero before ownership work can run.
+4. After corrected startup passes, run the existing 1,510-control ownership
+   fixture against the same corrected SDK and I386 runtime artifacts. Require
+   the lifecycle, cache, rendering, pixel, and process-exit assertions to pass.
+5. If corrected startup fails, retain its I386 dump and compare the exception
+   and stack with both historical I386 runs. Do not interpret an AMD64 RVA as
+   an I386 symbol. Historical artifacts have no matching PDB or MAP files, so
+   report the symbolization limit if their faulting functions cannot be named.
 
 ## Surprises & Discoveries
 
@@ -237,18 +273,21 @@ deployment, execution, and debugging occur through GitHub Actions.
 
 Required acceptance follows the user's attached matrix and report questions.
 A source revision is connected to every SDK and native Windows artifact by
-build provenance; Launcher.exe and tcvm.dll both inspect as PE AMD64; matching
-PDBs are retained when supported. Each run records process status, distinct
-host/VM/Java/initUI/success markers, module inventory, runner desktop/graphics
-facts, and dump/debugger availability.
+build provenance. For the current production acceptance, Launcher.exe,
+tcvm.dll, and the deployed probe must inspect as PE I386 (`0x014c`); SDK and
+TCZ identities must match the same source revision. Corrected Release PDBs are
+retained for diagnosis. Each probe records process status, distinct
+host/VM/Java/initUI/success markers, module inventory, runner desktop facts,
+and dump/debugger availability.
 
-Run baseline and fixed minimum probes first. Only when both pass, execute the
-baseline and fixed functional scenarios; baseline ownership-specific
-assertions may fail, but the run must report the first reached stage. Never
-label Windows functional ownership smoke PASS unless fixed revision assertions
-and native rendering pass. Validate the fixture/workflow contracts, changed
-headers, commit message, and git diff. Windows build/runtime/debug validation
-is exclusively via Actions; no local Windows cross-compilation or execution.
+Run both historical I386 probes and the corrected I386 probe first on one
+runner. Gate ownership work only on corrected startup passing, and use the same
+corrected SDK/runtime artifact identities. Never label production Windows
+functional ownership PASS unless every fixed fixture assertion, image draw,
+pixel check, and normal process exit passes. Validate fixture/workflow
+contracts, changed headers, commit message, and staged diff. Windows
+build/runtime/debug validation is exclusively via Actions; no local Windows
+cross-compilation or execution.
 
 ## Risks and Open Questions
 
@@ -270,6 +309,10 @@ is exclusively via Actions; no local Windows cross-compilation or execution.
 - Baseline ownership behavior is known incorrect; the full fixture may stop on
   an early assertion. Adapt only diagnostic fixture checks so it can report
   reached stages without suppressing fixed-revision assertions.
+- Historical I386 artifacts from runs 44414042826 and 44565183218 have
+  provenance and PE I386 images, but no matching PDB or MAP files. The
+  corrected I386 build emits PDBs; historical failure stacks may remain
+  module-relative if those artifacts fault.
 
 ## Idempotence and Recovery
 
@@ -283,9 +326,13 @@ Do not force-push, rebase, amend, reset, or clean unrelated worktrees.
 
 ## Outcomes & Retrospective
 
-Pending Actions evidence and native crash analysis.
+The AMD64 comparison is complete and remains architecture-specific historical
+evidence. Production Win32/I386 acceptance remains INCOMPLETE until the new
+Actions workflow builds the corrected source, runs all three startup probes,
+and, if corrected startup passes, completes every ownership/rendering assertion.
 
 ## Revision Note
 
-Initial diagnostic plan. The prior investigation stopped before production
-runtime changes; this plan preserves that boundary while adding native evidence.
+Priority correction dated 2026-11-27: validate production Win32/I386 before
+continuing any AMD64 investigation. The prior x64 investigation stopped before
+production runtime changes; this plan preserves that boundary.

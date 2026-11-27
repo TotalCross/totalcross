@@ -2,11 +2,8 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-only
 
-name: Windows native crash diagnostics
+name: Windows AMD64 crash diagnostics (historical)
 on:
-  push:
-    branches:
-      - codex/image-ownership-windows-crash-diagnostics
   workflow_dispatch:
 
 jobs:
@@ -109,6 +106,7 @@ jobs:
             --platform-artifact "artifacts/$revision/windows" `
             --sdk-provenance "artifacts/$revision/sdk-extracted/build-provenance.json" `
             --platform-provenance "artifacts/$revision/windows/build-provenance.json" `
+            --sdk-archive "artifacts/$revision/sdk-build/sdk-build.tar.gz" `
             --source tests/windows-crash-diagnostics/src/totalcross/ui/WindowsNativeStartupProbe.java `
             --output "windows-crash-results/$revision/minimal"
           if ($LASTEXITCODE -ne 0) { Write-Warning "Probe preparation failed for $revision" }

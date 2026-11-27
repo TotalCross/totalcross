@@ -28,6 +28,11 @@ on:
         required: false
         type: boolean
         default: false
+      windows_win32_image_ownership_smoke:
+        description: Run only the native Windows Win32/I386 persistent image ownership smoke
+        required: false
+        type: boolean
+        default: false
       windows_native_crash_diagnostics:
         description: Preserve Windows PDB symbols for the isolated native crash workflow
         required: false
@@ -87,7 +92,7 @@ jobs:
       shell: bash
       env:
         SELECTIVE_BUILD: ${{ inputs.selective }}
-        RUN_IMAGE_OWNERSHIP_SMOKE: ${{ inputs.image_ownership_smoke || inputs.windows_x64_image_ownership_smoke }}
+        RUN_IMAGE_OWNERSHIP_SMOKE: ${{ inputs.image_ownership_smoke || inputs.windows_x64_image_ownership_smoke || inputs.windows_win32_image_ownership_smoke }}
         PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
         PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
       run: |
@@ -365,7 +370,7 @@ jobs:
         retention-days: 1
 
   build-linux:
-    if: ${{ !inputs.windows_x64_image_ownership_smoke && (needs.checkout-source.outputs.scope == 'full' || needs.checkout-source.outputs.scope == 'image-ownership') }}
+    if: ${{ !inputs.windows_x64_image_ownership_smoke && !inputs.windows_win32_image_ownership_smoke && (needs.checkout-source.outputs.scope == 'full' || needs.checkout-source.outputs.scope == 'image-ownership') }}
     name: Build '${{ matrix.project }}'
     needs: [checkout-source, prepare-native-dependencies, generate-native-bridges]
     strategy:
@@ -640,12 +645,13 @@ jobs:
       shell: cmd
       env:
         WINDOWS_NATIVE_CRASH_DIAGNOSTICS: ${{ inputs.windows_native_crash_diagnostics }}
+        WINDOWS_CMAKE_ARCH: ${{ inputs.windows_win32_image_ownership_smoke && 'Win32' || 'x64' }}
       run: |
         mkdir TotalCrossVM\vc2022
         pushd TotalCrossVM\vc2022
         set "CMAKE_DIAGNOSTIC_SYMBOL_ARGS="
         if "%WINDOWS_NATIVE_CRASH_DIAGNOSTICS%"=="true" set "CMAKE_DIAGNOSTIC_SYMBOL_ARGS=-DCMAKE_POLICY_DEFAULT_CMP0141=NEW -DCMAKE_MSVC_DEBUG_INFORMATION_FORMAT=ProgramDatabase -DCMAKE_EXE_LINKER_FLAGS_RELEASE=/DEBUG:FULL -DCMAKE_SHARED_LINKER_FLAGS_RELEASE=/DEBUG:FULL"
-        cmake ..\ -G"Visual Studio 17 2022" -A x64 %CMAKE_DIAGNOSTIC_SYMBOL_ARGS%
+        cmake ..\ -G"Visual Studio 17 2022" -A %WINDOWS_CMAKE_ARCH% %CMAKE_DIAGNOSTIC_SYMBOL_ARGS%
         findstr /C:"<RuntimeLibrary>MultiThreaded</RuntimeLibrary>" tcvm.vcxproj >NUL || exit /b 1
         findstr /C:"<RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>" tcvm.vcxproj >NUL || exit /b 1
         cmake --build . --config Release
@@ -865,7 +871,7 @@ jobs:
         path: sdk-build.tar.gz
 
   build-android:
-    if: ${{ !inputs.windows_x64_image_ownership_smoke && (needs.checkout-source.outputs.scope == 'full' || needs.checkout-source.outputs.scope == 'image-ownership') }}
+    if: ${{ !inputs.windows_x64_image_ownership_smoke && !inputs.windows_win32_image_ownership_smoke && (needs.checkout-source.outputs.scope == 'full' || needs.checkout-source.outputs.scope == 'image-ownership') }}
     name: Build `Android`
     needs: [checkout-source, prepare-native-dependencies, generate-native-bridges]
     runs-on: ubuntu-24.04
@@ -1184,13 +1190,13 @@ jobs:
           build-provenance.json
 
   image-ownership-smoke:
-    if: ${{ always() && !inputs.windows_native_crash_diagnostics && needs.checkout-source.result == 'success' && needs.build-sdk.result == 'success' && needs.build-windows.result == 'success' && (inputs.windows_x64_image_ownership_smoke || ((needs.checkout-source.outputs.image_ownership_changed == 'true' || inputs.image_ownership_smoke) && needs.build-linux.result == 'success' && needs.build-android.result == 'success')) }}
+    if: ${{ always() && !inputs.windows_native_crash_diagnostics && needs.checkout-source.result == 'success' && needs.build-sdk.result == 'success' && needs.build-windows.result == 'success' && (inputs.windows_x64_image_ownership_smoke || inputs.windows_win32_image_ownership_smoke || ((needs.checkout-source.outputs.image_ownership_changed == 'true' || inputs.image_ownership_smoke) && needs.build-linux.result == 'success' && needs.build-android.result == 'success')) }}
     name: Image ownership functional smoke / ${{ matrix.target }}
     needs: [checkout-source, build-sdk, build-linux, build-windows, build-android]
     strategy:
       fail-fast: false
       matrix:
-        include: ${{ fromJSON(inputs.windows_x64_image_ownership_smoke && '[{"target":"windows","artifact":"windows","runner":"windows-2022"}]' || '[{"target":"linux-amd64","artifact":"linux-amd64","runner":"ubuntu-22.04"},{"target":"windows","artifact":"windows","runner":"windows-2022"},{"target":"android","artifact":"android","runner":"ubuntu-24.04"}]') }}
+        include: ${{ fromJSON((inputs.windows_x64_image_ownership_smoke || inputs.windows_win32_image_ownership_smoke) && '[{"target":"windows","artifact":"windows","runner":"windows-2022"}]' || '[{"target":"linux-amd64","artifact":"linux-amd64","runner":"ubuntu-22.04"},{"target":"windows","artifact":"windows","runner":"windows-2022"},{"target":"android","artifact":"android","runner":"ubuntu-24.04"}]') }}
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 75
 
@@ -1245,6 +1251,7 @@ jobs:
       env:
         TARGET: ${{ matrix.target }}
         PLATFORM_ARTIFACT: ${{ matrix.artifact }}
+        WINDOWS_ARCHITECTURE: ${{ inputs.windows_win32_image_ownership_smoke && 'I386' || 'AMD64' }}
         LAB_COMMIT: 9f378cde4578ff257a6ba8082b7eac47ea176ad4
       run: |
         set -euo pipefail
@@ -1253,6 +1260,7 @@ jobs:
         source_tree="$(git rev-parse "${{ needs.checkout-source.outputs.source_sha }}^{tree}")"
         python performance-lab/tools/image_ownership_smoke.py prepare \
           --target "${TARGET}" \
+          --windows-architecture "${WINDOWS_ARCHITECTURE}" \
           --runtime-home "${PWD}/artifacts/sdk-extracted/build/TotalCross" \
           --platform-artifact "${PWD}/artifacts/${PLATFORM_ARTIFACT}" \
           --sdk-provenance "${PWD}/artifacts/sdk-extracted/build-provenance.json" \

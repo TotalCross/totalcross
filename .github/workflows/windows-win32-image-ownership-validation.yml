@@ -1,0 +1,427 @@
+# Copyright (C) 2026 Amalgam Solucoes em TI Ltda
+#
+# SPDX-License-Identifier: LGPL-2.1-only
+
+name: Windows Win32 image ownership validation
+on:
+  push:
+    branches:
+      - codex/image-ownership-windows-crash-diagnostics
+    paths:
+      - .github/workflows/build.yml
+      - .github/workflows/windows-native-crash-diagnostics.yml
+      - .github/workflows/windows-win32-image-ownership-validation.yml
+      - scripts/install-windows-crash-tools.ps1
+      - scripts/windows-native-crash-diagnostics.py
+      - scripts/windows-native-crash-runner.ps1
+      - tests/test_windows_native_crash_diagnostics.py
+      - tests/windows-crash-diagnostics/**
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  build-corrected-win32:
+    name: Build corrected production Win32/I386 artifacts
+    uses: ./.github/workflows/build.yml
+    with:
+      windows_win32_image_ownership_smoke: true
+      windows_native_crash_diagnostics: true
+      diagnostic_artifact_suffix: corrected-win32
+      source_sha: 94af2b8b653cad509994b5ccf3dbb60ac28ef920
+    secrets: inherit
+
+  minimal-probe:
+    name: Startup comparison / historical I386 and corrected I386
+    needs: [build-corrected-win32]
+    runs-on: windows-2022
+    timeout-minutes: 75
+    permissions:
+      actions: read
+      contents: read
+    steps:
+    - name: Checkout diagnostic harness
+      uses: actions/checkout@v6
+      with:
+        ref: ${{ github.sha }}
+
+    - name: Setup Python 3.12
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Setup JDK 17
+      uses: actions/setup-java@v5
+      with:
+        distribution: temurin
+        java-version: 17
+
+    - name: Run diagnostic contracts
+      run: python -B -m unittest discover -s tests -p test_windows_native_crash_diagnostics.py -v
+
+    - name: Create output folders
+      shell: pwsh
+      run: |
+        foreach ($revision in @('historical-444', 'historical-445', 'fixed')) {
+          New-Item -ItemType Directory -Force `
+            -Path "windows-crash-results/$revision/minimal" | Out-Null
+        }
+
+    - name: Download historical SDK from run 44414042826
+      continue-on-error: true
+      uses: actions/download-artifact@v7
+      with:
+        name: sdk-build
+        run-id: 44414042826
+        github-token: ${{ github.token }}
+        path: artifacts/historical-444/sdk-build
+
+    - name: Download historical Windows runtime from run 44414042826
+      continue-on-error: true
+      uses: actions/download-artifact@v7
+      with:
+        name: windows
+        run-id: 44414042826
+        github-token: ${{ github.token }}
+        path: artifacts/historical-444/windows
+
+    - name: Download historical SDK from run 44565183218
+      continue-on-error: true
+      uses: actions/download-artifact@v7
+      with:
+        name: sdk-build
+        run-id: 44565183218
+        github-token: ${{ github.token }}
+        path: artifacts/historical-445/sdk-build
+
+    - name: Download historical Windows runtime from run 44565183218
+      continue-on-error: true
+      uses: actions/download-artifact@v7
+      with:
+        name: windows
+        run-id: 44565183218
+        github-token: ${{ github.token }}
+        path: artifacts/historical-445/windows
+
+    - name: Download corrected Win32 SDK and runtime artifacts
+      uses: actions/download-artifact@v7
+      with:
+        name: sdk-build-corrected-win32
+        path: artifacts/fixed/sdk-build
+
+    - name: Download corrected Win32 runtime artifact
+      uses: actions/download-artifact@v7
+      with:
+        name: windows-corrected-win32
+        path: artifacts/fixed/windows
+
+    - name: Extract available SDK artifacts
+      shell: pwsh
+      run: |
+        foreach ($revision in @('historical-444', 'historical-445', 'fixed')) {
+          $archive = "artifacts/$revision/sdk-build/sdk-build.tar.gz"
+          if (-not (Test-Path -LiteralPath $archive)) {
+            Write-Warning "SDK archive unavailable for $revision"
+            continue
+          }
+          $destination = "artifacts/$revision/sdk-extracted"
+          New-Item -ItemType Directory -Force -Path $destination | Out-Null
+          tar -xzf $archive -C $destination
+          if ($LASTEXITCODE -ne 0) { throw "SDK extraction failed for $revision" }
+        }
+
+    - name: Deploy source-matched I386 startup probes
+      shell: pwsh
+      continue-on-error: true
+      run: |
+        foreach ($revision in @('historical-444', 'historical-445', 'fixed')) {
+          $root = "artifacts/$revision"
+          $sdkRoot = Join-Path $root 'sdk-extracted/build/TotalCross'
+          $output = "windows-crash-results/$revision/minimal"
+          $sdkManifest = Join-Path $root 'sdk-extracted/build-provenance.json'
+          $windowsManifest = Join-Path $root 'windows/build-provenance.json'
+          if (-not (Test-Path -LiteralPath $sdkManifest) -or
+              -not (Test-Path -LiteralPath $windowsManifest)) {
+            "SDK or Windows provenance is missing for $revision" |
+              Set-Content -LiteralPath (Join-Path $output 'prepare-failure.txt') -Encoding utf8NoBOM
+            continue
+          }
+          & python scripts/windows-native-crash-diagnostics.py prepare `
+            --revision $revision `
+            --runtime-home $sdkRoot `
+            --platform-artifact (Join-Path $root 'windows') `
+            --sdk-provenance $sdkManifest `
+            --platform-provenance $windowsManifest `
+            --sdk-archive (Join-Path $root 'sdk-build/sdk-build.tar.gz') `
+            --source tests/windows-crash-diagnostics/src/totalcross/ui/WindowsNativeStartupProbe.java `
+            --architecture I386 `
+            --output $output
+          if ($LASTEXITCODE -ne 0) {
+            "Probe preparation failed for $revision (exit $LASTEXITCODE)" |
+              Set-Content -LiteralPath (Join-Path $output 'prepare-failure.txt') -Encoding utf8NoBOM
+          }
+        }
+
+    - name: Install Win32 crash capture tools
+      if: always()
+      continue-on-error: true
+      shell: pwsh
+      env:
+        DIAGNOSTIC_DIRECTORY: ${{ github.workspace }}/windows-crash-results/tool-setup
+      run: |
+        & scripts/install-windows-crash-tools.ps1 `
+          -OutputDirectory $env:DIAGNOSTIC_DIRECTORY `
+          -Architecture I386
+
+    - name: Copy crash tool inventory to probe folders
+      if: always()
+      shell: pwsh
+      run: |
+        $toolDirectory = 'windows-crash-results/tool-setup'
+        foreach ($revision in @('historical-444', 'historical-445', 'fixed')) {
+          $destination = "windows-crash-results/$revision/minimal"
+          if (Test-Path -LiteralPath $toolDirectory) {
+            Get-ChildItem -LiteralPath $toolDirectory -File |
+              Copy-Item -Destination $destination -Force
+          }
+        }
+
+    - name: Run all prepared I386 probes on this runner
+      if: always()
+      shell: pwsh
+      continue-on-error: true
+      run: |
+        $sources = @{
+          'historical-444' = '61034a7562e7fa43df076dcc38bcd48128605395'
+          'historical-445' = 'c7cf79575602f3cc19e107643f0fa39d3e151004'
+          fixed = '94af2b8b653cad509994b5ccf3dbb60ac28ef920'
+        }
+        foreach ($revision in @('historical-444', 'historical-445', 'fixed')) {
+          $output = "windows-crash-results/$revision/minimal"
+          $manifestPath = Join-Path $output 'diagnostic-manifest.json'
+          if (-not (Test-Path -LiteralPath $manifestPath)) {
+            Write-Warning "No prepared I386 probe for $revision"
+            continue
+          }
+          try {
+            $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
+            & scripts/windows-native-crash-runner.ps1 `
+              -Executable $manifest.deployedProbe.path `
+              -OutputDirectory $output `
+              -SourceCommit $sources[$revision] `
+              -Architecture I386 `
+              -ProcdumpPath $env:PROCDUMP_PATH `
+              -DebuggerPath $env:DEBUGGER_PATH `
+              -PdbDirectory (Join-Path $output 'symbols') `
+              -TimeoutSeconds 45
+          } catch {
+            "I386 probe runner failed for ${revision}: $($_.Exception.Message)" |
+              Set-Content -LiteralPath (Join-Path $output 'runner-failure.txt') -Encoding utf8NoBOM
+          }
+          try {
+            python scripts/windows-native-crash-diagnostics.py summarize --output $output
+            if ($LASTEXITCODE -ne 0) { Write-Warning "Summary failed for $revision" }
+          } catch {
+            "I386 probe summary failed for ${revision}: $($_.Exception.Message)" |
+              Set-Content -LiteralPath (Join-Path $output 'summary-failure.txt') -Encoding utf8NoBOM
+          }
+        }
+
+    - name: Write architecture comparison summary
+      if: always()
+      shell: pwsh
+      run: |
+        $cases = @()
+        foreach ($revision in @('historical-444', 'historical-445', 'fixed')) {
+          $resultPath = "windows-crash-results/$revision/minimal/diagnostic-result.json"
+          if (Test-Path -LiteralPath $resultPath) {
+            $result = Get-Content -LiteralPath $resultPath -Raw | ConvertFrom-Json
+            $runtimePath = "windows-crash-results/$revision/minimal/runtime.json"
+            $dumpFiles = @()
+            $debuggerLog = $null
+            if (Test-Path -LiteralPath $runtimePath) {
+              $runtime = Get-Content -LiteralPath $runtimePath -Raw | ConvertFrom-Json
+              $dumpFiles = $runtime.dumpFiles
+              $debuggerLog = $runtime.debuggerLog
+            }
+            $cases += [ordered]@{
+              revision = $revision
+              sourceCommit = $result.sourceCommit
+              sourceTree = $result.sourceTree
+              configuration = $result.configuration
+              architecture = $result.architecture
+              peMachine = $result.peMachine
+              status = $result.status
+              exitCode = $result.exitCode
+              exitCodeHex = $result.exitCodeHex
+              observedMarkers = $result.observedAppMarkers
+              dumpFiles = $dumpFiles
+              debuggerLog = $debuggerLog
+            }
+          } else {
+            $cases += [ordered]@{ revision = $revision; status = 'INCOMPLETE' }
+          }
+        }
+        [ordered]@{ runnerImage = $env:ImageVersion; cases = $cases } |
+          ConvertTo-Json -Depth 10 |
+          Set-Content -LiteralPath 'windows-crash-results/i386-comparison.json' -Encoding utf8NoBOM
+
+    - name: Upload historical and corrected I386 startup evidence
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: windows-i386-startup-comparison
+        path: windows-crash-results
+        if-no-files-found: warn
+        retention-days: 14
+
+    - name: Require corrected Win32 startup to pass
+      if: always()
+      shell: pwsh
+      run: |
+        $resultPath = 'windows-crash-results/fixed/minimal/diagnostic-result.json'
+        if (-not (Test-Path -LiteralPath $resultPath)) {
+          throw 'Corrected Win32 startup result is INCOMPLETE'
+        }
+        $result = Get-Content -LiteralPath $resultPath -Raw | ConvertFrom-Json
+        if ($result.architecture -ne 'I386' -or $result.peMachine -ne '0x014c') {
+          throw 'Corrected runtime is not verified PE I386'
+        }
+        if ($result.status -ne 'PASS') {
+          throw "Corrected Win32 startup failed: $($result.error)"
+        }
+
+  image-ownership-smoke:
+    name: Persistent ownership smoke / corrected Win32
+    needs: [build-corrected-win32, minimal-probe]
+    if: ${{ needs.minimal-probe.result == 'success' }}
+    runs-on: windows-2022
+    timeout-minutes: 60
+    steps:
+    - name: Checkout diagnostic harness
+      uses: actions/checkout@v6
+      with:
+        ref: ${{ github.sha }}
+
+    - name: Checkout pinned Win32 ownership smoke fixture
+      uses: actions/checkout@v6
+      with:
+        repository: TotalCross/totalcross-performance-lab
+        ref: bf691c14d7c5fe807c62de98c7285f65d38de87e
+        path: performance-lab
+
+    - name: Setup Python 3.12
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Setup JDK 17
+      uses: actions/setup-java@v5
+      with:
+        distribution: temurin
+        java-version: 17
+
+    - name: Run Win32 ownership fixture contracts
+      working-directory: performance-lab
+      run: python -B -m unittest discover -s tests -p test_image_ownership_smoke_contract.py -v
+
+    - name: Download corrected SDK and exact I386 runtime artifacts
+      uses: actions/download-artifact@v7
+      with:
+        name: sdk-build-corrected-win32
+        path: artifacts/fixed/sdk-build
+
+    - name: Download corrected I386 runtime artifact
+      uses: actions/download-artifact@v7
+      with:
+        name: windows-corrected-win32
+        path: artifacts/fixed/windows
+
+    - name: Extract corrected SDK
+      shell: pwsh
+      run: |
+        New-Item -ItemType Directory -Force -Path artifacts/fixed/sdk-extracted | Out-Null
+        tar -xzf artifacts/fixed/sdk-build/sdk-build.tar.gz -C artifacts/fixed/sdk-extracted
+        if ($LASTEXITCODE -ne 0) { throw 'Corrected SDK extraction failed' }
+
+    - name: Install Win32 crash capture tools
+      continue-on-error: true
+      shell: pwsh
+      env:
+        DIAGNOSTIC_DIRECTORY: ${{ github.workspace }}/windows-crash-results/ownership/tool-setup
+      run: |
+        & scripts/install-windows-crash-tools.ps1 `
+          -OutputDirectory $env:DIAGNOSTIC_DIRECTORY `
+          -Architecture I386
+
+    - name: Deploy ownership smoke with exact Win32 provenance
+      working-directory: performance-lab
+      shell: pwsh
+      env:
+        LAB_COMMIT: bf691c14d7c5fe807c62de98c7285f65d38de87e
+        DIAGNOSTIC_DIRECTORY: ${{ github.workspace }}/windows-crash-results/ownership
+      run: |
+        $sdkRoot = Join-Path $env:GITHUB_WORKSPACE 'artifacts/fixed/sdk-extracted/build/TotalCross'
+        $platform = Join-Path $env:GITHUB_WORKSPACE 'artifacts/fixed/windows'
+        python tools/image_ownership_smoke.py prepare `
+          --target windows `
+          --windows-architecture I386 `
+          --runtime-home $sdkRoot `
+          --platform-artifact $platform `
+          --sdk-provenance (Join-Path $env:GITHUB_WORKSPACE 'artifacts/fixed/sdk-extracted/build-provenance.json') `
+          --platform-provenance (Join-Path $platform 'build-provenance.json') `
+          --sdk-archive (Join-Path $env:GITHUB_WORKSPACE 'artifacts/fixed/sdk-build/sdk-build.tar.gz') `
+          --source-commit 94af2b8b653cad509994b5ccf3dbb60ac28ef920 `
+          --source-tree 539f5b424b6f4593c7d96074d69ff077a38ed361 `
+          --lab-root $env:GITHUB_WORKSPACE/performance-lab `
+          --lab-commit $env:LAB_COMMIT `
+          --output $env:DIAGNOSTIC_DIRECTORY `
+          --diagnostic-mode fixed
+
+    - name: Run native persistent ownership and rendering smoke
+      working-directory: performance-lab
+      continue-on-error: true
+      env:
+        DIAGNOSTIC_DIRECTORY: ${{ github.workspace }}/windows-crash-results/ownership
+        CRASH_RUNNER: ${{ github.workspace }}/scripts/windows-native-crash-runner.ps1
+        PDB_DIRECTORY: ${{ github.workspace }}/artifacts/fixed/windows/TotalCrossVM/vc2022/Release
+      run: |
+        $arguments = @(
+          'run-host', '--target', 'windows', '--windows-architecture', 'I386',
+          '--output', $env:DIAGNOSTIC_DIRECTORY,
+          '--windows-crash-runner', $env:CRASH_RUNNER,
+          '--pdb-directory', $env:PDB_DIRECTORY
+        )
+        if (-not [string]::IsNullOrWhiteSpace($env:PROCDUMP_PATH)) {
+          $arguments += @('--procdump', $env:PROCDUMP_PATH)
+        }
+        if (-not [string]::IsNullOrWhiteSpace($env:DEBUGGER_PATH)) {
+          $arguments += @('--debugger', $env:DEBUGGER_PATH)
+        }
+        python tools/image_ownership_smoke.py @arguments
+
+    - name: Upload Win32 ownership results and logs
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: windows-i386-image-ownership-smoke
+        path: windows-crash-results/ownership
+        if-no-files-found: warn
+        retention-days: 14
+
+    - name: Require corrected Win32 ownership smoke to pass
+      if: always()
+      shell: pwsh
+      env:
+        DIAGNOSTIC_DIRECTORY: ${{ github.workspace }}/windows-crash-results/ownership
+      run: |
+        $resultPath = Join-Path $env:DIAGNOSTIC_DIRECTORY 'image-ownership-result.json'
+        if (-not (Test-Path -LiteralPath $resultPath)) {
+          throw 'Win32 image ownership result is INCOMPLETE'
+        }
+        $result = Get-Content -LiteralPath $resultPath -Raw | ConvertFrom-Json
+        if ($result.status -ne 'PASS') {
+          throw "Corrected Win32 ownership smoke failed: $($result.error)"
+        }
