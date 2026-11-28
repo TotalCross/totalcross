@@ -63,8 +63,13 @@ FINAL-REPORT.md is completed only at final consolidation.
   pixels before/after rotation and after new-image creation. Default-off EGL
   replacement itself remains unestablished. See
   evidence/M4-api30-default-off-closeout.md. Stop before M5.
-- [ ] Milestone 5: run the authorized local ARM64 emulator matrix; stop for
-  review.
+- [x] (2026-11-28) Complete the authorized Milestone 5 API 36 functional
+  slice on the existing hardware-accelerated ARM64 AVD. Customer and marker
+  permission flows passed; exact retained/shared/new-image pixels remained
+  present through rotation, background/foreground, and Settings return. See
+  evidence/M5-api36-validation.md. Stop before API 35 pending authorization.
+- [ ] Continue the remaining API matrix only after explicit authorization;
+  API 35 and API 29 have not started.
 - [ ] Milestone 6: reconcile evidence, finish FINAL-REPORT.md, and verify the
   remote branch.
 
@@ -193,14 +198,20 @@ recovery, repeated empty cleanup, five diagnostic EGL replacements, corrected
 customer permission scenarios, and exact default-off pixel assertions across
 orientation and new-image creation. Surface generations advanced in the
 default-off run, but it did not log EGL destroy/create. The Java lifecycle
-logger was still at INFO for the screenshot run and was suppressed afterward;
-no repeat occurred before the experiment cutoff. The missing TCUI assets and
-ADB Back timeout remain independent. M4 is complete; do not start M5 without
-explicit approval.
+logger was still at INFO for the API 30 screenshot run and was suppressed
+afterward; no repeat occurred before that interval's cutoff. The missing
+TCUI assets and ADB Back timeout remain independent. M4 is complete. The
+authorized M5 API 36 slice also passes: exact and marker grant/denied flows
+returned to live processes, marker filesystem outcomes matched permission
+state, and retained/shared image pixel counts remained exact across rotation
+and background/foreground transitions. A new image rendered. A separate
+diagnostic Settings-return run recorded ordered valid Skia cleanup, EGL
+destruction/recreation, and replacement Skia initialization. The default-off
+graphics run itself did not log EGL replacement. API 35 and API 29 remain
+unstarted; stop pending authorization.
 
 ## Revision Note
 
-Updated after the final resumed M4 API 30 validation: customer permission
-scenarios and default-off screenshot pixel assertions pass; default-off EGL
-replacement remains unestablished and the final PR still needs affected
-non-Android compilation.
+Updated after the M5 API 36 slice: customer and marker scenarios and
+default-off screenshot assertions are indexed; API 35/API 29 remain pending.
+The final PR still needs affected non-Android compilation.

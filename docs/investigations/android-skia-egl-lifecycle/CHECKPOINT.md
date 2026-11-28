@@ -7,13 +7,14 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Current milestone
 
-Milestone 4 production correction and focused API 30 validation are complete.
-Default-off customer permission scenarios and representative rendering pixel
-assertions pass. The default-off orientation run does not independently prove
-EGL context replacement; diagnostic-enabled replacement evidence is retained.
-All `debug.tcvm.*` hooks were off; read-only Java lifecycle INFO logging remained
-on during the pixel capture and was suppressed afterward without a repeat.
-Stop before Milestone 5 pending review.
+Milestone 4 is accepted and closed. The authorized Milestone 5 API 36
+functional slice is complete on the existing ARM64 hardware-accelerated AVD.
+Default-off customer and marker permission cases passed; retained/shared and
+new-image rendering passed exact pixel assertions through orientation,
+background/foreground, and Settings-return transitions. A separate
+diagnostic-enabled natural Settings return recorded actual EGL replacement.
+API 35 and API 29 have not started. Stop here pending explicit authorization
+before the next API validation.
 
 ## Completed sub-milestones
 
@@ -134,15 +135,20 @@ API 30 crashes in the grant-in-place and denied-return candidate flows.
 
 None.
 
-## Pending experiments
+## M5 progress
 
-M4 production correction is implemented and focused API 30 runtime validation
-is complete for Skia/EGL teardown ordering, real context loss, injected
-initialization failures and retry, repeated cleanup, and five rendered surface
-replacements. The corrected original customer permission scenarios and full
-default-off recreation pixel check remain unrun. See
-evidence/M4-api30-resumed-validation.md and TEST-MATRIX.md. Milestone 5 has not
-started and requires explicit authorization.
+API 36 functional validation passed using the retained default-off ARM64
+Release runtime and compatible APKs. Exact customer grant-in-place and
+denied-return cases returned to the same live process with the expected
+app-op state. Marker grant and pregranted cases created/deleted the expected
+directory; denied-return recorded error 13 and no directory. The graphics
+probe retained exact image pixel counts across rotation, Home/foreground, and
+Settings return, then rendered its new cyan image. See
+evidence/M5-api36-validation.md and the linked machine-readable results.
+Default-off EGL replacement itself was not logged; a separate equivalent
+diagnostic Settings-return control recorded ordered EGL teardown and
+replacement initialization. Do not proceed to API 35 or API 29 without
+explicit authorization.
 
 ## Test environment
 
@@ -184,8 +190,8 @@ independent findings and were not fixed.
 
 ## Exact next concrete action
 
-Pause for review of completed M4 work. Do not begin Milestone 5 without
-explicit authorization.
+Pause after the API 36 slice. Wait for explicit authorization before starting
+another Android API validation.
 
 ## Milestone 4 checkpoint update
 
@@ -207,11 +213,11 @@ identities and compact assertions are in
 `evidence/M4-api30-default-off-pixel-assertions.json`. Missing TCUI assets and
 the unrelated ADB Back timeout remain open. Java lifecycle logging was
 suppressed after the rendering run; no repeat was started after the experiment
-cutoff. Milestone 5 has not begun.
+cutoff. Milestone 5 had not begun when this M4 closeout was recorded.
 
 ## Resume protocol
 
 Resume in the isolated worktree
 /Users/flsobral/.codex/worktrees/fix-android-skia-egl-surface-lifecycle.
-Read this file first. M4 is complete for this authorized interval; wait for
-explicit authorization before Milestone 5.
+Read this file first. The API 36 slice is complete; wait for explicit
+authorization before starting the next API validation.

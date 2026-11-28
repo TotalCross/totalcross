@@ -1,0 +1,308 @@
+{
+  "captureAssertions": {
+    "landscape": {
+      "contentBounds_xyxy": null,
+      "dimensions": "2400x1080",
+      "exactRgbCounts": {
+        "blue": 47628,
+        "cyan": 0,
+        "green": 47628,
+        "magenta": 15876,
+        "red": 95256,
+        "yellow": 31752
+      },
+      "file": "M5-api36-landscape.png",
+      "representativeSamples_xy_rgb": {},
+      "sha256": "7557a693060ac54c7c107a988d0040fdfe0c6a99b77a40ed6bb7fd2f865b30e4"
+    },
+    "portrait-after-home-return": {
+      "contentBounds_xyxy": {
+        "blue": [
+          735,
+          296,
+          986,
+          547
+        ],
+        "cyan": null,
+        "green": [
+          63,
+          674,
+          314,
+          925
+        ],
+        "magenta": [
+          126,
+          737,
+          251,
+          862
+        ],
+        "red": [
+          63,
+          296,
+          650,
+          547
+        ],
+        "yellow": [
+          126,
+          359,
+          587,
+          484
+        ]
+      },
+      "dimensions": "1080x2400",
+      "exactRgbCounts": {
+        "blue": 47628,
+        "cyan": 0,
+        "green": 47628,
+        "magenta": 15876,
+        "red": 95256,
+        "yellow": 31752
+      },
+      "file": "M5-api36-portrait-after-home-return.png",
+      "representativeSamples_xy_rgb": {
+        "blue": "750,315=0,0,255",
+        "green": "80,685=0,255,0",
+        "magenta": "170,765=255,0,255",
+        "red": "80,315=255,0,0",
+        "shared_red": "420,315=255,0,0",
+        "shared_yellow": "520,395=255,255,0",
+        "white": "820,395=255,255,255",
+        "yellow": "170,395=255,255,0"
+      },
+      "sha256": "16be5d06f056bb6adeb05656c4cbd5e7e04ed01cd61cfca1f2508ef9eb35065c"
+    },
+    "portrait-after-rotation": {
+      "contentBounds_xyxy": {
+        "blue": [
+          735,
+          296,
+          986,
+          547
+        ],
+        "cyan": null,
+        "green": [
+          63,
+          674,
+          314,
+          925
+        ],
+        "magenta": [
+          126,
+          737,
+          251,
+          862
+        ],
+        "red": [
+          63,
+          296,
+          650,
+          547
+        ],
+        "yellow": [
+          126,
+          359,
+          587,
+          484
+        ]
+      },
+      "dimensions": "1080x2400",
+      "exactRgbCounts": {
+        "blue": 47628,
+        "cyan": 0,
+        "green": 47628,
+        "magenta": 15876,
+        "red": 95256,
+        "yellow": 31752
+      },
+      "file": "M5-api36-portrait-after-rotation.png",
+      "representativeSamples_xy_rgb": {
+        "blue": "750,315=0,0,255",
+        "green": "80,685=0,255,0",
+        "magenta": "170,765=255,0,255",
+        "red": "80,315=255,0,0",
+        "shared_red": "420,315=255,0,0",
+        "shared_yellow": "520,395=255,255,0",
+        "white": "820,395=255,255,255",
+        "yellow": "170,395=255,255,0"
+      },
+      "sha256": "8f729037db7397ed35935247481896714d2b841b5352d3403f6fe485ba6628a5"
+    },
+    "portrait-after-settings-return": {
+      "contentBounds_xyxy": {
+        "blue": [
+          735,
+          296,
+          986,
+          547
+        ],
+        "cyan": null,
+        "green": [
+          63,
+          674,
+          314,
+          925
+        ],
+        "magenta": [
+          126,
+          737,
+          251,
+          862
+        ],
+        "red": [
+          63,
+          296,
+          650,
+          547
+        ],
+        "yellow": [
+          126,
+          359,
+          587,
+          484
+        ]
+      },
+      "dimensions": "1080x2400",
+      "exactRgbCounts": {
+        "blue": 47628,
+        "cyan": 0,
+        "green": 47628,
+        "magenta": 15876,
+        "red": 95256,
+        "yellow": 31752
+      },
+      "file": "M5-api36-portrait-after-settings-return.png",
+      "representativeSamples_xy_rgb": {
+        "blue": "750,315=0,0,255",
+        "green": "80,685=0,255,0",
+        "magenta": "170,765=255,0,255",
+        "red": "80,315=255,0,0",
+        "shared_red": "420,315=255,0,0",
+        "shared_yellow": "520,395=255,255,0",
+        "white": "820,395=255,255,255",
+        "yellow": "170,395=255,255,0"
+      },
+      "sha256": "9fdd64981fd2b972d79079942e67605d05e8c705c0debc36d0e4ca779dd08e95"
+    },
+    "portrait-before": {
+      "contentBounds_xyxy": {
+        "blue": [
+          735,
+          231,
+          986,
+          482
+        ],
+        "cyan": null,
+        "green": [
+          63,
+          609,
+          314,
+          860
+        ],
+        "magenta": [
+          126,
+          672,
+          251,
+          797
+        ],
+        "red": [
+          63,
+          231,
+          650,
+          482
+        ],
+        "yellow": [
+          126,
+          294,
+          587,
+          419
+        ]
+      },
+      "dimensions": "1080x2400",
+      "exactRgbCounts": {
+        "blue": 47628,
+        "cyan": 0,
+        "green": 47628,
+        "magenta": 15876,
+        "red": 95256,
+        "yellow": 31752
+      },
+      "file": "M5-api36-portrait-before.png",
+      "representativeSamples_xy_rgb": {
+        "blue": "750,250=0,0,255",
+        "green": "80,620=0,255,0",
+        "magenta": "170,700=255,0,255",
+        "red": "80,250=255,0,0",
+        "shared_red": "420,250=255,0,0",
+        "shared_yellow": "520,330=255,255,0",
+        "white": "820,330=255,255,255",
+        "yellow": "170,330=255,255,0"
+      },
+      "sha256": "58a6a91bca11193b93db884cfc122f57d8f9b6a96cd828cd7641205acc1d0c39"
+    },
+    "portrait-new-image": {
+      "contentBounds_xyxy": {
+        "blue": [
+          735,
+          296,
+          986,
+          547
+        ],
+        "cyan": [
+          399,
+          674,
+          650,
+          925
+        ],
+        "green": [
+          63,
+          674,
+          314,
+          925
+        ],
+        "magenta": [
+          126,
+          737,
+          251,
+          862
+        ],
+        "red": [
+          63,
+          296,
+          650,
+          547
+        ],
+        "yellow": [
+          126,
+          359,
+          587,
+          484
+        ]
+      },
+      "dimensions": "1080x2400",
+      "exactRgbCounts": {
+        "blue": 47628,
+        "cyan": 47628,
+        "green": 47628,
+        "magenta": 15876,
+        "red": 95256,
+        "yellow": 31752
+      },
+      "file": "M5-api36-portrait-new-image.png",
+      "representativeSamples_xy_rgb": {
+        "blue": "750,315=0,0,255",
+        "green": "80,685=0,255,0",
+        "magenta": "170,765=255,0,255",
+        "new_black": "520,805=0,0,0",
+        "new_cyan": "520,865=0,255,255",
+        "red": "80,315=255,0,0",
+        "shared_red": "420,315=255,0,0",
+        "shared_yellow": "520,395=255,255,0",
+        "white": "820,395=255,255,255",
+        "yellow": "170,395=255,255,0"
+      },
+      "sha256": "5097f4a52cae2056de87ba2cba76cd403f18299326c78383eb223938e16a9659"
+    }
+  },
+  "countAssertion": "exact equality; no tolerance",
+  "tool": "ffmpeg PNG decode to RGB24 plus retained C pixel counter and bbox checker"
+}

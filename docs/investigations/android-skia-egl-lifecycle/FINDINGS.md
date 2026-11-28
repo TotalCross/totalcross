@@ -219,3 +219,32 @@ candidate, not the permanent build. The missing `floatingFrg.png` and
 unfixed. Full build logs, APKs, and logcats remain under
 `/tmp/codex-android-skia-egl-m4/`; compact results and source/binary hashes are
 in `evidence/M4-api30-resumed-validation.md`.
+
+## Milestone 5 API 36 functional validation
+
+The default-off ARM64 Release runtime ran on the API 36 ARM64 emulator using
+the recorded compatible customer, marker, and graphics-probe APKs. Customer
+grant-in-place and denied-return both returned from Settings to the same live
+PID with app-op state `allow` and `ignore`, respectively. The marker app
+created and deleted `/sdcard/asd` when access was granted, including a
+pregranted control. On denied return it remained alive, kept app-op `ignore`,
+and logged `Error Code: 13 - Permission denied`; no directory was created.
+
+The graphics probe reported two shared-image controls and one retained image.
+After portrait/landscape/portrait, Home/foreground, and Settings return, exact
+counts for red, yellow, blue, green, and magenta content remained unchanged.
+The orientation round-trip shifted the probe's image layout down 65 pixels;
+all color bounds moved uniformly and later portrait captures preserved that
+layout. This is a layout translation, not missing image content. A newly
+created cyan image and its black interior rendered with exact pixel checks.
+The default-off run did not record EGL destroy/create. A separate diagnostic
+build Settings-return control recorded valid-current Skia cleanup, EGL
+destruction, replacement EGL current, and replacement Skia initialization in
+that order. No fatal native crash signature appeared in the retained logs.
+
+The retained marker-denied summary has a false `denied` boolean because its
+classifier matched only `Operation not permitted`. The raw API 36 log contains
+`Permission denied`; the new M5 scenario evidence classifies this expected
+denial correctly. API 35 and API 29 remain unstarted. See
+`evidence/M5-api36-validation.md`, machine-readable assertions, and the source
+log hashes there.

@@ -64,3 +64,15 @@ default-off EGL replacement evidence limit are recorded in
 `M4-api30-default-off-closeout.md` and
 `M4-api30-default-off-pixel-assertions.json`, with four corresponding PNGs.
 The TCUI resource gap and ADB Back timeout remain independent findings.
+
+M5 API 36 functional validation reuses the default-off ARM64 Release runtime
+and APKs. Permission assertions and source log hashes are in
+`M5-api36-scenario-results.json`; exact portrait/landscape pixel counts,
+representative samples, bounds, and screenshot hashes are in
+`M5-api36-pixel-assertions.json`. The six graphics captures are
+`M5-api36-*.png`. A separate natural diagnostic Settings return recorded
+valid-current Skia cleanup, EGL destruction/recreation, and replacement Skia
+initialization in `M5-api36-diagnostic-lifecycle-excerpt.log`. Full logcats
+remain outside Git under `/tmp/codex-android-skia-egl-m5-api36/`; the compact
+validation report is `M5-api36-validation.md`. API 35 and API 29 have not
+started.

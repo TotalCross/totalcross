@@ -66,6 +66,14 @@ report failed GPU context, surface, or canvas creation so callers can release
 new EGL state and defer drawing until a later surface callback succeeds.
 Android screen updates must respect `screen.surfaceReady` after a failed
 replacement. Keep diagnostic hooks default-off and separate from production
-behavior. Focused API 30 lifecycle checks passed; corrected customer
-permission flows and the cross-API matrix remain outstanding. Do not begin
-Milestone 5 without explicit authorization.
+behavior. The M4 API 30 lifecycle and customer checks are accepted. M5 is
+authorized for the API 36 slice only; stop before another API validation.
+
+## M5 API 36 artifact reuse
+
+Reuse the retained default-off ARM64 Release runtime and compatible customer,
+marker, and graphics-probe APKs when their embedded runtime hash matches the
+recorded runtime. Keep all injection properties at zero and suppress the
+lifecycle log filter during default-off cases. Do not rebuild compatible SDK
+or runtime artifacts, repeat M4 exceptional-path injections, or start API 35
+without a separate authorization.

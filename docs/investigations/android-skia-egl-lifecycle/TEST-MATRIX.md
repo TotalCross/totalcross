@@ -138,3 +138,29 @@ scenario evidence, `evidence/M4-api30-default-off-pixel-assertions.json` for
 exact screenshot assertions, and the four `evidence/M4-api30-defaultoff-*.png`
 captures. The accepted diagnostic-enabled five-replacement sequence remains
 in `evidence/M4-api30-five-replacements.json`.
+
+## Milestone 5 — API 36 authorized slice
+
+| Case | Expected assertions | Status |
+| --- | --- | --- |
+| ARM64 API 36 environment and artifact provenance | Hardware-accelerated emulator; default-off APKs embed the reused release runtime | PASS |
+| Exact customer, grant in place | Settings return, app-op `allow`, same live PID, no native crash | PASS |
+| Exact customer, denied return | Settings return, app-op `ignore`, same live PID, no native crash | PASS |
+| Marker, grant in place | App-op `allow`; create/delete `/sdcard/asd`; same process | PASS |
+| Marker, denied return | App-op `ignore`; expected error 13; no directory; same process | PASS |
+| Marker, pregranted | App-op `allow` before launch; create/delete `/sdcard/asd` | PASS |
+| Retained/shared image rendering | Exact red/yellow, blue, green, and magenta pixels after transitions | PASS |
+| Rotation and Home/foreground | Same process returns responsive; exact image counts retained | PASS |
+| Settings return and new image | Retained/shared counts remain; new cyan image and black interior asserted | PASS |
+| Default-off EGL replacement event assertion | Logging suppressed in default-off run; replacement itself not recorded | NOT_RUN |
+| Equivalent diagnostic Settings-return replacement | Cleanup end precedes EGL destroy; new EGL current precedes Skia init end | PASS |
+| Native crash scan | No `Fatal signal`, `SIGSEGV`, `SIGABRT`, `FATAL EXCEPTION`, or `Abort message` matches | PASS |
+| API 35 and API 29 | Await explicit authorization; no tests started | NOT_RUN |
+
+The portrait orientation round-trip consistently shifts all image bounds down
+65 pixels while preserving their exact counts; post-transition captures use
+matching shifted sample coordinates. Artifact identities, permission states,
+filesystem assertions, hashes, pixel results, screenshots, and the diagnostic
+event excerpt are in `evidence/M5-api36-validation.md`,
+`evidence/M5-api36-scenario-results.json`, and
+`evidence/M5-api36-pixel-assertions.json`.

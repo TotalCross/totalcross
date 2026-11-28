@@ -1,0 +1,164 @@
+{
+  "api": 36,
+  "artifacts": {
+    "defaultOffGraphicsProbeApkSha256": "abb88ebc7790789d0d38cf63ac07834ba947ca660fd9d8b912c9e2b1979c1232",
+    "defaultOffRuntimeSha256": "c86831b58e4beb0415468d354473cd0f7fc98c09ceb3549abd6d9b89b4316610",
+    "disposableTCUIOverlaySha256": "e08519d84906a80e93e1b9e549c992c47fb20ae7ca8e74f78d4f66a18c0dc7fb",
+    "exactCustomerApkSha256": "842af2c7d984074d09806139252629b626c888e4ccefe570d01f7b704d958af5",
+    "markerApkSha256": "9252d1738d7e036884f6216138f029f266f9fc4b0495b221e5c568fd01609779"
+  },
+  "cases": [
+    {
+      "fatalNative": false,
+      "filesystemMarkers": "not emitted by exact customer APK; covered by marker app",
+      "id": "customer-grant-in-place",
+      "permissionAfter": "allow",
+      "permissionBefore": "ignore",
+      "pid": "17318",
+      "returnedToApp": true,
+      "sameProcess": true,
+      "settingsOpened": true,
+      "status": "PASS"
+    },
+    {
+      "fatalNative": false,
+      "id": "customer-denied-return",
+      "permissionAfter": "ignore",
+      "permissionBefore": "ignore",
+      "pid": "18015",
+      "returnedToApp": true,
+      "sameProcess": true,
+      "settingsOpened": true,
+      "status": "PASS",
+      "storageDirectoryAfter": ""
+    },
+    {
+      "created": true,
+      "deleted": true,
+      "fatalNative": false,
+      "id": "marker-grant-in-place",
+      "permissionAfter": "allow",
+      "permissionBefore": "ignore",
+      "pid": "17565",
+      "returnedToApp": true,
+      "sameProcess": true,
+      "status": "PASS",
+      "storageDirectoryAfter": ""
+    },
+    {
+      "created": false,
+      "deleted": false,
+      "expectedDenial": true,
+      "fatalNative": false,
+      "id": "marker-denied-return",
+      "note": "Raw marker log resolves a summary-parser mismatch; retained summary boolean was false because it only matched Operation not permitted.",
+      "permissionAfter": "ignore",
+      "permissionBefore": "ignore",
+      "pid": "17735",
+      "returnedToApp": true,
+      "sameProcess": true,
+      "status": "PASS",
+      "storageDirectoryAfter": ""
+    },
+    {
+      "created": true,
+      "deleted": true,
+      "fatalNative": false,
+      "id": "marker-pregranted",
+      "permissionAfter": "allow",
+      "permissionBefore": "allow",
+      "pid": "17863",
+      "sameProcess": true,
+      "settingsOpened": false,
+      "status": "PASS",
+      "storageDirectoryAfter": ""
+    }
+  ],
+  "diagnosticSettingsReturnControl": {
+    "apkSha256": "b52b2034f0779c085b78aabffbd1812014a4df95215b2ed7e28fcb05a983fcb0",
+    "appPidBeforeAfter": 18551,
+    "debugInjectionProperties": "all 0",
+    "embeddedDiagnosticRuntimeSha256": "0e9e5e37b79c29db96acce7083f9b29e788832750614fe72c129f5a53c1586b5",
+    "events": [
+      {
+        "event": "skia.cleanup.valid-current.end",
+        "seq": 58
+      },
+      {
+        "event": "egl.destroy.begin",
+        "seq": 59
+      },
+      {
+        "event": "egl.create.madeCurrent",
+        "seq": 70
+      },
+      {
+        "event": "skia.init.end",
+        "seq": 82
+      }
+    ],
+    "excerpt": "M5-api36-diagnostic-lifecycle-excerpt.log",
+    "orderedEglReplacement": true,
+    "sameProcess": true,
+    "status": "PASS",
+    "transition": "natural Settings launch and return"
+  },
+  "environment": {
+    "abi": "arm64-v8a",
+    "api": 36,
+    "avd": "Codex_ImageOwnership_API36_ARM64",
+    "fingerprint": "google/sdk_gphone64_arm64/emu64a:16/BE2A.250530.026.F3/13894323:userdebug/dev-keys",
+    "hardwareAccelerated": true,
+    "renderer": "Google (Apple), Android Emulator OpenGL ES Translator (Apple M1 Pro), GLES 3.0",
+    "serial": "emulator-5556"
+  },
+  "graphicsProbe": {
+    "fatalNative": false,
+    "foregroundAfterHomeReturn": true,
+    "injectionProperties": "all 0",
+    "landscapeRotation": "1",
+    "logger": "SUPPRESS",
+    "newImageMarker": "TC_SKIA_PROBE NEW_IMAGE_CREATED",
+    "pidAfterHomeReturn": "18202",
+    "pidAfterRotation": "18202",
+    "pidAfterSettingsReturn": "18202",
+    "pidBackground": "18202",
+    "pidFinal": "18202",
+    "pidInitial": "18202",
+    "pidLandscape": "18202",
+    "readyMarker": "TC_SKIA_PROBE READY shared=2 retained=1 content=red-yellow-blue-green",
+    "rotationInitial": "0",
+    "settingsReturnedToProbe": true,
+    "status": "PASS"
+  },
+  "injectionProperties": {
+    "failEglInit": "0",
+    "failSkiaSurfaceInit": "0",
+    "forceEglReplacement": "0",
+    "loseEglContext": "0",
+    "renderSkiaProbe": "0",
+    "repeatSkiaCleanup": "0"
+  },
+  "nativeCrashScan": {
+    "matches": [],
+    "patterns": [
+      "Fatal signal",
+      "SIGSEGV",
+      "SIGABRT",
+      "FATAL EXCEPTION",
+      "Abort message"
+    ],
+    "status": "PASS"
+  },
+  "runtimeSha256": "c86831b58e4beb0415468d354473cd0f7fc98c09ceb3549abd6d9b89b4316610",
+  "sourceLogSha256": {
+    "diag-control-settings-return.log": "b46680095c10b2be47aac8034e7c6f510a68952b1b4007a7863a95d0107b5821",
+    "exact-denied-logcat.txt": "41518494d733dbaf0ee4dec8b9dcd79563a899901527d34895647d63a41cc552",
+    "exact-grant-logcat.txt": "314f2e07ee070b095c12d1681ec079cfd18f3fe4d4d9c4a0f54cf7e7e77ffb6e",
+    "graphics-initial-logcat.txt": "60cbbf4957e676f82c95d13acaff768ed3ef620ea35095cd9e783bade1b8c984",
+    "graphics-lifecycle-logcat.txt": "2b9a7679d96809f4282dd8c4e13bd1bf0dc868258c43f8426328564652e0b035",
+    "marker-denied-return-logcat.txt": "866c0a17752fc3239da02689b665dc7731e341fb03897ec00b74b4cf2924ee9e",
+    "marker-grant-in-place-logcat.txt": "3bb1bd7568e10d7401db617c8c73b6609f5eef20c4252c361fe90459f5f4f72f",
+    "marker-pregranted-logcat.txt": "fe0ac2ca575929d744844273a9d04084330a701eccf950aaf26c871fac002c46"
+  }
+}
