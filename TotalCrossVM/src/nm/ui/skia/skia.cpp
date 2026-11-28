@@ -10,9 +10,6 @@
 #if defined(ANDROID)
 #include <jni.h>
 #include <android/bitmap.h>
-#if defined(TC_ANDROID_EGL_LIFECYCLE_TESTS)
-#include <sys/system_properties.h>
-#endif
 #endif
 
 #if TC_GRAPHICS_GLES
@@ -67,16 +64,6 @@
 
 #include <vector>
 #include <map>
-
-#if defined(ANDROID) && defined(TC_ANDROID_EGL_LIFECYCLE_TESTS)
-static bool androidSkiaLifecycleRenderProbeEnabled()
-{
-    char value[PROP_VALUE_MAX];
-    return __system_property_get("debug.tcvm.renderSkiaProbe", value) > 0
-        && value[0] == '1' && value[1] == '\0';
-}
-
-#endif
 
 #if defined(ANDROID) && defined(TC_ANDROID_EGL_LIFECYCLE_DIAGNOSTICS)
 #include <android/log.h>
@@ -221,7 +208,7 @@ std::vector<std::unique_ptr<SkiaImageSurface>> imageSurfaces;
 
 std::map<std::string, int> typefaceIndexMap;
 
-void initSkia(int w, int h, void * pixels, int pitch, uint32_t pixelformat)
+int32_t initSkia(int w, int h, void * pixels, int pitch, uint32_t pixelformat)
 {
     SKIA_TRACE()
 #if defined(ANDROID) && defined(TC_ANDROID_EGL_LIFECYCLE_DIAGNOSTICS)
@@ -231,9 +218,10 @@ void initSkia(int w, int h, void * pixels, int pitch, uint32_t pixelformat)
 #endif
     destroySkiaScreen();
 #if TC_GRAPHICS_SOFTWARE
-    bitmap.installPixels(SkImageInfo::Make(w,
+    if (!bitmap.installPixels(SkImageInfo::Make(w,
                                            h,
-                                           (SkColorType) colorType(pixelformat), kPremul_SkAlphaType), pixels, pitch);
+                                           (SkColorType) colorType(pixelformat), kPremul_SkAlphaType), pixels, pitch))
+        return false;
     canvas = new SkCanvas(bitmap);
 #elif TC_GRAPHICS_GLES
     // To use Skia's GPU backend, a OpenGL context is needed. Skia uses the "Gr" library to abstract
@@ -241,6 +229,16 @@ void initSkia(int w, int h, void * pixels, int pitch, uint32_t pixelformat)
     // a GL context and produce a valid rendertarget out of it for rendering.
     auto interface = GrGLMakeNativeInterface();
     sk_sp<GrDirectContext> grContext(GrDirectContext::MakeGL(interface));
+    if (!grContext)
+    {
+#if defined(ANDROID) && defined(TC_ANDROID_EGL_LIFECYCLE_DIAGNOSTICS)
+        androidSkiaContextIdentity = nullptr;
+        androidSkiaSurfaceIdentity = nullptr;
+        androidSkiaCanvasIdentity = nullptr;
+        TC_ANDROID_EGL_DIAG_SKIA("skia.context.create.failed", nullptr, nullptr, nullptr, 0);
+#endif
+        return false;
+    }
 #if defined(ANDROID) && defined(TC_ANDROID_EGL_LIFECYCLE_DIAGNOSTICS)
     androidSkiaContextIdentity = grContext.get();
     TC_ANDROID_EGL_DIAG_SKIA("skia.context.created", androidSkiaContextIdentity,
@@ -263,6 +261,17 @@ void initSkia(int w, int h, void * pixels, int pitch, uint32_t pixelformat)
     sk_sp<SkSurface> gpuSurface = SkSurface::MakeFromBackendRenderTarget(
         grContext.get(), render_target, kBottomLeft_GrSurfaceOrigin,
         kRGB_888x_SkColorType, nullptr, &surface_props);
+    if (!gpuSurface)
+    {
+        grContext->releaseResourcesAndAbandonContext();
+#if defined(ANDROID) && defined(TC_ANDROID_EGL_LIFECYCLE_DIAGNOSTICS)
+        androidSkiaContextIdentity = nullptr;
+        androidSkiaSurfaceIdentity = nullptr;
+        androidSkiaCanvasIdentity = nullptr;
+        TC_ANDROID_EGL_DIAG_SKIA("skia.surface.create.failed", nullptr, nullptr, nullptr, 0);
+#endif
+        return false;
+    }
 #if defined(ANDROID) && defined(TC_ANDROID_EGL_LIFECYCLE_DIAGNOSTICS)
     androidSkiaSurfaceIdentity = gpuSurface.get();
     TC_ANDROID_EGL_DIAG_SKIA("skia.surface.created", androidSkiaContextIdentity,
@@ -270,6 +279,18 @@ void initSkia(int w, int h, void * pixels, int pitch, uint32_t pixelformat)
 #endif
 
     SkCanvas *gpuCanvas = gpuSurface->getCanvas();
+    if (!gpuCanvas)
+    {
+        grContext->releaseResourcesAndAbandonContext();
+        gpuSurface.reset();
+#if defined(ANDROID) && defined(TC_ANDROID_EGL_LIFECYCLE_DIAGNOSTICS)
+        androidSkiaContextIdentity = nullptr;
+        androidSkiaSurfaceIdentity = nullptr;
+        androidSkiaCanvasIdentity = nullptr;
+        TC_ANDROID_EGL_DIAG_SKIA("skia.canvas.create.failed", nullptr, nullptr, nullptr, 0);
+#endif
+        return false;
+    }
 #if defined(ANDROID) && defined(TC_ANDROID_EGL_LIFECYCLE_DIAGNOSTICS)
     androidSkiaCanvasIdentity = gpuCanvas;
     TC_ANDROID_EGL_DIAG_SKIA("skia.canvas.created", androidSkiaContextIdentity,
@@ -299,26 +320,12 @@ void initSkia(int w, int h, void * pixels, int pitch, uint32_t pixelformat)
 
     backPaint.setAntiAlias(true);
     canvas->clear(SK_ColorWHITE);
-#if defined(ANDROID) && defined(TC_ANDROID_EGL_LIFECYCLE_TESTS)
-    if (androidSkiaLifecycleRenderProbeEnabled()) {
-        SkPaint probePaint;
-        probePaint.setAntiAlias(false);
-        probePaint.setStyle(SkPaint::kFill_Style);
-        probePaint.setColor(SK_ColorRED);
-        canvas->drawRect(SkRect::MakeXYWH(12, 12, 96, 96), probePaint);
-        probePaint.setColor(SK_ColorGREEN);
-        canvas->drawRect(SkRect::MakeXYWH(120, 12, 96, 96), probePaint);
-        probePaint.setColor(SK_ColorBLUE);
-        canvas->drawRect(SkRect::MakeXYWH(228, 12, 96, 96), probePaint);
-        TC_ANDROID_EGL_DIAG_SKIA("skia.test.render-probe", androidSkiaContextIdentity,
-                androidSkiaSurfaceIdentity, androidSkiaCanvasIdentity, 3);
-    }
-#endif
     flushSkia();
 #if defined(ANDROID) && defined(TC_ANDROID_EGL_LIFECYCLE_DIAGNOSTICS)
     TC_ANDROID_EGL_DIAG_SKIA("skia.init.end", androidSkiaContextIdentity,
             androidSkiaSurfaceIdentity, androidSkiaCanvasIdentity, 0);
 #endif
+    return true;
 }
 
 enum SkiaScreenCleanupMode

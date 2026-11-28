@@ -27,7 +27,7 @@ typedef Pixel32 Pixel;
 #if TC_WINDOWING_SDL
 int32 colorType(uint32 pixelformat);
 #endif
-void initSkia(int w, int h, void * pixels, int pitch, uint32 pixelformat);
+int32 initSkia(int w, int h, void * pixels, int pitch, uint32 pixelformat);
 void destroySkiaScreen();
 void releaseSkiaScreenBeforeEglTeardown();
 void abandonSkiaScreenBeforeEglTeardown();

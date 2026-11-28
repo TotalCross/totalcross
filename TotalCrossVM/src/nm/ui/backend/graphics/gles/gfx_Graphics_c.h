@@ -657,7 +657,15 @@ int32 initGLES(ScreenSurface screenSurface)
    androidLogEglLifecycle("skia.init.call.begin", extension,
          extension->window, null, extension->display,
          extension->surface, extension->context);
-   initSkia(width, height, NULL, screenSurface->pitch, screenSurface->pixelformat);
+   if (!initSkia(width, height, NULL, screenSurface->pitch, screenSurface->pixelformat))
+   {
+      androidLogEglLifecycle("skia.init.failed", extension,
+            extension->window, null, extension->display,
+            extension->surface, extension->context);
+      androidPrepareSkiaForEglTeardown(extension);
+      androidDestroyEGL(extension);
+      return false;
+   }
    androidLogEglLifecycle("skia.init.call.end", extension,
          extension->window, null, extension->display,
          extension->surface, extension->context);
@@ -720,8 +728,16 @@ int32 graphicsCreateScreenSurface(ScreenSurface screenSurface)
    screenSurface->pixels = (uint8*)1;
 
 #ifdef SKIA_H
-   initSkia(screenSurface->screenW, screenSurface->screenH, NULL,
-         screenSurface->pitch, screenSurface->pixelformat);
+   if (!initSkia(screenSurface->screenW, screenSurface->screenH, NULL,
+         screenSurface->pitch, screenSurface->pixelformat))
+   {
+#if TC_GLES_ANDROID
+      ScreenSurfaceEx extension = SCREEN_EX(screenSurface);
+      androidPrepareSkiaForEglTeardown(extension);
+      androidDestroyEGL(extension);
+#endif
+      return false;
+   }
 #endif
 
    return screenSurface->pixels != null;

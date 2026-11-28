@@ -80,7 +80,8 @@ bool graphicsCreateScreenSurface(ScreenSurface screen)
       return false;
 #endif
 #if TC_RENDERER_SKIA
-   initSkia(screen->screenW, screen->screenH, screen->pixels, (int)screen->pitch, screen->pixelformat);
+   if (!initSkia(screen->screenW, screen->screenH, screen->pixels, (int)screen->pitch, screen->pixelformat))
+      return false;
 #endif
    return true;
 }

@@ -59,7 +59,7 @@ static bool checkScreenPixels()
 void updateScreen(Context currentContext)
 {
 #ifdef ANDROID
-   if (appPaused) return;
+   if (appPaused || !screen.surfaceReady) return;
 #endif
    LOCKVAR(screen);
    if (keepRunning && checkScreenPixels() && controlEnableUpdateScreenPtr && *controlEnableUpdateScreenPtr && (currentContext->fullDirty || (currentContext->dirtyX1 != screen.screenW && currentContext->dirtyX2 != 0 && currentContext->dirtyY1 != screen.screenH && currentContext->dirtyY2 != 0)))
