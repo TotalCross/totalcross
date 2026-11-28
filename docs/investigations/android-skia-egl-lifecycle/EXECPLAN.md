@@ -41,18 +41,28 @@ FINAL-REPORT.md is completed only at final consolidation.
   background/foreground control passed. See
   evidence/M3-api30-causal-candidate.md and
   evidence/M3-api30-candidate-sequence.log. Stop for review before M4.
-- [ ] Milestone 4: production correction and cleanup-policy tests are
-  committed. The resumed API 30 interval passed cleanup-policy, actual context
-  loss, injected EGL/Skia initialization failure and retry, repeated cleanup,
-  five rendered EGL replacements, and diagnostic/default-off builds. Corrected
-  customer permission scenarios and complete default-off pixel verification
-  remain outstanding. See evidence/M4-api30-resumed-validation.md; stop for
-  review before M5.
+- [x] Milestone 4: production correction, cleanup-policy tests, exceptional
+  recovery, and diagnostic rendering passed. The final resumed API 30 run
+  passed exact and marker-only customer grant, denied, and pregranted cases on
+  the retained default-off runtime. Default-off pixel counts matched across a
+  portrait orientation round-trip, and a new image rendered. That run logged
+  surface generations but did not establish EGL destroy/create. Java
+  lifecycle INFO logging was still enabled, though all test hooks were off;
+  it was suppressed after capture and no repeat was started. All direct
+  `initSkia()` callers were reviewed; non-Android software failure propagation
+  needs final PR compile coverage. See
+  evidence/M4-api30-default-off-closeout.md. Stop for review before M5.
 - [x] (2026-11-28) Resume M4 within the authorized interval. A failed EGL
   replacement exposed an event-thread draw with no canvas; the surface-ready
   guard fixed it and the next callback recovered in the same process. Five
   post-replacement images had expected pixel assertions. Preserve the missing
-  customer permission cases as pending; do not start M5.
+  customer permission cases as pending at that checkpoint; do not start M5.
+- [x] (2026-11-28) Complete the final default-off API 30 customer and rendering
+  checks from checkpoint `9542e4d8`. Both application variants pass all three
+  permission states without the native crash; the probe passes exact portrait
+  pixels before/after rotation and after new-image creation. Default-off EGL
+  replacement itself remains unestablished. See
+  evidence/M4-api30-default-off-closeout.md. Stop before M5.
 - [ ] Milestone 5: run the authorized local ARM64 emulator matrix; stop for
   review.
 - [ ] Milestone 6: reconcile evidence, finish FINAL-REPORT.md, and verify the
@@ -179,14 +189,18 @@ M4 implemented the valid/current release path, non-current rebind check, and
 lost/unavailable abandon path, with cleanup before EGL teardown. The policy
 test and diagnostics/default-off Release builds pass. The resumed API 30
 campaign passed context-loss handling, EGL and Skia initialization failure
-recovery, repeated empty cleanup, five real EGL replacements, and deterministic
-pixel checks. The corrected customer permission flows were not rerun, and the
-default-off screenshot did not preserve the full expected layout. The missing
-TCUI assets and ADB Back timeout remain independent. Do not start M5 until
-remaining focused checks are authorized and complete.
+recovery, repeated empty cleanup, five diagnostic EGL replacements, corrected
+customer permission scenarios, and exact default-off pixel assertions across
+orientation and new-image creation. Surface generations advanced in the
+default-off run, but it did not log EGL destroy/create. The Java lifecycle
+logger was still at INFO for the screenshot run and was suppressed afterward;
+no repeat occurred before the experiment cutoff. The missing TCUI assets and
+ADB Back timeout remain independent. M4 is complete; do not start M5 without
+explicit approval.
 
 ## Revision Note
 
-Updated after the resumed M4 validation checkpoint: production correction and
-test hooks are committed; API 30 lifecycle rendering and exception paths pass;
-customer permission flows and full default-off pixel validation remain open.
+Updated after the final resumed M4 API 30 validation: customer permission
+scenarios and default-off screenshot pixel assertions pass; default-off EGL
+replacement remains unestablished and the final PR still needs affected
+non-Android compilation.

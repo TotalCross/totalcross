@@ -89,7 +89,7 @@ graphics failure.
 This table records the first M4 interval; the continuation below supersedes
 these statuses where it contains newer evidence.
 
-## Milestone 4 — resumed API 30 validation
+## Milestone 4 — resumed API 30 validation, earlier checkpoint (superseded)
 
 | Case | Result |
 | --- | --- |
@@ -110,10 +110,31 @@ these statuses where it contains newer evidence.
 | Corrected customer app native-crash check | NOT_RUN for permission scenarios; graphics-probe recreation and exceptional-path checks had no fatal signal after the guard |
 | TCUI missing resources and ADB Back timeout | OPEN independent findings; neither was corrected |
 
-The diagnostics build used `debug.tcvm.forceEglReplacement=1` together with
-rotation to produce real EGL teardown and replacement initialization. Each
-iteration checked representative exact color counts from screen captures;
-see `evidence/M4-api30-five-replacements.json` and the three
-`evidence/M4-api30-render-*.png` files. Default-off runtime rendering is not
-claimed pixel-validated. Milestone 5 and the API 29/30/35/36 matrix have not
-started.
+This earlier M4 checkpoint is superseded by the final resumed cases below.
+Milestone 5 and the API 29/30/35/36 matrix have not started.
+
+## Milestone 4 — final resumed API 30 validation
+
+| Case | Result |
+| --- | --- |
+| Reused default-off ARM64 Release runtime and compatible artifacts | PASS; embedded runtime SHA matches `c86831b5…`, test TCUI matches the recorded overlay, customer APK signatures verify |
+| Exact customer / grant in place | PASS; Settings returned to same PID, app-op `allow`, no native crash |
+| Exact customer / denied return | PASS; returned to same PID, app-op `ignore`, no native crash |
+| Exact customer / pregranted | PASS; app-op `allow` before launch, no Settings screen, same live process, no native crash |
+| Marker app / grant in place | PASS; same process, `/sdcard/asd` created and deleted, app-op `allow`, no native crash |
+| Marker app / denied return | PASS; same process, expected `Operation not permitted`, app-op `ignore`, no native crash |
+| Marker app / pregranted | PASS; `/sdcard/asd` created and deleted, app-op `allow`, no Settings screen, no native crash |
+| Default-off initial probe rendering | PASS; exact expected red/yellow, blue/white, green/magenta RGB counts; all `debug.tcvm.*` hooks off |
+| Default-off portrait after orientation round-trip | PASS; exact portrait counts match the initial capture; read-only Java lifecycle INFO logging was enabled |
+| Default-off newly created image and continued interaction | PASS; cyan/black image pixels present; retained/shared image counts unchanged; same process responsive |
+| Logging-suppressed pixel repetition | NOT_RUN; logger property set to `SUPPRESS` after capture, no rerun after 28-minute experiment cutoff |
+| EGL replacement in default-off run | NOT_RUN as an EGL replacement assertion; surface generations 1–4 and callbacks are logged, but no EGL destroy/create events |
+| Shared `initSkia()` return-contract review | PASS; all three direct callers check the result. Non-Android software initialization failure now propagates; compile affected non-Android backends in final PR review |
+| API 29/30/35/36 matrix and Milestone 5 | NOT_RUN; require explicit approval |
+| Missing TCUI resources and full-harness ADB Back timeout | OPEN independent findings; not investigated or corrected |
+
+See `evidence/M4-api30-default-off-closeout.md` for artifact identities and
+scenario evidence, `evidence/M4-api30-default-off-pixel-assertions.json` for
+exact screenshot assertions, and the four `evidence/M4-api30-defaultoff-*.png`
+captures. The accepted diagnostic-enabled five-replacement sequence remains
+in `evidence/M4-api30-five-replacements.json`.

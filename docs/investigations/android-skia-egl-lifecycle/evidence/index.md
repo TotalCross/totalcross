@@ -52,12 +52,15 @@ full logcats, and tombstones remain outside Git. The committed stack excerpt
 is sanitized and compact.
 
 M4 first-interval results: M4-api30-initial-validation.md. Resumed M4 source,
-binary identities, lifecycle events, exception injection/retry, five rendered
-EGL replacements, and deferred permission cases:
+binary identities, lifecycle events, exception injection/retry, and five
+rendered EGL replacements:
 M4-api30-resumed-validation.md, M4-api30-five-replacements.json,
 M4-api30-context-loss-and-init-attempts.json,
 M4-api30-guarded-retry.json, M4-api30-skia-init-retry.json, and
 M4-api30-render-before.png, M4-api30-render-after-recreation.png, and
-M4-api30-render-new-image.png. Corrected customer permission flows and
-default-off pixel validation remain incomplete. The TCUI resource gap and ADB
-Back timeout remain independent findings.
+M4-api30-render-new-image.png. Final default-off customer permission
+scenarios, equivalent-state pixel assertions, screenshot hashes, and the
+default-off EGL replacement evidence limit are recorded in
+`M4-api30-default-off-closeout.md` and
+`M4-api30-default-off-pixel-assertions.json`, with four corresponding PNGs.
+The TCUI resource gap and ADB Back timeout remain independent findings.

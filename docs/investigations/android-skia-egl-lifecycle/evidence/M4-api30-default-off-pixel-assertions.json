@@ -1,0 +1,86 @@
+{
+  "checker": "Exact PNG RGB pixel counts and representative RGB samples; no tolerance.",
+  "overall": "PASS",
+  "captures": {
+    "before": {
+      "file": "M4-api30-defaultoff-before.png",
+      "sha256": "e9ae05d9655943fbde977d90399cbc69022acb076bccf97ec7faefb4adccb8b7",
+      "size": "1080x1920",
+      "exactRgbCounts": {
+        "red": 95256,
+        "yellow": 31752,
+        "blue": 47628,
+        "green": 47628,
+        "magenta": 15876,
+        "cyan": 0
+      },
+      "pass": true,
+      "samples_xy_rgb": {
+        "red": "80,250=255,0,0",
+        "yellow": "170,330=255,255,0",
+        "shared_red": "420,250=255,0,0",
+        "shared_yellow": "520,330=255,255,0",
+        "blue": "750,250=0,0,255",
+        "retained_white": "820,330=255,255,255",
+        "green": "80,620=0,255,0",
+        "magenta": "170,700=255,0,255"
+      }
+    },
+    "after": {
+      "file": "M4-api30-defaultoff-after.png",
+      "sha256": "646b2f54a3c9ec6f51987a8f41cc8b590b74b71ca544b14068a9b3865be69bb2",
+      "size": "1080x1920",
+      "exactRgbCounts": {
+        "red": 95256,
+        "yellow": 31752,
+        "blue": 47628,
+        "green": 47628,
+        "magenta": 15876,
+        "cyan": 0
+      },
+      "pass": true,
+      "samples_xy_rgb": {
+        "red": "80,250=255,0,0",
+        "yellow": "170,330=255,255,0",
+        "shared_red": "420,250=255,0,0",
+        "shared_yellow": "520,330=255,255,0",
+        "blue": "750,250=0,0,255",
+        "retained_white": "820,330=255,255,255",
+        "green": "80,620=0,255,0",
+        "magenta": "170,700=255,0,255"
+      }
+    },
+    "new": {
+      "file": "M4-api30-defaultoff-new-image.png",
+      "sha256": "7126c5420b6beafb52d855a34ccbb4a75838a7f438d442f9285f0cbdb4554997",
+      "size": "1080x1920",
+      "exactRgbCounts": {
+        "red": 95256,
+        "yellow": 31752,
+        "blue": 47628,
+        "green": 47628,
+        "magenta": 15876,
+        "cyan": 47628
+      },
+      "pass": true,
+      "samples_xy_rgb": {
+        "red": "80,250=255,0,0",
+        "yellow": "170,330=255,255,0",
+        "shared_red": "420,250=255,0,0",
+        "shared_yellow": "520,330=255,255,0",
+        "blue": "750,250=0,0,255",
+        "retained_white": "820,330=255,255,255",
+        "green": "80,620=0,255,0",
+        "magenta": "170,700=255,0,255",
+        "new_cyan_outer": "520,800=0,255,255",
+        "new_black_inner": "520,740=0,0,0"
+      }
+    }
+  },
+  "landscape": {
+    "path": "M4-api30-defaultoff-landscape.png",
+    "size": "1920x1080",
+    "sha256": "9ab7d84c820a0e0c997f518c28430c263118f25c9818e75b94103154047b05e7",
+    "note": "Lower button is clipped in fixed 600x800 content viewport; portrait restores it."
+  }
+}

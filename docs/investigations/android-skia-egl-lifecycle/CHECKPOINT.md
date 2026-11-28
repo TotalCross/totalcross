@@ -7,9 +7,13 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Current milestone
 
-Milestone 4 production correction is committed; focused API 30 lifecycle
-validation is complete. Corrected permission scenarios and default-off pixel
-validation remain outstanding. Stop before Milestone 5 pending review.
+Milestone 4 production correction and focused API 30 validation are complete.
+Default-off customer permission scenarios and representative rendering pixel
+assertions pass. The default-off orientation run does not independently prove
+EGL context replacement; diagnostic-enabled replacement evidence is retained.
+All `debug.tcvm.*` hooks were off; read-only Java lifecycle INFO logging remained
+on during the pixel capture and was suppressed afterward without a repeat.
+Stop before Milestone 5 pending review.
 
 ## Completed sub-milestones
 
@@ -171,9 +175,12 @@ ordered evidence are committed separately.
 ## Remaining technical question
 
 No unresolved M4 cleanup policy question remains for the exercised Android
-paths. API 29/30/35/36 matrix validation and the corrected customer permission
-flows remain for a later authorized milestone. M1's missing TCUI resources and
-M2's all-phase ADB Back timeout remain independent findings and were not fixed.
+paths. API 29/30/35/36 matrix validation remains for a later authorized
+milestone. The default-off orientation transition changed surface generations
+and rendered all expected pixels, but its trace did not show EGL destroy/create
+events; that replacement claim remains unestablished for this configuration.
+M1's missing TCUI resources and M2's all-phase ADB Back timeout remain
+independent findings and were not fixed.
 
 ## Exact next concrete action
 
@@ -183,21 +190,24 @@ explicit authorization.
 ## Milestone 4 checkpoint update
 
 Production correction commits: 4c128ad88 and d71b21bc7. Policy/test-probe
-commit: b9415e205; original cleanup-policy test commit: c5e7b7103. The resumed
-cleanup-policy C test also passed all five cases. Diagnostic and default-off
-ARM64 Release builds passed. API 30 testing
-verified actual context destruction followed by Skia abandon cleanup; a real
-failed replacement initialization was first found to call `skia_shiftScreen`
-without a canvas. The Android update path now skips drawing while the screen
-surface is not ready, and a cleared failure followed by another surface
-callback restored EGL, Skia, visible content, and the same running process.
-Injected Skia surface-creation failure/retry and repeated empty cleanup passed.
-Five consecutive forced EGL replacements during rotations each showed cleanup
-end before EGL destroy, replacement EGL current before Skia init end, and
-preserved exact colored pixels for retained/shared/new images. The corrected
-customer grant/denied/pregranted scenarios were not rerun in this interval.
-Evidence is in `evidence/M4-api30-resumed-validation.md`; initial M4 results
-remain in `evidence/M4-api30-initial-validation.md`. Milestone 5 has not begun.
+commit: b9415e205; original cleanup-policy test commit: c5e7b7103. Diagnostic
+and default-off ARM64 Release builds passed. The accepted diagnostic evidence
+covers context loss, failed replacement recovery, repeated cleanup, and five
+ordered EGL replacements with exact image pixels. In the final resumed API 30
+run, exact and marker-only customer APKs passed grant-in-place, denied-return,
+and pregranted permission cases on the retained default-off runtime. The
+default-off graphics probe passed exact portrait pixel checks before and after
+an orientation round-trip, then rendered a newly created image. Surface
+generation callbacks advanced, but EGL destroy/create was not established in
+that default-off run. All direct `initSkia()` callers check its return value;
+the shared software path now propagates initialization failure on non-Android
+builds, which requires compilation validation in the final PR review. Detailed
+identities and compact assertions are in
+`evidence/M4-api30-default-off-closeout.md` and
+`evidence/M4-api30-default-off-pixel-assertions.json`. Missing TCUI assets and
+the unrelated ADB Back timeout remain open. Java lifecycle logging was
+suppressed after the rendering run; no repeat was started after the experiment
+cutoff. Milestone 5 has not begun.
 
 ## Resume protocol
 
