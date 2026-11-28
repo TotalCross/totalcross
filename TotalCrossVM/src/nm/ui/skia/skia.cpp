@@ -10,6 +10,15 @@
 #if defined(ANDROID)
 #include <jni.h>
 #include <android/bitmap.h>
+#if defined(TC_ANDROID_EGL_LIFECYCLE_TESTS)
+#include <sys/system_properties.h>
+static bool androidSkiaLifecycleTestProperty(const char *name)
+{
+    char value[PROP_VALUE_MAX];
+    return __system_property_get(name, value) > 0
+        && value[0] == '1' && value[1] == '\0';
+}
+#endif
 #endif
 
 #if TC_GRAPHICS_GLES
@@ -261,6 +270,10 @@ int32_t initSkia(int w, int h, void * pixels, int pitch, uint32_t pixelformat)
     sk_sp<SkSurface> gpuSurface = SkSurface::MakeFromBackendRenderTarget(
         grContext.get(), render_target, kBottomLeft_GrSurfaceOrigin,
         kRGB_888x_SkColorType, nullptr, &surface_props);
+#if defined(ANDROID) && defined(TC_ANDROID_EGL_LIFECYCLE_TESTS)
+    if (androidSkiaLifecycleTestProperty("debug.tcvm.failSkiaSurfaceInit"))
+        gpuSurface.reset();
+#endif
     if (!gpuSurface)
     {
         grContext->releaseResourcesAndAbandonContext();
