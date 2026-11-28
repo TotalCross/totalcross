@@ -7,7 +7,9 @@ SPDX-License-Identifier: LGPL-2.1-only
 
 ## Current milestone
 
-Milestone 4 implementation committed; initial validation is partial.
+Milestone 4 production correction is committed; focused API 30 lifecycle
+validation is complete. Corrected permission scenarios and default-off pixel
+validation remain outstanding. Stop before Milestone 5 pending review.
 
 ## Completed sub-milestones
 
@@ -130,10 +132,13 @@ None.
 
 ## Pending experiments
 
-No M3 experiment remains. The final API matrix and production correction have
-not started. M4 should implement the narrow lifecycle contract recorded in
-evidence/M3-api30-causal-candidate.md; do not begin it until the user
-explicitly authorizes Milestone 4.
+M4 production correction is implemented and focused API 30 runtime validation
+is complete for Skia/EGL teardown ordering, real context loss, injected
+initialization failures and retry, repeated cleanup, and five rendered surface
+replacements. The corrected original customer permission scenarios and full
+default-off recreation pixel check remain unrun. See
+evidence/M4-api30-resumed-validation.md and TEST-MATRIX.md. Milestone 5 has not
+started and requires explicit authorization.
 
 ## Test environment
 
@@ -165,35 +170,38 @@ ordered evidence are committed separately.
 
 ## Remaining technical question
 
-The current Android resource tree is missing two assets eagerly loaded by
-Android UI startup. The disposable overlay is sufficient for this reproduced
-flow; no production resource fix is in scope for the graphics correction.
-M3 isolated teardown ordering on API 30 and the candidate passed all focused
-scenarios, five repetitions, and one rotation/background/foreground control.
-The production correction remains unimplemented. M1's missing TCUI resources
-and M2's all-phase ADB Back timeout remain independent findings, not fixed.
+No unresolved M4 cleanup policy question remains for the exercised Android
+paths. API 29/30/35/36 matrix validation and the corrected customer permission
+flows remain for a later authorized milestone. M1's missing TCUI resources and
+M2's all-phase ADB Back timeout remain independent findings and were not fixed.
 
 ## Exact next concrete action
 
-Stop at the Milestone 3 review pause. After explicit authorization, begin
-Milestone 4 with the narrow production lifecycle correction; preserve the
-thread, window, generation, and replacement-context contracts established here.
+Pause for review of completed M4 work. Do not begin Milestone 5 without
+explicit authorization.
 
 ## Milestone 4 checkpoint update
 
-Production correction commit: 4c128ad88. Policy test commit: c5e7b7103.
-The API 30 ARM64 release build passed in build3; the five-case cleanup policy
-test passed. One runtime surface replacement completed valid/current Skia
-cleanup before EGL teardown and replacement initialization without a fatal
-signal. The exact denied harness stopped at the existing ADB Back stall.
-Permission marker assertions, actual lost-context and init-failure injection,
-repeated EGL replacements, and distinctive pixel validation remain incomplete.
-The screenshot was blank white. Full details are in
-evidence/M4-api30-initial-validation.md. Complete these focused M4 checks in a
-new authorized interval; do not begin Milestone 5.
+Production correction commits: 4c128ad88 and d71b21bc7. Policy/test-probe
+commit: b9415e205; original cleanup-policy test commit: c5e7b7103. The resumed
+cleanup-policy C test also passed all five cases. Diagnostic and default-off
+ARM64 Release builds passed. API 30 testing
+verified actual context destruction followed by Skia abandon cleanup; a real
+failed replacement initialization was first found to call `skia_shiftScreen`
+without a canvas. The Android update path now skips drawing while the screen
+surface is not ready, and a cleared failure followed by another surface
+callback restored EGL, Skia, visible content, and the same running process.
+Injected Skia surface-creation failure/retry and repeated empty cleanup passed.
+Five consecutive forced EGL replacements during rotations each showed cleanup
+end before EGL destroy, replacement EGL current before Skia init end, and
+preserved exact colored pixels for retained/shared/new images. The corrected
+customer grant/denied/pregranted scenarios were not rerun in this interval.
+Evidence is in `evidence/M4-api30-resumed-validation.md`; initial M4 results
+remain in `evidence/M4-api30-initial-validation.md`. Milestone 5 has not begun.
 
 ## Resume protocol
 
 Resume in the isolated worktree
 /Users/flsobral/.codex/worktrees/fix-android-skia-egl-surface-lifecycle.
-Read this file first. Do not begin Milestone 4 without explicit authorization.
+Read this file first. M4 is complete for this authorized interval; wait for
+explicit authorization before Milestone 5.

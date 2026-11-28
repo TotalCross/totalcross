@@ -42,8 +42,17 @@ FINAL-REPORT.md is completed only at final consolidation.
   evidence/M3-api30-causal-candidate.md and
   evidence/M3-api30-candidate-sequence.log. Stop for review before M4.
 - [ ] Milestone 4: production correction and cleanup-policy tests are
-  committed; initial API 30 validation is partial. Complete permission marker,
-  exceptional-path, repeated-surface, and pixel assertions before M5.
+  committed. The resumed API 30 interval passed cleanup-policy, actual context
+  loss, injected EGL/Skia initialization failure and retry, repeated cleanup,
+  five rendered EGL replacements, and diagnostic/default-off builds. Corrected
+  customer permission scenarios and complete default-off pixel verification
+  remain outstanding. See evidence/M4-api30-resumed-validation.md; stop for
+  review before M5.
+- [x] (2026-11-28) Resume M4 within the authorized interval. A failed EGL
+  replacement exposed an event-thread draw with no canvas; the surface-ready
+  guard fixed it and the next callback recovered in the same process. Five
+  post-replacement images had expected pixel assertions. Preserve the missing
+  customer permission cases as pending; do not start M5.
 - [ ] Milestone 5: run the authorized local ARM64 emulator matrix; stop for
   review.
 - [ ] Milestone 6: reconcile evidence, finish FINAL-REPORT.md, and verify the
@@ -168,12 +177,16 @@ Milestone 1 reproduced the current-baseline failure. Milestone 2 captured the
 old-Skia/new-EGL mismatch, and M3 established the cleanup order as causal.
 M4 implemented the valid/current release path, non-current rebind check, and
 lost/unavailable abandon path, with cleanup before EGL teardown. The policy
-test and release build pass. Initial API 30 functional validation is partial:
-the ADB Back harness stalled, exceptional hooks were not reached, and the
-distinctive-pixel assertion failed to produce colored content. Do not start
-M5 until those focused checks are completed.
+test and diagnostics/default-off Release builds pass. The resumed API 30
+campaign passed context-loss handling, EGL and Skia initialization failure
+recovery, repeated empty cleanup, five real EGL replacements, and deterministic
+pixel checks. The corrected customer permission flows were not rerun, and the
+default-off screenshot did not preserve the full expected layout. The missing
+TCUI assets and ADB Back timeout remain independent. Do not start M5 until
+remaining focused checks are authorized and complete.
 
 ## Revision Note
 
-Updated after Milestone 4 implementation: production correction is committed;
-focused API 30 functional and rendering validation remains incomplete.
+Updated after the resumed M4 validation checkpoint: production correction and
+test hooks are committed; API 30 lifecycle rendering and exception paths pass;
+customer permission flows and full default-off pixel validation remain open.

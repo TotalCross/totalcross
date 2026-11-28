@@ -170,21 +170,52 @@ abandon its direct context before dropping GPU wrappers; do not issue cleanup
 GL calls through the replacement context. No broader context-loss redesign
 was tested or implemented.
 
-## Milestone 4 initial validation
+## Milestone 4 resumed validation
 
-The Android production path queries EGL context/surface validity and checks
-the current display, context, draw surface, and read surface. A valid
-non-current context is rebound on the existing graphics thread before Skia
-cleanup. The valid path calls `releaseResourcesAndAbandonContext()`; invalid
-or unavailable state calls `abandonContext()` before surface wrapper release.
-The same ordering is used for surface replacement and final graphics teardown.
-Failed replacement initialization can retry on a later callback for the same
-window.
+The M4 production path is described in the decisions and checkpoint. Review
+identified a concrete initialization defect: `initSkia()` dereferenced a null
+`SkSurface` and returned no success status. It now checks direct-context,
+surface, and canvas creation and propagates failure through Android GLES and
+software screen creation. Failed EGL/Skia setup clears EGL state before
+returning. A second runtime finding came from the failed replacement test:
+`androidApplySurfaceChange()` marks the screen not ready, but `updateScreen()`
+could still call `skia_shiftScreen()` with no canvas. The Android update path
+now returns while paused or while `screen.surfaceReady` is false. A later
+surface callback retries initialization.
 
-The release build and five-case cleanup policy test passed. One API 30 surface
-replacement logged cleanup completion before EGL destruction and replacement
-Skia initialization, with no fatal signal. Full permission marker assertions,
-test-injected loss/init failure, repeated EGL replacement, and distinctive
-pixel validation remain incomplete. The screenshot was blank white. The exact
-denied harness stopped at the existing ADB Back timeout. See
-`evidence/M4-api30-initial-validation.md`.
+The default-off ARM64 Release build and diagnostics/test-enabled ARM64 Release
+build both passed. The 5-case cleanup policy C test passed. On API 30 ARM64,
+the test hook successfully unbound and destroyed the old EGL context before
+Skia cleanup; the `abandonContext()` path completed before EGL teardown and a
+replacement EGL/Skia surface initialized. The failed EGL initialization hook
+first reproduced a SIGSEGV in `SkCanvas::restoreToCount()` via
+`skia_shiftScreen()`/`updateScreen()`. After the readiness guard, the same
+injection left the app process alive; clearing it and causing a later surface
+callback initialized EGL and Skia successfully. A separate test-only Skia
+surface failure injection exercised the failure return and successful retry.
+The fail hook nulls the just-created backend surface to exercise this branch;
+it does not claim a driver-generated `MakeFromBackendRenderTarget()` failure.
+The EGL-init injection returns before display allocation, so it does not
+validate every partial EGL allocation failure.
+
+Five consecutive forced EGL replacements on a running application-level
+TotalCross probe passed. Each per-iteration evidence record orders old Skia
+cleanup completion before EGL destroy, replacement EGL current before Skia
+initialization completion, and confirms the app stayed alive. Every captured
+post-replacement PNG contained exact red/yellow, blue/white, and green/magenta
+pixel regions from Java-owned images; the shared image appeared in two
+controls. A cyan/black image created after recreation was visible as well.
+Screenshots and machine-readable pixel/event summaries are preserved in
+`evidence/M4-api30-render-*.png` and `evidence/M4-api30-five-replacements.json`.
+
+The default-off runtime started, displayed probe content, returned from
+background, and terminated. Its captured post-resume screen did not preserve
+the complete expected layout, so this is partial rendering evidence and not a
+default-off pixel pass. The corrected original customer permission app's
+grant-in-place, denied-return, and pregranted cases were not rerun during this
+resumed interval. M3's permission passes remain evidence for the isolated
+candidate, not the permanent build. The missing `floatingFrg.png` and
+`outlined_edit.png` resources and the ADB Back timeout remain independent and
+unfixed. Full build logs, APKs, and logcats remain under
+`/tmp/codex-android-skia-egl-m4/`; compact results and source/binary hashes are
+in `evidence/M4-api30-resumed-validation.md`.

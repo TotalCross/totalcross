@@ -1,0 +1,9 @@
+{
+  "failureObserved": true,
+  "processAfterFailure": "18237",
+  "fatalAfterFailure": false,
+  "processAfterRetry": "18237",
+  "replacementEglCreated": true,
+  "replacementSkiaInitialized": true,
+  "pass": true
+}

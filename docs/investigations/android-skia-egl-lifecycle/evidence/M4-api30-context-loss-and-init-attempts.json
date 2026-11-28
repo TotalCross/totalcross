@@ -1,0 +1,35 @@
+[
+  {
+    "scenario": "actual-context-destruction",
+    "events": {
+      "test.context.destroyed.before.cleanup": 7,
+      "skia.cleanup.abandon.begin": 8,
+      "skia.cleanup.abandon.end": 13,
+      "egl.destroy.begin": 14,
+      "egl.create.madeCurrent": 24,
+      "skia.init.end": 36
+    },
+    "pid": "17783",
+    "pass": true
+  },
+  {
+    "scenario": "failed-replacement-init-injected",
+    "failureObserved": true,
+    "pid": "",
+    "pass": false
+  },
+  {
+    "scenario": "replacement-retry",
+    "eglCreated": true,
+    "skiaInitialized": true,
+    "pid": "",
+    "pass": false
+  },
+  {
+    "scenario": "repeated-cleanup",
+    "begin": false,
+    "end": false,
+    "pid": "",
+    "pass": false
+  }
+]

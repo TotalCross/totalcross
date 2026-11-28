@@ -73,7 +73,7 @@ permission state, visual assertion, completion, and crash result for each
 completed case. Do not interpret API 29 legacy permission behavior as a
 graphics failure.
 
-## Milestone 4 — initial API 30 validation
+## Milestone 4 — first API 30 checkpoint (superseded)
 
 | Case | Result |
 | --- | --- |
@@ -86,5 +86,34 @@ graphics failure.
 | Lost-context / replacement-init-failure injection | NOT RUN; test hooks were not reached |
 | Distinctive rendering/pixel assertion | NOT PASS; screenshot was blank white |
 
-M4 remains partially validated. Complete these focused API 30 checks before
-requesting Milestone 5.
+This table records the first M4 interval; the continuation below supersedes
+these statuses where it contains newer evidence.
+
+## Milestone 4 — resumed API 30 validation
+
+| Case | Result |
+| --- | --- |
+| Diagnostics/test-enabled ARM64 Release build | PASS; 86 tasks, 13 executed; build log in `/tmp/codex-android-skia-egl-m4-recovery-build.log` |
+| Default-off ARM64 Release build | PASS; 86 tasks, 13 executed; no diagnostic/test options enabled |
+| Cleanup policy C test | PASS; valid/current, non-current rebind, lost, unavailable/bind failure, binding verification failure |
+| Actual old EGL context destruction | PASS; both unbind and destroy succeeded, abandon cleanup completed, replacement EGL and Skia initialized |
+| Failed replacement EGL initialization | PASS after readiness guard; failed attempt kept process alive and later callback restored EGL/Skia |
+| Partial Skia surface initialization failure | PASS with test-only null-surface injection; cleanup completed and later surface callback restored graphics |
+| Repeated empty cleanup | PASS; second cleanup begin/end completed without crash |
+| Five consecutive EGL replacements | PASS; force hook plus five natural rotation changes; ordered cleanup/destroy/create/init evidence each iteration |
+| Existing/shared and post-recreation images | PASS in diagnostics build; exact PNG pixel counts after every replacement |
+| Default-off startup/background/foreground/termination | PARTIAL; process started, returned from Home, and terminated; captured resumed screen did not retain the full expected content layout |
+| Original customer grant-in-place filesystem operation | NOT_RUN in resumed interval; M3 candidate passed but is not permanent-build evidence |
+| Original customer denied-return filesystem operation | NOT_RUN in resumed interval; M3 candidate passed but is not permanent-build evidence |
+| Original customer pregranted filesystem operation | NOT_RUN in resumed interval; M3 candidate passed but is not permanent-build evidence |
+| Original customer and marker-only app on resumed production library | NOT_RUN; the application-level graphics probe used the resumed library |
+| Corrected customer app native-crash check | NOT_RUN for permission scenarios; graphics-probe recreation and exceptional-path checks had no fatal signal after the guard |
+| TCUI missing resources and ADB Back timeout | OPEN independent findings; neither was corrected |
+
+The diagnostics build used `debug.tcvm.forceEglReplacement=1` together with
+rotation to produce real EGL teardown and replacement initialization. Each
+iteration checked representative exact color counts from screen captures;
+see `evidence/M4-api30-five-replacements.json` and the three
+`evidence/M4-api30-render-*.png` files. Default-off runtime rendering is not
+claimed pixel-validated. Milestone 5 and the API 29/30/35/36 matrix have not
+started.

@@ -1,0 +1,23 @@
+[
+  {
+    "scenario": "partial-Skia-surface-initialization-failure",
+    "failureObserved": true,
+    "process": "18237",
+    "noCrash": true,
+    "pass": true
+  },
+  {
+    "scenario": "retry-after-Skia-init-failure",
+    "eglAndSkiaRecovered": true,
+    "process": "18237",
+    "pass": true
+  },
+  {
+    "scenario": "repeated-empty-cleanup",
+    "begin": true,
+    "end": true,
+    "process": "18237",
+    "noCrash": true,
+    "pass": true
+  }
+]

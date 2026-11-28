@@ -30,7 +30,8 @@ and replacement initialization. Grant-in-place passed six times total, and
 denied-return, pregranted, and rotation/background/foreground controls passed.
 Old-context cleanup completed before EGL destruction, and replacement Skia
 initialization completed. This confirms the cause for the exercised API 30
-paths. Pause for explicit review before any production change.
+paths. The user approved M4 production correction at commit
+88073e5ddfa3e5b4518cefb4598ed835cb7903a0; pause before Milestone 5.
 
 For the pinned Skia `158dc9d7` APIs, use
 `releaseResourcesAndAbandonContext()` only while the native context is still
@@ -60,6 +61,11 @@ Use the pinned Skia release API `releaseResourcesAndAbandonContext()` only
 after EGL validity and current binding are verified (or a valid non-current
 context is successfully rebound) on the existing graphics thread. If EGL is
 invalid or unavailable, call `abandonContext()` before dropping GPU wrappers.
-Apply this before surface-replacement and final EGL teardown. Initial API 30
-validation is partial; retain the pending assertions in the checkpoint and
-do not begin Milestone 5 yet.
+Apply this before surface-replacement and final EGL teardown. `initSkia()` must
+report failed GPU context, surface, or canvas creation so callers can release
+new EGL state and defer drawing until a later surface callback succeeds.
+Android screen updates must respect `screen.surfaceReady` after a failed
+replacement. Keep diagnostic hooks default-off and separate from production
+behavior. Focused API 30 lifecycle checks passed; corrected customer
+permission flows and the cross-API matrix remain outstanding. Do not begin
+Milestone 5 without explicit authorization.
